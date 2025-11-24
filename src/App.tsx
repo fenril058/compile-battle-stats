@@ -124,7 +124,7 @@ export default function App() {
   // === レンダリング ===
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0">
-      <div className="p-3 border-b border-zinc-800">
+      <div className="p-3 border-b border-zinc-800 overflow">
         <div className="text-xs text-zinc-400 text-center">
           モード: {mode === "remote" ? "Firebase" : "ローカル(localStorage)"}
           <span className="ml-2">
@@ -235,7 +235,7 @@ export default function App() {
         <RatioTable />
       </div>
 
-      <div className="p-3 md:p-6">
+      <div className="p-3 md:p-6 overflow-x-auto">
         <div className="grid md:grid-cols-3 gap-4 mb-6">
           <Stat t="通常戦 勝率" m={ns} color="bg-orange-950/40" />
           <Stat t="レシオ制 勝率" m={rs} color="bg-blue-950/40" />
