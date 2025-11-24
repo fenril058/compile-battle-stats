@@ -16,6 +16,8 @@ import { ratioSum, isRatioBattle, makeStats, matchup } from "./utils/logic";
 import { RatioTable } from "./components/RatioTable";
 import { Stat } from "./components/Stat";
 import { Matrix } from "./components/Matrix";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const COLLECTIONNAME = "compile_season1_aux";
 const MOCK_KEY = "compile_season2_public_mock";
@@ -56,14 +58,19 @@ export default function App() {
   // === UI入力状態 ===
   const [left, setLeft] = useState<Trio>(["DARKNESS", "FIRE", "HATE"]);
   const [right, setRight] = useState<Trio>(["PSYCHIC", "GRAVITY", "WATER"]);
-  const [winner, setWinner] = useState<"L" | "R">("L");
 
   // === アクション ===
-  const addMatch = () => {
+  const addMatch = (selectedWinner: "L" | "R") => {
+    // チーム選択が完了しているか確認
+    if (left.some(p => p === null) || right.some(p => p === null)) {
+      toast.error("プロトコルをすべて選択してください");
+      return;
+    }
+    // 登録ペイロードを作成
     const payload = {
       left,
       right,
-      winner,
+      winner: selectedWinner,
       ratio: isRatioBattle(left, right), // logicから利用
     };
     void addMatchItem(payload);
@@ -138,11 +145,23 @@ export default function App() {
   // === レンダリング ===
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0">
+      <ToastContainer
+        position="top-right" // トーストが表示される位置
+        autoClose={3000}     // 3秒後に自動的に消える
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark" // 背景色に合わせてダークテーマを指定
+      />
       <div className="p-3 border-b border-zinc-800 overflow">
         <div className="text-xs text-zinc-400 text-center">
-          モード: {mode === "remote" ? "Firebase" : "ローカル(localStorage)"}
+                                                             モード: {mode === "remote" ? "Firebase" : "ローカル(localStorage)"}
           <span className="ml-2">
-            / ユーザー: {user ? user.displayName ?? user.email ?? "ログイン中" : "未ログイン"}
+                                   / ユーザー: {user ? user.displayName ?? user.email ?? "ログイン中" : "未ログイン"}
           </span>
         </div>
 
@@ -201,47 +220,32 @@ export default function App() {
           )}
 
           <div className="flex flex-col justify-center items-center border border-zinc-700 rounded-xl p-2 gap-2">
-            <p className="text-sm text-zinc-400">勝者</p>
+            <p className="text-sm text-zinc-400">勝敗登録（即時反映）</p>
             <div className="flex gap-2">
               <button
-                onClick={() => setWinner("L")}
-                className={`px-3 py-2 rounded text-sm font-semibold ${
-                  winner === "L"
-                    ? "bg-blue-600 text-white"
-                    : "bg-zinc-800 text-zinc-300"
-                }`}
+                onClick={() => addMatch("L")} // Lの勝利として即登録
+                className={"py-2 px-4 rounded-lg transition-colors bg-green-600 hover:bg-blue-700"}
+                disabled={!left.every(p => p !== null) || !right.every(p => p !== null)}
               >
-                先攻
+                 先攻の勝利 (Left)
               </button>
               <button
-                onClick={() => setWinner("R")}
-                className={`px-3 py-2 rounded text-sm font-semibold ${
-                  winner === "R"
-                    ? "bg-blue-600 text-white"
-                    : "bg-zinc-800 text-zinc-300"
-                }`}
+                onClick={() => addMatch("R")} // Rの勝利として即登録
+                className={"py-2 px-4 rounded-lg transition-colors bg-green-600 hover:bg-blue-700"}
+                disabled={!left.every(p => p !== null) || !right.every(p => p !== null)}
               >
-                後攻
+                 後攻の勝利 (Right)
               </button>
             </div>
-            <button
-              onClick={addMatch}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full sm:w-auto"
-            >
-              追加
-            </button>
             <div className="flex justify-center gap-2 mt-3">
-              <button
-                onClick={syncLocal}
-                disabled={mode !== "local"}
-                className={`px-3 py-2 rounded text-sm text-white ${
-                  mode !== "local"
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }`}
-              >
-                 ローカルデータの読み込み
-              </button>
+              {mode === "local" && (
+                <button
+                  onClick={syncLocal}
+                  className={`px-3 py-2 rounded text-sm text-white bg-blue-600 hover:bg-blue-700`}
+                >
+                   ローカルデータの読み込み
+                </button>
+              )}
             </div>
           </div>
         </div>
