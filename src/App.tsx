@@ -10,108 +10,18 @@ import {
   onAuthStateChanged,
   type User,
 } from "firebase/auth";
+import {
+  ratioSum,
+  isRatioBattle,
+  makeStats,
+  rows,
+  matchup
+} from "./utils/logic";
 
 const COLLECTIONNAME = "compile_season1_aux"
 
 const MOCK_KEY = "compile_season2_public_mock";
 
-const ratioSum = (t: Protocol[]): number =>
-  t.reduce((a, p) => a + (RATIOS[p] ?? 0), 0);
-
-const isRatioBattle = (a: Trio, b: Trio): boolean =>
-  ratioSum(a) <= 8 && ratioSum(b) <= 8;
-
-const percent = (w: number, g: number): number =>
-  g ? Math.round((w / g) * 1000) / 10 : 0;
-
-const makeStats = (list: Match[]) => {
-  const s: any = { single: {}, pair: {}, trio: {}, first: {}, second: {} };
-  const bump = (m: any, k: string, w: boolean) => {
-    if (!m[k]) m[k] = { g: 0, w: 0 };
-    m[k].g += 1;
-    if (w) m[k].w += 1;
-  };
-
-  for (const mt of list) {
-    const leftWin = mt.winner === "L";
-    const rightWin = mt.winner === "R";
-
-    const sides = [
-      { t: mt.left, w: leftWin, first: true },
-      { t: mt.right, w: rightWin, first: false },
-    ];
-
-    for (const side of sides) {
-      side.t.forEach((p) => bump(s.single, p, side.w));
-
-      for (let i = 0; i < 3; i += 1) {
-        for (let j = i + 1; j < 3; j += 1) {
-          const key = [side.t[i], side.t[j]].sort().join(" · ");
-          bump(s.pair, key, side.w);
-        }
-      }
-
-      const trioKey = [...side.t].sort().join(" · ");
-      bump(s.trio, trioKey, side.w);
-
-      side.t.forEach((p) => bump(side.first ? s.first : s.second, p, side.w));
-    }
-  }
-
-  return s;
-};
-
-const rows = (m: any, filterType?: "pair" | "trio" | string) =>
-  Object.entries(m)
-    .map(([k, v]: any) => ({
-      n: k,
-      g: v.g,
-      w: v.w,
-      l: v.g - v.w,
-      p: percent(v.w, v.g),
-    }))
-    .filter((r) => {
-      if (filterType === "pair") return r.g >= 5;
-      if (filterType === "trio") return r.g >= 3;
-      return true;
-    })
-    .sort((a, b) => b.p - a.p);
-
-const matchup = (list: Match[]) => {
-  const r: any = {};
-  const bump = (k: string, w: boolean) => {
-    if (!r[k]) r[k] = { g: 0, w: 0 };
-    r[k].g += 1;
-    if (w) r[k].w += 1;
-  };
-
-  for (const mt of list) {
-    const leftWin = mt.winner === "L";
-    const rightWin = mt.winner === "R";
-
-    for (const lp of mt.left) {
-      for (const rp of mt.right) {
-        bump(`${lp}__${rp}`, leftWin);
-        bump(`${rp}__${lp}`, rightWin);
-      }
-    }
-  }
-
-  const m: any = {};
-  PROTOCOLS_FULL.forEach((a) => {
-    m[a] = {};
-    PROTOCOLS_FULL.forEach((b) => {
-      m[a][b] = null;
-    });
-  });
-
-  for (const [k, v] of Object.entries(r) as any) {
-    const [a, b] = (k as string).split("__");
-    if (v.g >= 3) m[a][b] = percent(v.w, v.g);
-  }
-
-  return m;
-};
 
 //  RATIOS定数から表を生成
 const RatioTable: React.FC = () => {
