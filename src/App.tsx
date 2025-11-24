@@ -121,6 +121,20 @@ export default function App() {
   const nmat = useMemo(() => matchup(normalMatches), [normalMatches]);
   const rmat = useMemo(() => matchup(ratioMatches), [ratioMatches]);
 
+  // ★ 登録順 (タイムスタンプ昇順) に並び替えた試合一覧を作成
+  const sortedMatches = useMemo(() => {
+    // timestamp の昇順 (古いものが上、新しいものが下) でソートします。
+    return [...matches].sort((a, b) => {
+      // 1. タイムスタンプで比較
+      if (a.timestamp !== b.timestamp) {
+        return a.timestamp - b.timestamp; // 古いものが上
+      }
+      // 2. タイムスタンプが同じ場合は ID をタイブレーカーとして利用 (文字列比較)
+      // IDの文字列で昇順に並べることで、順序を安定させます。
+      return a.id.localeCompare(b.id);
+    });
+  }, [matches]);
+
   // === レンダリング ===
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0">
@@ -262,7 +276,7 @@ export default function App() {
 
         <div className="bg-zinc-900 p-3 rounded-2xl overflow-x-auto mb-6">
           <h2 className="font-semibold mb-2 text-center">
-            登録試合一覧({matches.length})
+            登録試合一覧({sortedMatches.length})
           </h2>
           <table className="text-xs w-full border-collapse">
             <thead className="bg-zinc-800 text-zinc-300">
@@ -276,7 +290,7 @@ export default function App() {
               </tr>
             </thead>
             <tbody>
-              {matches.map((m, i) => (
+              {sortedMatches.map((m, i) => (
                 <tr
                   key={m.id}
                   className="border-t border-zinc-800 text-center"

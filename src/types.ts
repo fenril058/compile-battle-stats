@@ -26,6 +26,7 @@ export type Match = {
   right: Trio;
   winner: "L" | "R";
   ratio: boolean;
+  timestamp: number;
 };
 
 export const ABBR: Record<Protocol, string> = {

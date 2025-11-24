@@ -76,15 +76,17 @@ export function useFirestore<T extends WithId>(
 
   // 追加
   const add = useCallback(
-    async (data: Omit<T, "id">) => {
+    async (data: Omit<T, "id" | "timestamp">) => {
+      const dataWithTimestamp = { ...data, timestamp: Date.now() };
+
       if (mode === "remote" && colRef) {
-        const docRef = await addDoc(colRef, data as DocumentData);
+        const docRef = await addDoc(colRef, dataWithTimestamp as DocumentData);
         toast.success(`追加しました: id=${docRef.id}`);
         // ✅ Remoteでは onSnapshot に任せる（ここでは setItems しない）
         //    → スナップショット到着時に docRef.id を含むサーバー正で全置換される
       } else {
         const id = crypto.randomUUID();
-        setItems((prev) => [...prev, { ...(data as T), id }]);
+        setItems((prev) => [...prev, { ...(dataWithTimestamp as unknown as T), id }]);
       }
     },
     [mode, colRef]
