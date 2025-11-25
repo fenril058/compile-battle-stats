@@ -50,8 +50,8 @@ export function useFirestore<T extends WithId>(
           setItems((parsed as T[]).map((x) => normalizeId(x)));
         }
       }
-    } catch {
-      // 破損時は無視
+    } catch (e) {
+      console.error("[useFirestore] Initial load failed:", e);
     }
   }, [localKey]);
 
@@ -65,14 +65,18 @@ export function useFirestore<T extends WithId>(
     return unsubscribe;
   }, [db, colRef]);
 
-  // 変更を常に localStorage へ
+  // items の変更を検知して LocalStorage へ自動で保存する
   useEffect(() => {
-    try {
-      localStorage.setItem(localKey, JSON.stringify(items));
-    } catch {
-      // 容量超過などは無視（必要なら UI 通知）
+    if (mode === 'local' && items.length > 0) {
+      try {
+        localStorage.setItem(localKey, JSON.stringify(items));
+      } catch (e) {
+        console.error("[useFirestore] Autosave to localStorage failed:", e);
+        // 保存失敗時はユーザーに通知する
+        toast.error("ローカルストレージへの自動保存に失敗しました。");
+      }
     }
-  }, [items, localKey]);
+  }, [items, localKey, mode]); // items が変更されるたびに実行
 
   // 追加
   const add = useCallback(
