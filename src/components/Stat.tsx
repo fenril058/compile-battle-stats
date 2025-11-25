@@ -1,18 +1,32 @@
 import React from "react";
 import { rows } from "../utils/logic";
 
-export const Stat: React.FC<{ t: string; m: any; color: string }> = ({ t, m, color }) => {
-  const sections = ["single", "pair", "trio", "first", "second"] as const;
+const STAT_HEADERS = {
+  single: "プロトコル単体勝率", // single -> プロトコル単体勝率
+  pair: "プロトコル2枚組勝率",   // pair -> プロトコル2枚組勝率
+  trio: "プロトコル3枚組勝率",   // trio -> プロトコル3枚組勝率
+  first: "1枠目配置勝率",     // first -> 1枠目配置勝率
+  second: "2枠目配置勝率",    // second -> 2枠目配置勝率
+};
+
+const sectionKeys = Object.keys(STAT_HEADERS) as Array<keyof typeof STAT_HEADERS>;
+
+export const Stat: React.FC<{
+  t: string;
+  m: any;
+  color: string;
+  minPair: number;
+  minTrio: number}> = ({ t, m, color, minPair, minTrio }) => {
 
   return (
     <div className={`p-3 rounded-2xl shadow-md ${color}`}>
       <h2 className="font-semibold mb-2 text-center">{t}</h2>
-      {sections.map((key) => {
-        const r = rows(m[key], key as any);
+      {sectionKeys.map((key) => {
+        const r = rows(m[key], key, minPair, minTrio);
         if (!r.length) return null;
         return (
           <div key={key} className="mb-3">
-            <h3 className="text-sm text-zinc-400 mb-1 text-center">{key}</h3>
+            <h3 className="text-sm text-zinc-400 mb-1 text-center">{STAT_HEADERS[key]}</h3>
             <table className="text-xs w-full border border-zinc-800">
               <thead className="bg-zinc-800 text-zinc-300">
                 <tr>

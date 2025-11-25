@@ -20,8 +20,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const COLLECTIONNAME = import.meta.env.VITE_COLLECTION_NAME;
-
 const LOCAL_STORAGE_KEY = import.meta.env.VITE_LOCAL_STORAGE_KEY;
+const MIN_GAMES_FOR_PAIR_STATS = 5; // pair (2枚組) の表示に必要な最小試合数
+const MIN_GAMES_FOR_TRIO_STATS = 3; // trio (3枚組) の表示に必要な最小試合数
 
 export default function App() {
   // === データ管理フック ===
@@ -302,9 +303,27 @@ export default function App() {
 
       <div className="p-3 md:p-6 overflow-x-auto">
         <div className="grid md:grid-cols-3 gap-4 mb-6">
-          <Stat t="通常戦 勝率" m={ns} color="bg-orange-950/40" />
-          <Stat t="レシオ制 勝率" m={rs} color="bg-blue-950/40" />
-          <Stat t="全試合 勝率" m={as} color="bg-green-950/40" />
+          <Stat
+            t="通常戦 勝率"
+            m={ns}
+            color="bg-orange-950/40"
+            minPair={MIN_GAMES_FOR_PAIR_STATS}
+            minTrio={MIN_GAMES_FOR_TRIO_STATS}
+          />
+          <Stat
+            t="レシオ制 勝率"
+            m={rs}
+            color="bg-blue-950/40"
+            minPair={MIN_GAMES_FOR_PAIR_STATS}
+            minTrio={MIN_GAMES_FOR_TRIO_STATS}
+          />
+          <Stat
+            t="全試合 勝率"
+            m={as}
+            color="bg-green-950/40"
+            minPair={MIN_GAMES_FOR_PAIR_STATS}
+            minTrio={MIN_GAMES_FOR_TRIO_STATS}
+          />
         </div>
 
         <div className="grid md:grid-cols-3 gap-4 mb-6">

@@ -64,7 +64,12 @@ export const makeStats = (list: Match[]): StatsResult => {
   return s;
 };
 
-export const rows = (m: SideStats, filterType?: "pair" | "trio" | string) =>
+export const rows = (
+  m: SideStats,
+  filterType?: "pair" | "trio" | string,
+  minPair: number = 5, //default値
+  minTrio: number = 3, //default値
+) =>
   Object.entries(m)
     .map(([k, v]) => ({
       n: k,
@@ -72,12 +77,12 @@ export const rows = (m: SideStats, filterType?: "pair" | "trio" | string) =>
       w: v.w,
       l: v.g - v.w,
       p: percent(v.w, v.g),
-    }))
+  }))
     .filter((r) => {
-      if (filterType === "pair") return r.g >= 5;
-      if (filterType === "trio") return r.g >= 3;
-      return true;
-    })
+    if (filterType === "pair") return r.g >= minPair;
+    if (filterType === "trio") return r.g >= minTrio;
+    return true;
+  })
     .sort((a, b) => b.p - a.p);
 
 export const matchup = (list: Match[]) => {
