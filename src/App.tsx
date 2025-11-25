@@ -275,14 +275,14 @@ export default function App() {
                 className={"py-2 px-4 rounded-lg transition-colors bg-green-600 hover:bg-blue-700"}
                 disabled={!left.every(p => p !== null) || !right.every(p => p !== null)}
               >
-                 先攻の勝利 (Left)
+                 先攻の勝利
               </button>
               <button
                 onClick={() => addMatch("R")} // Rの勝利として即登録
                 className={"py-2 px-4 rounded-lg transition-colors bg-green-600 hover:bg-blue-700"}
                 disabled={!left.every(p => p !== null) || !right.every(p => p !== null)}
               >
-                 後攻の勝利 (Right)
+                 後攻の勝利
               </button>
             </div>
             <div className="flex justify-center gap-2 mt-3">

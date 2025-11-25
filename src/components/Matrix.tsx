@@ -2,7 +2,7 @@ import React from "react";
 import { PROTOCOLS_FULL, ABBR } from "../types";
 
 export const Matrix: React.FC<{ t: string; m: any; bg: string }> = ({ t, m, bg }) => (
-  <div className={`p-4 rounded-2xl mb-6 ${bg}`}>
+  <div className={`p-4 rounded-2xl mb-6 ${bg} overflow-x-auto`}>
     <h2 className="text-lg font-semibold mb-2 text-center">{t}</h2>
     <table className="w-full text-xs border border-zinc-800 rounded-md overflow-hidden">
       <thead className="bg-zinc-800 text-zinc-300">
