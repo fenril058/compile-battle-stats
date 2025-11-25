@@ -33,9 +33,8 @@ const SEASON_COLLECTIONS = [
 ] as const;
 type Season = (typeof SEASON_COLLECTIONS)[number]; // 型定義を抽出
 
-
 export default function App() {
-  // 選択されたシーズンを状態として管理
+  // === シーズン選択の状態管理 ===
   // 初期値はリストの最初、またはLocalStorageから取得
   const [selectedSeason, setSelectedSeason] = useState<Season>(
     (localStorage.getItem('selectedSeason') as Season) || SEASON_COLLECTIONS[0]
@@ -215,8 +214,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0">
       <ToastContainer
-        position="top-right" // トーストが表示される位置
-        autoClose={3000}     // 3秒後に自動的に消える
+        position="top-right"
+        autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
@@ -224,54 +223,66 @@ export default function App() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="dark" // 背景色に合わせてダークテーマを指定
+        theme="dark"
       />
-      <div className="p-3 border-b border-zinc-800 overflow">
-        <div className="text-xs text-zinc-400 text-center"
-        >
-           モード: {mode === "remote" ? "Firebase" : "ローカル(localStorage)"}
-          <span className="ml-2"
-          >
-             / ユーザー: {user ? user.displayName ?? user.email ?? "ログイン中" : "未ログイン"}
-          </span>
-        </div>
-        <div className="flex items-center space-x-2 text-sm mt-2 mb-4">
-          <label htmlFor="season-select" className="font-semibold"
-          >
-             シーズン選択:
-          </label>
-          <select
-            id="season-select"
-            value={selectedSeason}
-            onChange={(e) => setSelectedSeason(e.target.value as Season)}
-            className="p-2 border border-zinc-700 bg-zinc-800 rounded text-white"
-          >
-            {SEASON_COLLECTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex justify-center gap-2 my-2">
-          {user ? (
-            <button
-              onClick={logout}
-              className="bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-1 rounded text-sm"
-            >
-               ログアウト
-            </button>
-          ) : (
-            <button
-              onClick={login}
-              className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded text-sm"
-            >
-               Googleでログイン
-            </button>
-          )}
+
+      {/* ★ ヘッダー部分をFlexboxで整理 ★ */}
+      <div className="p-3 border-b border-zinc-800">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+
+          {/* 左側: アプリ名とシーズン選択 (モバイルでは縦に積む) */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <h1 className="text-xl font-bold whitespace-nowrap">
+              Compile Battle Stats
+            </h1>
+
+            {/* シーズン選択プルダウン */}
+            <div className="flex items-center space-x-2 text-sm">
+              <label htmlFor="season-select" className="font-semibold text-zinc-400 whitespace-nowrap">
+                シーズン:
+              </label>
+              <select
+                id="season-select"
+                value={selectedSeason}
+                onChange={(e) => setSelectedSeason(e.target.value as Season)}
+                className="p-1 border border-zinc-700 bg-zinc-800 rounded text-white text-sm focus:ring-sky-500 focus:border-sky-500"
+              >
+                {SEASON_COLLECTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* 右側: ユーザー情報とログインボタン (モバイルでは下) */}
+          <div className="flex flex-wrap sm:flex-nowrap justify-between sm:justify-end sm:items-center gap-2 text-xs sm:text-sm mt-2 sm:mt-0">
+            <div className="text-zinc-400 whitespace-nowrap">
+              モード: {mode === "remote" ? "Firebase" : "ローカル"}
+            </div>
+            <div className="text-zinc-300 whitespace-nowrap">
+              ユーザー: {user ? user.displayName ?? user.email ?? "ログイン中" : "未ログイン"}
+            </div>
+            {user ? (
+              <button
+                onClick={logout}
+                className="bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
+              >
+                ログアウト
+              </button>
+            ) : (
+              <button
+                onClick={login}
+                className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
+              >
+                Googleでログイン
+              </button>
+            )}
+          </div>
         </div>
 
-        <h2 className="text-base font-semibold mb-2 text-center">
+        <h2 className="text-base font-semibold mt-4 mb-2 text-center">
           試合登録
         </h2>
 
@@ -300,8 +311,9 @@ export default function App() {
                     ))}
                   </select>
                 ))}
-                <p className="text-xs text-center text-zinc-400 mt-1">
-                  合計レシオ: {ratioSum(side === "L" ? left : right)}
+                <p className="text-xs text-center text-zinc-400 mt-1"
+                >
+                   合計レシオ: {ratioSum(side === "L" ? left : right)}
                 </p>
               </div>
             )
@@ -337,7 +349,6 @@ export default function App() {
             </div>
           </div>
         </div>
-
         <RatioTable />
       </div>
 
