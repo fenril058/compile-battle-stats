@@ -19,14 +19,33 @@ import { Matrix } from "./components/Matrix";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const COLLECTIONNAME = import.meta.env.VITE_COLLECTION_NAME;
-// VITE_LOCAL_STORAGE_KEYがない場合、デフォルト値（compile_stats_local_data）を使用
 const LOCAL_STORAGE_KEY =
   import.meta.env.VITE_LOCAL_STORAGE_KEY || "compile_stats_local_data";
+
 const MIN_GAMES_FOR_PAIR_STATS = 5; // pair (2枚組) の表示に必要な最小試合数
 const MIN_GAMES_FOR_TRIO_STATS = 3; // trio (3枚組) の表示に必要な最小試合数
 
+const SEASON_COLLECTIONS = [
+  // "compile_season2_aux",
+  // "compile_season2",
+  "compile_season1_aux",
+  "compile_season1",
+] as const;
+type Season = (typeof SEASON_COLLECTIONS)[number]; // 型定義を抽出
+
+
 export default function App() {
+  // 選択されたシーズンを状態として管理
+  // 初期値はリストの最初、またはLocalStorageから取得
+  const [selectedSeason, setSelectedSeason] = useState<Season>(
+    (localStorage.getItem('selectedSeason') as Season) || SEASON_COLLECTIONS[0]
+  );
+
+  // 依存値が変わるたびにLocalStorageに保存する
+  useEffect(() => {
+    localStorage.setItem('selectedSeason', selectedSeason);
+  }, [selectedSeason]);
+
   // === データ管理フック ===
   const {
     mode,
@@ -34,7 +53,7 @@ export default function App() {
     add: addMatchItem,
     remove: removeMatchItem,
     reloadLocal,
-  } = useFirestore<Match>(COLLECTIONNAME, LOCAL_STORAGE_KEY);
+  } = useFirestore<Match>(selectedSeason, LOCAL_STORAGE_KEY);
 
   // === 認証状態管理 ===
   const [user, setUser] = useState<User | null>(null); // 修正済み
@@ -208,27 +227,46 @@ export default function App() {
         theme="dark" // 背景色に合わせてダークテーマを指定
       />
       <div className="p-3 border-b border-zinc-800 overflow">
-        <div className="text-xs text-zinc-400 text-center">
-                                                             モード: {mode === "remote" ? "Firebase" : "ローカル(localStorage)"}
-          <span className="ml-2">
-                                   / ユーザー: {user ? user.displayName ?? user.email ?? "ログイン中" : "未ログイン"}
+        <div className="text-xs text-zinc-400 text-center"
+        >
+           モード: {mode === "remote" ? "Firebase" : "ローカル(localStorage)"}
+          <span className="ml-2"
+          >
+             / ユーザー: {user ? user.displayName ?? user.email ?? "ログイン中" : "未ログイン"}
           </span>
         </div>
-
+        <div className="flex items-center space-x-2 text-sm mt-2 mb-4">
+          <label htmlFor="season-select" className="font-semibold"
+          >
+             シーズン選択:
+          </label>
+          <select
+            id="season-select"
+            value={selectedSeason}
+            onChange={(e) => setSelectedSeason(e.target.value as Season)}
+            className="p-2 border border-zinc-700 bg-zinc-800 rounded text-white"
+          >
+            {SEASON_COLLECTIONS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="flex justify-center gap-2 my-2">
           {user ? (
             <button
               onClick={logout}
               className="bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-1 rounded text-sm"
             >
-              ログアウト
+               ログアウト
             </button>
           ) : (
             <button
               onClick={login}
               className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded text-sm"
             >
-              Googleでログイン
+               Googleでログイン
             </button>
           )}
         </div>
