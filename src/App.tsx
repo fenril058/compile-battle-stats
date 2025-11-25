@@ -20,7 +20,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const COLLECTIONNAME = import.meta.env.VITE_COLLECTION_NAME;
-const LOCAL_STORAGE_KEY = import.meta.env.VITE_LOCAL_STORAGE_KEY;
+// VITE_LOCAL_STORAGE_KEYがない場合、デフォルト値（compile_stats_local_data）を使用
+const LOCAL_STORAGE_KEY =
+  import.meta.env.VITE_LOCAL_STORAGE_KEY || "compile_stats_local_data";
 const MIN_GAMES_FOR_PAIR_STATS = 5; // pair (2枚組) の表示に必要な最小試合数
 const MIN_GAMES_FOR_TRIO_STATS = 3; // trio (3枚組) の表示に必要な最小試合数
 
