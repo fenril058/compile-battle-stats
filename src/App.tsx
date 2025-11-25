@@ -19,8 +19,9 @@ import { Matrix } from "./components/Matrix";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const COLLECTIONNAME = "compile_season1_aux";
-const MOCK_KEY = "compile_season2_public_mock";
+const COLLECTIONNAME = import.meta.env.VITE_COLLECTION_NAME;
+
+const LOCAL_STORAGE_KEY = import.meta.env.VITE_LOCAL_STORAGE_KEY;
 
 export default function App() {
   // === データ管理フック ===
@@ -30,7 +31,7 @@ export default function App() {
     add: addMatchItem,
     remove: removeMatchItem,
     reloadLocal,
-  } = useFirestore<Match>(COLLECTIONNAME, MOCK_KEY);
+  } = useFirestore<Match>(COLLECTIONNAME, LOCAL_STORAGE_KEY);
 
   // === 認証状態管理 ===
   const [user, setUser] = useState<User | null>(null); // 修正済み
