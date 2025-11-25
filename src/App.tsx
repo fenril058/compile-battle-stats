@@ -115,22 +115,22 @@ export default function App() {
 
   const handleSelect =
     (side: "L" | "R", index: number) =>
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const v = e.target.value as Protocol;
-      if (side === "L") {
-        setLeft((prev) => {
-          const next: Trio = [...prev];
-          next[index] = v;
-          return next;
-        });
-      } else {
-        setRight((prev) => {
-          const next: Trio = [...prev];
-          next[index] = v;
-          return next;
-        });
-      }
-    };
+      (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const v = e.target.value as Protocol;
+        if (side === "L") {
+          setLeft((prev) => {
+            const next: Trio = [...prev];
+            next[index] = v;
+            return next;
+          });
+        } else {
+          setRight((prev) => {
+            const next: Trio = [...prev];
+            next[index] = v;
+            return next;
+          });
+        }
+      };
 
   // === 統計計算 (logicを利用) ===
   const normalMatches = useMemo(
@@ -226,20 +226,27 @@ export default function App() {
         theme="dark"
       />
 
+
       {/* ★ ヘッダー部分をFlexboxで整理 ★ */}
       <div className="p-3 border-b border-zinc-800">
+        {mode === "local" && (
+          <div className="text-center text-xs text-red-400 mt-2"
+          >
+             注意: 現在ローカルモード (localStorage) で動作しています。
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
 
           {/* 左側: アプリ名とシーズン選択 (モバイルでは縦に積む) */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <h1 className="text-xl font-bold whitespace-nowrap">
-              Compile Battle Stats
+                                                                  Compile Battle Stats
             </h1>
 
             {/* シーズン選択プルダウン */}
             <div className="flex items-center space-x-2 text-sm">
               <label htmlFor="season-select" className="font-semibold text-zinc-400 whitespace-nowrap">
-                シーズン:
+                                                                                                         シーズン:
               </label>
               <select
                 id="season-select"
@@ -258,32 +265,32 @@ export default function App() {
 
           {/* 右側: ユーザー情報とログインボタン (モバイルでは下) */}
           <div className="flex flex-wrap sm:flex-nowrap justify-between sm:justify-end sm:items-center gap-2 text-xs sm:text-sm mt-2 sm:mt-0">
-            <div className="text-zinc-400 whitespace-nowrap">
-              モード: {mode === "remote" ? "Firebase" : "ローカル"}
-            </div>
-            <div className="text-zinc-300 whitespace-nowrap">
-              ユーザー: {user ? user.displayName ?? user.email ?? "ログイン中" : "未ログイン"}
-            </div>
+            {/* ログイン状態に応じてボタンとユーザー名を統合して表示 */}
             {user ? (
-              <button
-                onClick={logout}
-                className="bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
-              >
-                ログアウト
-              </button>
+              <div className="flex items-center gap-2">
+                <span className="text-zinc-300 whitespace-nowrap">
+                  {user.displayName ?? user.email ?? "ログイン中"}
+                </span>
+                <button
+                  onClick={logout}
+                  className="bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
+                >
+                   ログアウト
+                </button>
+              </div>
             ) : (
               <button
                 onClick={login}
                 className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
               >
-                Googleでログイン
+                 Googleでログイン
               </button>
             )}
           </div>
         </div>
 
         <h2 className="text-base font-semibold mt-4 mb-2 text-center">
-          試合登録
+                                                                        試合登録
         </h2>
 
         {/* 入力フォーム部分 */}
@@ -397,7 +404,7 @@ export default function App() {
 
         <div className="bg-zinc-900 p-3 rounded-2xl overflow-x-auto mb-6">
           <h2 className="font-semibold mb-2 text-center">
-            登録試合一覧({sortedMatches.length})
+                                                           登録試合一覧({sortedMatches.length})
           </h2>
           <table className="text-xs w-full border-collapse">
             <thead className="bg-zinc-800 text-zinc-300">
@@ -426,7 +433,7 @@ export default function App() {
                       onClick={() => removeMatch(m.id)}
                       className="text-red-400 text-xs"
                     >
-                      削除
+                       削除
                     </button>
                   </td>
                 </tr>
@@ -436,34 +443,35 @@ export default function App() {
         </div>
         {/* CSVエクスポートボタンを配置 */}
         <div className="flex justify-center mt-6 mb-6">
-            <button
-                onClick={exportToCsv}
-                className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-sm"
-            >
-                CSVエクスポート (Download)
-            </button>
+          <button
+            onClick={exportToCsv}
+            className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-sm"
+          >
+             CSVエクスポート (Download)
+          </button>
         </div>
-        <footer className="text-center text-xs text-zinc-500 pb-3">
-          2025 りゅー(
+        <footer className="text-center text-xs text-zinc-500 pb-3"
+        >
+           2025 りゅー(
           <a
             href="https://x.com/suke69"
             target="_blank"
             rel="noreferrer"
             className="text-blue-400 hover:underline"
           >
-            @suke69
+             @suke69
           </a>
                 )
-                & ril (
+          & ril (
           <a
             href="https://x.com/fenril_nh"
             target="_blank"
             rel="noreferrer"
             className="text-blue-400 hover:underline"
           >
-            @fenril_nh
+             @fenril_nh
           </a>
-          )
+                )
         </footer>
       </div>
     </div>
