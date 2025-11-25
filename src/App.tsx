@@ -143,6 +143,52 @@ export default function App() {
     });
   }, [matches]);
 
+  // CSVエクスポート機能
+  const exportToCsv = () => {
+    // ヘッダー行 (types.tsのMatch型に依存)
+    const headers = [
+      "ID",
+      "先攻プロトコル1",
+      "先攻プロトコル2",
+      "先攻プロトコル3",
+      "後攻プロトコル1",
+      "後攻プロトコル2",
+      "後攻プロトコル3",
+      "勝者(L/R)",
+      "レシオ判定(T/F)",
+      "タイムスタンプ",
+    ];
+
+    // データ行の作成
+    const csvRows = matches.map(m => [
+      m.id,
+      ...m.left,
+      ...m.right,
+      m.winner,
+      m.ratio ? 'TRUE' : 'FALSE',
+      m.timestamp,
+    ].map(field => `"${field}"`).join(',')); // 各フィールドをダブルクォートで囲み、CSV形式に
+
+    const csvContent = [
+      headers.join(','),
+      ...csvRows
+    ].join('\n');
+
+    // BOM (Byte Order Mark) を追加して日本語文字化けを防ぐ
+    const blob = new Blob(['\ufeff', csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    // ダウンロードリンクを作成・クリック
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `compile_battle_stats_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    toast.success("CSVファイルをエクスポートしました");
+  };
+
   // === レンダリング ===
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0">
@@ -318,7 +364,15 @@ export default function App() {
             </tbody>
           </table>
         </div>
-
+        {/* CSVエクスポートボタンを配置 */}
+        <div className="flex justify-center mt-6 mb-6">
+            <button
+                onClick={exportToCsv}
+                className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-sm"
+            >
+                CSVエクスポート (Download)
+            </button>
+        </div>
         <footer className="text-center text-xs text-zinc-500 pb-3">
           2025 りゅー(
           <a
