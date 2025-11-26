@@ -5,7 +5,7 @@ import type { StatsResult } from "../types";
 // SideStats型を利用して、mの型を具体化
 type StatProps = {
   t: string;
-  m: StatsResult["single"]; // single, pair, trio 共通の構造と想定
+  m: StatsResult;
   color: string;
   minPair: number;
   minTrio: number;

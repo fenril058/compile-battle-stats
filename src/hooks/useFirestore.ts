@@ -37,7 +37,6 @@ export function useFirestore<T extends WithId>(
   localKey: string
 ) {
   const [items, setItems] = useState<T[]>([]);
-  const [isLoading, setIsLoading] = useState(true); 
   const mode: StorageMode = db ? "remote" : "local";
   const colRef = useMemo(() => (db ? collection(db, collectionName) : null), [db, collectionName]);
 

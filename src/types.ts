@@ -26,12 +26,18 @@ export type SeasonCollectionName = keyof typeof SEASON_COLLECTIONS_CONFIG;
 
 // makeStats で使用する型定義
 export type StatEntry = { g: number; w: number };
-export type SideStats =Record<string, StatEntry>;
 
+// SideStats は { [key: string]: StatEntry } という構造を持つ
+export type SideStats = Record<string, StatEntry>;
+
+/**
+ * makeStats が返す統計結果の完全な構造
+ * Stat.tsx の m prop はこの StatsResult 全体を想定しているため、型を明確にする
+ */
 export type StatsResult = {
-  single: SideStats;
-  pair: SideStats;
-  trio: SideStats;
-  first: SideStats;
-  second: SideStats;
+  single: SideStats; // プロトコル単体
+  pair: SideStats;   // ペア
+  trio: SideStats;   // トリオ
+  first: SideStats;  // 1枠目
+  second: SideStats; // 2枠目
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -8,10 +8,10 @@ import {
   SEASON_COLLECTIONS_CONFIG,
   PROTOCOL_SETS,
   UNAVAILABLE_SEASONS,
-  LOCAL_STORAGE_KEY,
   MIN_GAMES_FOR_PAIR_STATS,
   MIN_GAMES_FOR_TRIO_STATS
 } from "./config";
+import {LOCAL_STORAGE_KEY} from "./config/env"
 import type {
   Protocol,
   Trio,
