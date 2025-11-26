@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useFirestore } from "./hooks/useFirestore";
 import {
   RATIOS,
-  SEASON_COLLECTIONS_CONFIG, PROTOCOL_SETS,
+  SEASON_COLLECTIONS_CONFIG,
+  PROTOCOL_SETS,
+  UNAVAILABLE_SEASONS,
 } from "./types";
 import type { Protocol, Trio, Match, SeasonCollectionName } from "./types";
 import { auth } from "./firebase";
@@ -93,8 +95,19 @@ export default function App() {
   const [left, setLeft] = useState<Trio>(["DARKNESS", "FIRE", "HATE"]);
   const [right, setRight] = useState<Trio>(["PSYCHIC", "GRAVITY", "WATER"]);
 
+  // 登録が許可されているかどうかの判定ロジック
+  const isRegistrationAllowed = useMemo(() => {
+    // 選択中のシーズンが UNAVAILABLE_SEASONS に含まれていなければ登録可能
+    return !UNAVAILABLE_SEASONS.includes(selectedSeason as (typeof UNAVAILABLE_SEASONS)[number]);
+  }, [selectedSeason]);
+
   // === アクション ===
   const addMatch = (selectedWinner: "L" | "R") => {
+    // 登録不可なシーズンであればここで処理を中断し、ユーザーに通知する
+    if (!isRegistrationAllowed) {
+      toast.error(`「${selectedSeason}」は登録期間が終了しています。`);
+      return;
+    }
     // チーム選択が完了しているか確認
     if (left.some(p => p === null) || right.some(p => p === null)) {
       toast.error("プロトコルをすべて選択してください");
@@ -344,8 +357,15 @@ export default function App() {
             )
           )}
 
-          <div className="flex flex-col justify-center items-center border border-zinc-700 rounded-xl p-2 gap-2">
+          <div className="flex flex-col justify-center items-center
+          border border-zinc-700 rounded-xl p-2 gap-2">
             <p className="text-sm text-zinc-400">勝敗登録（即時反映）</p>
+            {/* 登録が許可されていない場合はメッセージを表示し、ボタンを非表示にする */}
+            {!isRegistrationAllowed && (
+              <div className="text-red-400 font-semibold p-2 border border-red-700 rounded-lg text-center">
+                登録期間は終了しました
+              </div>
+            )}
             <div className="flex gap-2">
               <button
                 onClick={() => addMatch("L")} // Lの勝利として即登録

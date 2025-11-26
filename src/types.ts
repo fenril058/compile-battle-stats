@@ -56,6 +56,10 @@ export const SEASON_COLLECTIONS_CONFIG: Record<string, ProtocolSetKey> = {
   "compile_season1": "V1",
 } as const;
 
+export const UNAVAILABLE_SEASONS = [
+  "compile_season1"
+] as const;
+
 export type SeasonCollectionName = keyof typeof SEASON_COLLECTIONS_CONFIG;
 
 export const ABBR: Record<Protocol, string> = {
