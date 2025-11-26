@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { RATIOS } from "../types";
+import { RATIOS } from "../config";
 import type { Protocol } from "../types";
 
 export const RatioTable: React.FC<{ protocols: Protocol[] }> = ({ protocols }) => {

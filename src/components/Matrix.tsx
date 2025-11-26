@@ -1,5 +1,5 @@
 import React from "react";
-import { ABBR } from "../types";
+import { ABBR } from "../config";
 import type { Protocol } from "../types";
 
 export const Matrix: React.FC<{ t: string; m: any; bg: string, protocols: Protocol[] }>

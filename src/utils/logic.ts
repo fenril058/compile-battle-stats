@@ -1,4 +1,5 @@
-import { RATIOS, ALL_PROTOCOLS, type Protocol, type Trio, type Match } from "../types";
+import {RATIOS, ALL_PROTOCOLS} from "../config"
+import type { Protocol, Trio, Match } from "../types";
 
 export const ratioSum = (t: Protocol[]): number =>
   t.reduce((a, p) => a + (RATIOS[p] ?? 0), 0);

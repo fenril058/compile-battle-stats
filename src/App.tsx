@@ -5,8 +5,14 @@ import {
   SEASON_COLLECTIONS_CONFIG,
   PROTOCOL_SETS,
   UNAVAILABLE_SEASONS,
-} from "./types";
-import type { Protocol, Trio, Match, SeasonCollectionName } from "./types";
+  MIN_GAMES_FOR_PAIR_STATS,
+  MIN_GAMES_FOR_TRIO_STATS
+} from "./config";
+import type {
+  Protocol,
+  Trio,
+  Match,
+  SeasonCollectionName } from "./types";
 import { auth } from "./firebase";
 import {
   GoogleAuthProvider,
@@ -26,9 +32,6 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const LOCAL_STORAGE_KEY =
   import.meta.env.VITE_LOCAL_STORAGE_KEY || "compile_stats_local_data";
-
-const MIN_GAMES_FOR_PAIR_STATS = 5; // pair (2枚組) の表示に必要な最小試合数
-const MIN_GAMES_FOR_TRIO_STATS = 3; // trio (3枚組) の表示に必要な最小試合数
 
 export default function App() {
   // === シーズン選択の状態管理 ===
