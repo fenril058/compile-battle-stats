@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useFirestore } from "./hooks/useFirestore";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Config & Types
 import {
   RATIOS,
   SEASON_COLLECTIONS_CONFIG,
@@ -13,7 +16,10 @@ import type {
   Protocol,
   Trio,
   Match,
-  SeasonCollectionName } from "./types";
+  SeasonCollectionName
+} from "./types";
+
+// Firebase
 import { auth } from "./firebase";
 import {
   GoogleAuthProvider,
@@ -23,19 +29,24 @@ import {
   type User,
 } from "firebase/auth";
 
-// 分離したロジックとコンポーネントをインポート
-import { isRatioBattle, makeStats, matchup } from "./utils/logic";
-import { RatioTable } from "./components/RatioTable";
+// Hooks & Logic
+import { useFirestore } from "./hooks/useFirestore";
+import { isRatioBattle } from "./utils/logic"; // 判定ロジックは単純なのでここで使用
+import { useMatchStats } from "./hooks/useMatchStats";
+import { useCsvExport } from "./hooks/useCsvExport";
+
+// Components
 import { Stat } from "./components/Stat";
 import { Matrix } from "./components/Matrix";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { MatchForm } from "./components/MatchForm";
+import { MatchList } from "./components/MatchList";
+import { Footer } from "./components/Footer";
+import { RatioTable } from "./components/RatioTable";
 
 export default function App() {
-  // === シーズン選択の状態管理 ===
+  // === シーズン選択 ===
   const SEASON_COLLECTIONS = Object.keys(SEASON_COLLECTIONS_CONFIG) as SeasonCollectionName[];
 
-  // 初期値はLocalStorageから取得、なければリストの最初を使用
   const [selectedSeason, setSelectedSeason] = useState<SeasonCollectionName>(() => {
     const saved = localStorage.getItem('selectedSeason');
     if (saved && SEASON_COLLECTIONS.includes(saved as SeasonCollectionName)) {
@@ -44,23 +55,22 @@ export default function App() {
     return SEASON_COLLECTIONS[0];
   });
 
-
-  // 依存値が変わるたびにLocalStorageに保存する
   useEffect(() => {
     localStorage.setItem('selectedSeason', selectedSeason);
   }, [selectedSeason]);
 
-  // 選択されたシーズンに対応するプロトコルセットを決定
   const currentProtocolSetKey = SEASON_COLLECTIONS_CONFIG[selectedSeason];
   const currentProtocols = PROTOCOL_SETS[currentProtocolSetKey] as unknown as Protocol[];
 
-  // 動的なプロトコルリストに対応した ratioSum 関数を定義
   const ratioSum = useMemo(() => {
-    return (t: Protocol[]): number =>
-      t.reduce((a, p) => a + (RATIOS[p] ?? 0), 0);
+    return (t: Trio): number => t.reduce((a, p) => a + (RATIOS[p] ?? 0), 0);
   }, []);
 
-  // === データ管理フック ===
+  const isRegistrationAllowed = useMemo(() => {
+    return !UNAVAILABLE_SEASONS.includes(selectedSeason as any);
+  }, [selectedSeason]);
+
+  // === データ管理 & 統計計算Hooks ===
   const {
     mode,
     items: matches,
@@ -69,68 +79,69 @@ export default function App() {
     reloadLocal,
   } = useFirestore<Match>(selectedSeason, LOCAL_STORAGE_KEY);
 
-  // === 認証状態管理 ===
-  const [user, setUser] = useState<User | null>(null);
+  // 統計計算ロジック（Hooksへ委譲）
+  const { stats, matrices } = useMatchStats(matches);
 
+  // CSV出力ロジック（Hooksへ委譲）
+  const { exportToCsv } = useCsvExport(matches, selectedSeason);
+
+  // 表示用ソート済みリスト
+  const sortedMatches = useMemo(() => {
+    return [...matches].sort((a, b) => {
+      if (a.timestamp !== b.timestamp) {
+        return a.timestamp - b.timestamp;
+      }
+      return a.id.localeCompare(b.id);
+    });
+  }, [matches]);
+
+  // === 認証 ===
+  const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
     if (!auth) return;
-    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
-    return () => unsub();
+    return onAuthStateChanged(auth, (u) => setUser(u));
   }, []);
 
   const login = async () => {
     if (!auth) {
-      alert("Firebaseが未初期化のためログインできません（.env を確認）");
+      alert("Firebase Config Error");
       return;
     }
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    await signInWithPopup(auth, new GoogleAuthProvider());
   };
-
   const logout = async () => {
-    if (!auth) return;
-    await signOut(auth);
+    if (auth) await signOut(auth);
   };
 
   // === UI入力状態 ===
   const [left, setLeft] = useState<Trio>(["DARKNESS", "FIRE", "HATE"]);
   const [right, setRight] = useState<Trio>(["PSYCHIC", "GRAVITY", "WATER"]);
 
-  // 登録が許可されているかどうかの判定ロジック
-  const isRegistrationAllowed = useMemo(() => {
-    // 選択中のシーズンが UNAVAILABLE_SEASONS に含まれていなければ登録可能
-    return !UNAVAILABLE_SEASONS.includes(selectedSeason as (typeof UNAVAILABLE_SEASONS)[number]);
-  }, [selectedSeason]);
-
   // === アクション ===
-  const addMatch = (selectedWinner: "L" | "R") => {
-    // 登録不可なシーズンであればここで処理を中断し、ユーザーに通知する
+  const addMatch = (winner: "L" | "R") => {
     if (!isRegistrationAllowed) {
       toast.error(`「${selectedSeason}」は登録期間が終了しています。`);
       return;
     }
-    // チーム選択が完了しているか確認
     if (left.some(p => p === null) || right.some(p => p === null)) {
       toast.error("プロトコルをすべて選択してください");
       return;
     }
-    // 登録ペイロードを作成
     const payload = {
       left,
       right,
-      winner: selectedWinner,
-      ratio: isRatioBattle(left, right), // logicから利用
+      winner,
+      ratio: isRatioBattle(left, right),
     };
     void addMatchItem(payload);
   };
 
   const removeMatch = (id: string) => {
-    // ★ 修正: 削除時にも登録可否チェックを追加 ★
     if (!isRegistrationAllowed) {
-      toast.error(`「${selectedSeason}」のデータは確定済みのため削除できません。`);
+      toast.error(`データは確定済みのため削除できません。`);
       return;
     }
-    if (window.confirm("本当に？")) {
+    if (window.confirm("削除しますか？")) {
       void removeMatchItem(id);
     }
   };
@@ -138,404 +149,153 @@ export default function App() {
   const syncLocal = () => {
     try {
       reloadLocal();
-      alert("ローカルデータを再読込しました");
+      toast.success("ローカルデータを再読込しました");
     } catch {
-      alert("ローカルデータの読込に失敗しました");
+      toast.error("読込失敗");
     }
   };
 
-  const handleSelect =
-    (side: "L" | "R", index: number) =>
-      (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const v = e.target.value as Protocol;
-        if (side === "L") {
-          setLeft((prev) => {
-            const next: Trio = [...prev];
-            next[index] = v;
-            return next;
-          });
-        } else {
-          setRight((prev) => {
-            const next: Trio = [...prev];
-            next[index] = v;
-            return next;
-          });
-        }
-      };
-
-  // === 統計計算 (logicを利用) ===
-  const normalMatches = useMemo(
-    () => matches.filter((m) => !m.ratio),
-    [matches]
-  );
-  const ratioMatches = useMemo(
-    () => matches.filter((m) => m.ratio),
-    [matches]
-  );
-
-  const as = useMemo(() => makeStats(matches), [matches]);
-  const ns = useMemo(() => makeStats(normalMatches), [normalMatches]);
-  const rs = useMemo(() => makeStats(ratioMatches), [ratioMatches]);
-
-  const amat = useMemo(() => matchup(matches), [matches]);
-  const nmat = useMemo(() => matchup(normalMatches), [normalMatches]);
-  const rmat = useMemo(() => matchup(ratioMatches), [ratioMatches]);
-
-  // ★ 登録順 (タイムスタンプ昇順) に並び替えた試合一覧を作成
-  const sortedMatches = useMemo(() => {
-    // timestamp の昇順 (古いものが上、新しいものが下) でソートします。
-    return [...matches].sort((a, b) => {
-      // 1. タイムスタンプで比較
-      if (a.timestamp !== b.timestamp) {
-        return a.timestamp - b.timestamp; // 古いものが上
-      }
-      // 2. タイムスタンプが同じ場合は ID をタイブレーカーとして利用 (文字列比較)
-      // IDの文字列で昇順に並べることで、順序を安定させます。
-      return a.id.localeCompare(b.id);
-    });
-  }, [matches]);
-
-  // CSVエクスポート機能
-  const exportToCsv = () => {
-    // ヘッダー行 (types.tsのMatch型に依存)
-    const headers = [
-      "ID",
-      "先攻プロトコル1",
-      "先攻プロトコル2",
-      "先攻プロトコル3",
-      "後攻プロトコル1",
-      "後攻プロトコル2",
-      "後攻プロトコル3",
-      "勝者(L/R)",
-      "レシオ判定(T/F)",
-      "タイムスタンプ",
-    ];
-
-    // データ行の作成
-    const csvRows = matches.map(m => [
-      m.id,
-      ...m.left,
-      ...m.right,
-      m.winner,
-      m.ratio ? 'TRUE' : 'FALSE',
-      m.timestamp,
-    ].map(field => `"${field}"`).join(',')); // 各フィールドをダブルクォートで囲み、CSV形式に
-
-    const csvContent = [
-      headers.join(','),
-      ...csvRows
-    ].join('\n');
-
-    // BOM (Byte Order Mark) を追加して日本語文字化けを防ぐ
-    const blob = new Blob(['\ufeff', csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-
-    // ダウンロードリンクを作成・クリック
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `compile_battle_stats_${selectedSeason}_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    toast.success("CSVファイルをエクスポートしました");
-  };
-
-  // === レンダリング ===
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0">
       <ToastContainer
         position="top-right"
         autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
         theme="dark"
       />
 
-
-      {/* ★ ヘッダー部分をFlexboxで整理 ★ */}
       <div className="p-3 border-b border-zinc-800">
         {mode === "local" && (
-          <div className="text-center text-xs text-red-400 mt-2"
-          >
-             注意: 現在ローカルモード (localStorage) で動作しています。
+          <div className="text-center text-xs text-red-400 mt-2">
+             Local Mode (LocalStorage)
           </div>
         )}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
 
-          {/* 左側: アプリ名とシーズン選択 (モバイルでは縦に積む) */}
+        {/* ヘッダーエリア */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <h1 className="text-xl font-bold whitespace-nowrap"
-            >
+            <h1 className="text-xl font-bold whitespace-nowrap">
                Compile Battle Stats
             </h1>
-
-            {/* シーズン選択プルダウン */}
             <div className="flex items-center space-x-2 text-sm">
-              <label htmlFor="season-select" className="font-semibold text-zinc-400 whitespace-nowrap"
-              >
-                 シーズン:
+              <label htmlFor="season-select" className="font-semibold text-zinc-400 whitespace-nowrap">
+                 Season:
               </label>
               <select
                 id="season-select"
                 value={selectedSeason}
                 onChange={(e) => setSelectedSeason(e.target.value as SeasonCollectionName)}
-                className="p-1 border border-zinc-700 bg-zinc-800
-                rounded text-white text-sm focus:ring-sky-500 focus:border-sky-500"
+                className="p-1 border border-zinc-700 bg-zinc-800 rounded text-white text-sm"
               >
                 {SEASON_COLLECTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* 右側: ユーザー情報とログインボタン (モバイルでは下) */}
-          <div className="flex flex-wrap sm:flex-nowrap justify-between
-          sm:justify-end sm:items-center gap-2 text-xs sm:text-sm mt-2 sm:mt-0">
-            {/* ログイン状態に応じてボタンとユーザー名を統合して表示 */}
+          <div className="flex flex-wrap sm:flex-nowrap justify-between sm:justify-end sm:items-center gap-2 text-xs sm:text-sm mt-2 sm:mt-0">
             {user ? (
               <div className="flex items-center gap-2">
                 <span className="text-zinc-300 whitespace-nowrap">
-                  {user.displayName ?? user.email ?? "ログイン中"}
+                  {user.displayName ?? "User"}
                 </span>
-                <button
-                  onClick={logout}
-                  className="bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
-                >
+                <button onClick={logout} className="bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-1 rounded">
                    ログアウト
                 </button>
               </div>
             ) : (
-              <button
-                onClick={login}
-                className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded text-sm whitespace-nowrap"
-              >
-                 Googleでログイン
+              <button onClick={login} className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded">
+                 Googleログイン
               </button>
             )}
           </div>
         </div>
 
-        <h2 className="text-base font-semibold mt-4 mb-2 text-center"
-        >
-           試合登録
-        </h2>
+        <h2 className="text-base font-semibold mt-4 mb-2 text-center">試合登録</h2>
 
-        {/* 入力フォーム部分 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-3">
-          {[{ label: "先攻", side: "L" as const }, { label: "後攻", side: "R" as const }].map(
-            ({ label, side }) => (
-              <div
-                key={side}
-                className="border border-zinc-700 rounded-xl p-2"
-              >
-                <p className="text-sm text-zinc-400 mb-1 text-center">
-                  {label}
-                </p>
-                {(side === "L" ? left : right).map((p, i) => (
-                  <select
-                    key={`${side}-${i}`}
-                    value={p}
-                    onChange={handleSelect(side, i)}
-                    className="w-full bg-zinc-800 border border-zinc-700
-                    rounded p-2 text-sm mb-1 focus:ring-2 focus:ring-blue-500"
-                  >
-                    {currentProtocols.map((x) => (
-                      <option key={x} value={x}>
-                        {x}
-                      </option>
-                    ))}
-                  </select>
-                ))}
-                <p className="text-xs text-center text-zinc-400 mt-1"
-                >
-                   合計レシオ: {ratioSum(side === "L" ? left : right)}
-                </p>
-              </div>
-            )
-          )}
-
-          <div className="flex flex-col justify-center items-center
-          border border-zinc-700 rounded-xl p-2 gap-2">
-            <p className="text-sm text-zinc-400">勝敗登録（即時反映）</p>
-            {/* 登録が許可されていない場合はメッセージを表示し、ボタンを非表示にする */}
-            {!isRegistrationAllowed && (
-              <div className="text-red-400 font-semibold p-2 border border-red-700 rounded-lg text-center">
-                登録期間は終了しました
-              </div>
-            )}
-            <div className="flex gap-2">
-              <button
-                onClick={() => addMatch("L")} // Lの勝利として即登録
-                className={"py-2 px-4 rounded-lg transition-colors bg-green-600 hover:bg-blue-700"}
-                disabled={!left.every(p => p !== null) || !right.every(p => p !== null)}
-              >
-                 先攻の勝利
-              </button>
-              <button
-                onClick={() => addMatch("R")} // Rの勝利として即登録
-                className={"py-2 px-4 rounded-lg transition-colors bg-green-600 hover:bg-blue-700"}
-                disabled={!left.every(p => p !== null) || !right.every(p => p !== null)}
-              >
-                 後攻の勝利
-              </button>
-            </div>
-            <div className="flex justify-center gap-2 mt-3">
-              {mode === "local" && (
-                <button
-                  onClick={syncLocal}
-                  className={`px-3 py-2 rounded text-sm text-white bg-blue-600 hover:bg-blue-700`}
-                >
-                   ローカルデータの読み込み
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-        <RatioTable protocols={currentProtocols} />
+        {/* 登録フォームコンポーネント */}
+        <MatchForm
+          protocols={currentProtocols}
+          left={left}
+          right={right}
+          setLeft={setLeft}
+          setRight={setRight}
+          onAddMatch={addMatch}
+          isRegistrationAllowed={isRegistrationAllowed}
+          onSyncLocal={syncLocal}
+          ratioSum={ratioSum}
+          mode={mode}
+        />
       </div>
 
+      {/* RatioTableは情報参照のため常に表示 */}
+      <RatioTable protocols={currentProtocols} />
+
       <div className="p-3 md:p-6 overflow-x-auto">
+        {/* 統計エリア */}
         <div className="grid md:grid-cols-3 gap-4 mb-6">
           <Stat
             t="通常戦 勝率"
-            m={ns}
+            m={stats.normal}
             color="bg-orange-950/40"
             minPair={MIN_GAMES_FOR_PAIR_STATS}
             minTrio={MIN_GAMES_FOR_TRIO_STATS}
           />
           <Stat
             t="レシオ制 勝率"
-            m={rs}
+            m={stats.ratio}
             color="bg-blue-950/40"
             minPair={MIN_GAMES_FOR_PAIR_STATS}
             minTrio={MIN_GAMES_FOR_TRIO_STATS}
           />
           <Stat
             t="全試合 勝率"
-            m={as}
+            m={stats.all}
             color="bg-green-950/40"
             minPair={MIN_GAMES_FOR_PAIR_STATS}
             minTrio={MIN_GAMES_FOR_TRIO_STATS}
           />
         </div>
 
+        {/* 相性表エリア */}
         <div className="grid md:grid-cols-3 gap-4 mb-6">
           <Matrix
-            t="通常戦 相性表(3試合以上)"
-            m={nmat}
+            t="通常戦 相性表"
+            m={matrices.normal}
             bg="bg-orange-950/10"
             protocols={currentProtocols}
           />
           <Matrix
-            t="レシオ制 相性表(3試合以上)"
-            m={rmat}
+            t="レシオ制 相性表"
+            m={matrices.ratio}
             bg="bg-blue-950/10"
             protocols={currentProtocols}
           />
           <Matrix
-            t="全試合 相性表(3試合以上)"
-            m={amat}
+            t="全試合 相性表"
+            m={matrices.all}
             bg="bg-green-950/10"
             protocols={currentProtocols}
           />
         </div>
 
-        <div className="bg-zinc-900 p-3 rounded-2xl overflow-x-auto mb-6">
-          <h2 className="font-semibold mb-2 text-center"
-          >
-             登録試合一覧({sortedMatches.length})
-          </h2>
-          <table className="text-xs w-full border-collapse">
-            <thead className="bg-zinc-800 text-zinc-300">
-              <tr>
-                <th>#</th>
-                <th>先攻</th>
-                <th>後攻</th>
-                <th>勝者</th>
-                <th>レシオ</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {matches.map((m, i) => (
-                <tr
-                  key={m.id}
-                  // ★ 修正1: i (インデックス) を使って背景色を交互に設定
-                  className={`border-t border-zinc-800 text-center ${
-                    i % 2 === 0 ? "bg-zinc-900" : "bg-zinc-950"
-                  }`}
-                >
-                  <td>{i + 1}</td>
-                  {/* ★ 修正2: 勝利した側 (m.winner === "L") のプロトコルリストを太字で強調 */}
-                  <td className={m.winner === "L" ? "font-bold text-white" : "text-zinc-300"}>
-                    {m.left.join(", ")}
-                  </td>
-                  {/* ★ 修正2: 勝利した側 (m.winner === "R") のプロトコルリストを太字で強調 */}
-                  <td className={m.winner === "R" ? "font-bold text-white" : "text-zinc-300"}>
-                    {m.right.join(", ")}
-                  </td>
-                  <td>{m.winner === "L" ? "先攻" : "後攻"}</td>
-                  <td>{m.ratio ? "◯" : ""}</td>
-                  <td>
-                    <button
-                      onClick={() => removeMatch(m.id)}
-                      // ★ 修正: 登録不可シーズンではボタンを無効化する ★
-                      disabled={!isRegistrationAllowed}
-                      className={`text-xs ${
-                        isRegistrationAllowed
-                          ? "text-red-400 hover:text-red-300" // 登録可能な場合
-                          : "text-zinc-600 cursor-not-allowed" // 登録不可な場合
-                      }`}
-                    >
-                      削除
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {/* CSVエクスポートボタンを配置 */}
+        {/* 試合一覧コンポーネント */}
+        <MatchList
+          matches={sortedMatches}
+          onRemove={removeMatch}
+          isRegistrationAllowed={isRegistrationAllowed}
+        />
+
         <div className="flex justify-center mt-6 mb-6">
           <button
             onClick={exportToCsv}
             className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-sm"
           >
-             CSVエクスポート (Download)
+             CSVエクスポート
           </button>
         </div>
-        <footer className="text-center text-xs text-zinc-500 pb-3"
-        >
-           2025 りゅー(
-          <a
-            href="https://x.com/suke69"
-            target="_blank"
-            rel="noreferrer"
-            className="text-blue-400 hover:underline"
-          >
-             @suke69
-          </a>
-                )
-          & ril (
-          <a
-            href="https://x.com/fenril_nh"
-            target="_blank"
-            rel="noreferrer"
-            className="text-blue-400 hover:underline"
-          >
-             @fenril_nh
-          </a>
-                )
-        </footer>
+
+        <Footer />
       </div>
     </div>
   );
