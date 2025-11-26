@@ -124,6 +124,11 @@ export default function App() {
   };
 
   const removeMatch = (id: string) => {
+    // ★ 修正: 削除時にも登録可否チェックを追加 ★
+    if (!isRegistrationAllowed) {
+      toast.error(`「${selectedSeason}」のデータは確定済みのため削除できません。`);
+      return;
+    }
     if (window.confirm("本当に？")) {
       void removeMatchItem(id);
     }
@@ -444,8 +449,9 @@ export default function App() {
         </div>
 
         <div className="bg-zinc-900 p-3 rounded-2xl overflow-x-auto mb-6">
-          <h2 className="font-semibold mb-2 text-center">
-                                                           登録試合一覧({sortedMatches.length})
+          <h2 className="font-semibold mb-2 text-center"
+          >
+             登録試合一覧({sortedMatches.length})
           </h2>
           <table className="text-xs w-full border-collapse">
             <thead className="bg-zinc-800 text-zinc-300">
@@ -459,22 +465,37 @@ export default function App() {
               </tr>
             </thead>
             <tbody>
-              {sortedMatches.map((m, i) => (
+              {matches.map((m, i) => (
                 <tr
                   key={m.id}
-                  className="border-t border-zinc-800 text-center"
+                  // ★ 修正1: i (インデックス) を使って背景色を交互に設定
+                  className={`border-t border-zinc-800 text-center ${
+                    i % 2 === 0 ? "bg-zinc-900" : "bg-zinc-950"
+                  }`}
                 >
                   <td>{i + 1}</td>
-                  <td>{m.left.join(", ")}</td>
-                  <td>{m.right.join(", ")}</td>
+                  {/* ★ 修正2: 勝利した側 (m.winner === "L") のプロトコルリストを太字で強調 */}
+                  <td className={m.winner === "L" ? "font-bold text-white" : "text-zinc-300"}>
+                    {m.left.join(", ")}
+                  </td>
+                  {/* ★ 修正2: 勝利した側 (m.winner === "R") のプロトコルリストを太字で強調 */}
+                  <td className={m.winner === "R" ? "font-bold text-white" : "text-zinc-300"}>
+                    {m.right.join(", ")}
+                  </td>
                   <td>{m.winner === "L" ? "先攻" : "後攻"}</td>
                   <td>{m.ratio ? "◯" : ""}</td>
                   <td>
                     <button
                       onClick={() => removeMatch(m.id)}
-                      className="text-red-400 text-xs"
+                      // ★ 修正: 登録不可シーズンではボタンを無効化する ★
+                      disabled={!isRegistrationAllowed}
+                      className={`text-xs ${
+                        isRegistrationAllowed
+                          ? "text-red-400 hover:text-red-300" // 登録可能な場合
+                          : "text-zinc-600 cursor-not-allowed" // 登録不可な場合
+                      }`}
                     >
-                       削除
+                      削除
                     </button>
                   </td>
                 </tr>
