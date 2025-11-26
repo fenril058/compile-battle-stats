@@ -86,6 +86,7 @@ export const UNAVAILABLE_SEASONS = [
 ] as const;
 
 // --- 3. 統計計算の閾値など ---
-
+export const LOCAL_STORAGE_KEY =
+  import.meta.env.VITE_LOCAL_STORAGE_KEY || "compile_stats_local_data";
 export const MIN_GAMES_FOR_PAIR_STATS = 5; // pair (2枚組) の表示に必要な最小試合数
 export const MIN_GAMES_FOR_TRIO_STATS = 3; // trio (3枚組) の表示に必要な最小試合数

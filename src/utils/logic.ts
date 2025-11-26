@@ -1,5 +1,5 @@
 import {RATIOS, ALL_PROTOCOLS} from "../config"
-import type { Protocol, Trio, Match } from "../types";
+import type { Protocol, Trio, Match, StatsResult, SideStats, StatEntry } from "../types";
 
 export const ratioSum = (t: Protocol[]): number =>
   t.reduce((a, p) => a + (RATIOS[p] ?? 0), 0);
@@ -9,18 +9,6 @@ export const isRatioBattle = (a: Trio, b: Trio): boolean =>
 
 export const percent = (w: number, g: number): number =>
   (g ? Math.round((w / g) * 1000) / 10 : 0);
-
-// makeStats で使用する型定義
-type StatEntry = { g: number; w: number };
-type SideStats =Record<string, StatEntry>;
-
-export type StatsResult = {
-  single: SideStats;
-  pair: SideStats;
-  trio: SideStats;
-  first: SideStats;
-  second: SideStats;
-};
 
 export const makeStats = (list: Match[]): StatsResult => {
   // 初期化

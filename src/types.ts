@@ -20,9 +20,18 @@ export type Match = {
 };
 
 export type Ratios = typeof RATIOS;
-
 export type Abbr = typeof ABBR;
-
 export type ProtocolSetKey = keyof typeof PROTOCOL_SETS;
-
 export type SeasonCollectionName = keyof typeof SEASON_COLLECTIONS_CONFIG;
+
+// makeStats で使用する型定義
+export type StatEntry = { g: number; w: number };
+export type SideStats =Record<string, StatEntry>;
+
+export type StatsResult = {
+  single: SideStats;
+  pair: SideStats;
+  trio: SideStats;
+  first: SideStats;
+  second: SideStats;
+};

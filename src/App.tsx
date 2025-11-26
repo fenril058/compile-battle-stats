@@ -5,6 +5,7 @@ import {
   SEASON_COLLECTIONS_CONFIG,
   PROTOCOL_SETS,
   UNAVAILABLE_SEASONS,
+  LOCAL_STORAGE_KEY,
   MIN_GAMES_FOR_PAIR_STATS,
   MIN_GAMES_FOR_TRIO_STATS
 } from "./config";
@@ -29,9 +30,6 @@ import { Stat } from "./components/Stat";
 import { Matrix } from "./components/Matrix";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-const LOCAL_STORAGE_KEY =
-  import.meta.env.VITE_LOCAL_STORAGE_KEY || "compile_stats_local_data";
 
 export default function App() {
   // === シーズン選択の状態管理 ===
