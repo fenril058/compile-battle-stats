@@ -8,10 +8,30 @@ const PROTOCOLS_AUX1 = [
   "HATE", "LOVE", "APATHY", // 3種
 ] as const;
 
-export const ALL_PROTOCOLS = [
-  ...PROTOCOLS_MAIN1,
-  ...PROTOCOLS_AUX1,
-] as const;
+// 定義済みのリストを参照し、新しいセットは前のセットをベースに作成します（積み上げ）
+export const PROTOCOL_SETS = {
+  // V1: S1のベースセット
+  V1: PROTOCOLS_MAIN1,
+
+  // V1_AUX: V1 + AUX1追加分
+  V1_AUX: [
+    ...PROTOCOLS_MAIN1,
+    ...PROTOCOLS_AUX1,
+  ] as const,
+
+  // 将来 V2 が追加される場合は、以下のように前のセットを継承
+  /* V2: [
+    ...PROTOCOL_SETS.V1_AUX,
+    ...PROTOCOLS_MAIN2, // 新しいプロトコルがあれば、それだけを定義
+  ] as const,
+  */
+} as const;
+
+export type ProtocolSetKey = keyof typeof PROTOCOL_SETS;
+
+// すべてのプロトコル（最新版）を定義（Protocol型定義のソース）
+// 現在はV1_AUXが最新
+export const ALL_PROTOCOLS = PROTOCOL_SETS.V1_AUX;
 
 export type Protocol = (typeof ALL_PROTOCOLS)[number];
 
@@ -26,24 +46,17 @@ export type Match = {
   timestamp: number;
 };
 
-// --- シーズンごとのプロトコルセットの定義 ---
-export const PROTOCOL_SETS = {
-  // S2_AUX: ALL_PROTOCOLS,
-  // S2: ALL_PROTOCOLS,
-  S1_AUX: ALL_PROTOCOLS,
-  S1: PROTOCOLS_MAIN1,
-} as const;
-
-// コレクション名とプロトコルセットキーのマッピング
-export const SEASON_COLLECTIONS_CONFIG = {
-  // "compile_season2_aux": "S2_AUX",
-  // "compile_season2": "S2",
-  "compile_season1_aux": "S1_AUX",
-  "compile_season1": "S1",
+// コレクション名とプロトコルバージョンを紐づける
+// シーズン名が変わっても、プロトコルセットが変わらなければ、キーは同じでOK
+// 一番上がデフォルトで表示されるデータになる
+export const SEASON_COLLECTIONS_CONFIG: Record<string, ProtocolSetKey> = {
+  // "compile_season2_aux": "V1_AUX", // S2_AUXもV1_AUXと同じセットを使用
+  // "compile_season2": "V1_AUX", // S2はS1_AUXと同じセットを使用
+  "compile_season1_aux": "V1_AUX",
+  "compile_season1": "V1",
 } as const;
 
 export type SeasonCollectionName = keyof typeof SEASON_COLLECTIONS_CONFIG;
-export type ProtocolSetKey = (typeof SEASON_COLLECTIONS_CONFIG)[SeasonCollectionName];
 
 export const ABBR: Record<Protocol, string> = {
   DARKNESS: "DAR",
