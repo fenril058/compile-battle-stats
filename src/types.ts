@@ -1,22 +1,19 @@
-export const PROTOCOLS_FULL = [
-  "DARKNESS",
-  "FIRE",
-  "HATE",
-  "PSYCHIC",
-  "DEATH",
-  "GRAVITY",
-  "WATER",
-  "LIFE",
-  "LOVE",
-  "PLAGUE",
-  "LIGHT",
-  "SPEED",
-  "SPIRIT",
-  "APATHY",
-  "METAL",
+const PROTOCOLS_MAIN1 = [
+  "DARKNESS", "FIRE", "PSYCHIC", "DEATH", "GRAVITY",
+  "WATER", "LIFE", "PLAGUE", "LIGHT", "SPEED",
+  "SPIRIT", "METAL", // 12種
 ] as const;
 
-export type Protocol = (typeof PROTOCOLS_FULL)[number];
+const PROTOCOLS_AUX1 = [
+  "HATE", "LOVE", "APATHY", // 3種
+] as const;
+
+export const ALL_PROTOCOLS = [
+  ...PROTOCOLS_MAIN1,
+  ...PROTOCOLS_AUX1,
+] as const;
+
+export type Protocol = (typeof ALL_PROTOCOLS)[number];
 
 export type Trio = [Protocol, Protocol, Protocol];
 
@@ -28,6 +25,25 @@ export type Match = {
   ratio: boolean;
   timestamp: number;
 };
+
+// --- シーズンごとのプロトコルセットの定義 ---
+export const PROTOCOL_SETS = {
+  // S2_AUX: ALL_PROTOCOLS,
+  // S2: ALL_PROTOCOLS,
+  S1_AUX: ALL_PROTOCOLS,
+  S1: PROTOCOLS_MAIN1,
+} as const;
+
+// コレクション名とプロトコルセットキーのマッピング
+export const SEASON_COLLECTIONS_CONFIG = {
+  // "compile_season2_aux": "S2_AUX",
+  // "compile_season2": "S2",
+  "compile_season1_aux": "S1_AUX",
+  "compile_season1": "S1",
+} as const;
+
+export type SeasonCollectionName = keyof typeof SEASON_COLLECTIONS_CONFIG;
+export type ProtocolSetKey = (typeof SEASON_COLLECTIONS_CONFIG)[SeasonCollectionName];
 
 export const ABBR: Record<Protocol, string> = {
   DARKNESS: "DAR",

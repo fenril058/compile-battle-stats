@@ -1,4 +1,4 @@
-import { RATIOS, PROTOCOLS_FULL, type Protocol, type Trio, type Match } from "../types";
+import { RATIOS, ALL_PROTOCOLS, type Protocol, type Trio, type Match } from "../types";
 
 export const ratioSum = (t: Protocol[]): number =>
   t.reduce((a, p) => a + (RATIOS[p] ?? 0), 0);
@@ -107,9 +107,9 @@ export const matchup = (list: Match[]) => {
 
   // マトリクス初期化
   const m: Record<string, Record<string, number | null>> = {};
-  PROTOCOLS_FULL.forEach((a) => {
+  ALL_PROTOCOLS.forEach((a) => {
     m[a] = {};
-    PROTOCOLS_FULL.forEach((b) => {
+    ALL_PROTOCOLS.forEach((b) => {
       m[a][b] = null;
     });
   });

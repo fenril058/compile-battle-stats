@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useFirestore } from "./hooks/useFirestore";
-import { PROTOCOLS_FULL } from "./types";
-import type { Protocol, Trio, Match } from "./types";
+import {
+  RATIOS,
+  SEASON_COLLECTIONS_CONFIG, PROTOCOL_SETS,
+} from "./types";
+import type { Protocol, Trio, Match, SeasonCollectionName } from "./types";
 import { auth } from "./firebase";
 import {
   GoogleAuthProvider,
@@ -12,7 +15,7 @@ import {
 } from "firebase/auth";
 
 // 分離したロジックとコンポーネントをインポート
-import { ratioSum, isRatioBattle, makeStats, matchup } from "./utils/logic";
+import { isRatioBattle, makeStats, matchup } from "./utils/logic";
 import { RatioTable } from "./components/RatioTable";
 import { Stat } from "./components/Stat";
 import { Matrix } from "./components/Matrix";
@@ -25,25 +28,34 @@ const LOCAL_STORAGE_KEY =
 const MIN_GAMES_FOR_PAIR_STATS = 5; // pair (2枚組) の表示に必要な最小試合数
 const MIN_GAMES_FOR_TRIO_STATS = 3; // trio (3枚組) の表示に必要な最小試合数
 
-const SEASON_COLLECTIONS = [
-  // "compile_season2_aux",
-  // "compile_season2",
-  "compile_season1_aux",
-  "compile_season1",
-] as const;
-type Season = (typeof SEASON_COLLECTIONS)[number]; // 型定義を抽出
-
 export default function App() {
   // === シーズン選択の状態管理 ===
-  // 初期値はリストの最初、またはLocalStorageから取得
-  const [selectedSeason, setSelectedSeason] = useState<Season>(
-    (localStorage.getItem('selectedSeason') as Season) || SEASON_COLLECTIONS[0]
-  );
+  const SEASON_COLLECTIONS = Object.keys(SEASON_COLLECTIONS_CONFIG) as SeasonCollectionName[];
+
+  // 初期値はLocalStorageから取得、なければリストの最初を使用
+  const [selectedSeason, setSelectedSeason] = useState<SeasonCollectionName>(() => {
+    const saved = localStorage.getItem('selectedSeason');
+    if (saved && SEASON_COLLECTIONS.includes(saved as SeasonCollectionName)) {
+      return saved as SeasonCollectionName;
+    }
+    return SEASON_COLLECTIONS[0];
+  });
+
 
   // 依存値が変わるたびにLocalStorageに保存する
   useEffect(() => {
     localStorage.setItem('selectedSeason', selectedSeason);
   }, [selectedSeason]);
+
+  // 選択されたシーズンに対応するプロトコルセットを決定
+  const currentProtocolSetKey = SEASON_COLLECTIONS_CONFIG[selectedSeason];
+  const currentProtocols = PROTOCOL_SETS[currentProtocolSetKey] as unknown as Protocol[];
+
+  // 動的なプロトコルリストに対応した ratioSum 関数を定義
+  const ratioSum = useMemo(() => {
+    return (t: Protocol[]): number =>
+      t.reduce((a, p) => a + (RATIOS[p] ?? 0), 0);
+  }, []);
 
   // === データ管理フック ===
   const {
@@ -55,7 +67,7 @@ export default function App() {
   } = useFirestore<Match>(selectedSeason, LOCAL_STORAGE_KEY);
 
   // === 認証状態管理 ===
-  const [user, setUser] = useState<User | null>(null); // 修正済み
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     if (!auth) return;
@@ -202,7 +214,7 @@ export default function App() {
     // ダウンロードリンクを作成・クリック
     const a = document.createElement('a');
     a.href = url;
-    a.download = `compile_battle_stats_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `compile_battle_stats_${selectedSeason}_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -239,20 +251,23 @@ export default function App() {
 
           {/* 左側: アプリ名とシーズン選択 (モバイルでは縦に積む) */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <h1 className="text-xl font-bold whitespace-nowrap">
-                                                                  Compile Battle Stats
+            <h1 className="text-xl font-bold whitespace-nowrap"
+            >
+               Compile Battle Stats
             </h1>
 
             {/* シーズン選択プルダウン */}
             <div className="flex items-center space-x-2 text-sm">
-              <label htmlFor="season-select" className="font-semibold text-zinc-400 whitespace-nowrap">
-                                                                                                         シーズン:
+              <label htmlFor="season-select" className="font-semibold text-zinc-400 whitespace-nowrap"
+              >
+                 シーズン:
               </label>
               <select
                 id="season-select"
                 value={selectedSeason}
-                onChange={(e) => setSelectedSeason(e.target.value as Season)}
-                className="p-1 border border-zinc-700 bg-zinc-800 rounded text-white text-sm focus:ring-sky-500 focus:border-sky-500"
+                onChange={(e) => setSelectedSeason(e.target.value as SeasonCollectionName)}
+                className="p-1 border border-zinc-700 bg-zinc-800
+                rounded text-white text-sm focus:ring-sky-500 focus:border-sky-500"
               >
                 {SEASON_COLLECTIONS.map((s) => (
                   <option key={s} value={s}>
@@ -264,7 +279,8 @@ export default function App() {
           </div>
 
           {/* 右側: ユーザー情報とログインボタン (モバイルでは下) */}
-          <div className="flex flex-wrap sm:flex-nowrap justify-between sm:justify-end sm:items-center gap-2 text-xs sm:text-sm mt-2 sm:mt-0">
+          <div className="flex flex-wrap sm:flex-nowrap justify-between
+          sm:justify-end sm:items-center gap-2 text-xs sm:text-sm mt-2 sm:mt-0">
             {/* ログイン状態に応じてボタンとユーザー名を統合して表示 */}
             {user ? (
               <div className="flex items-center gap-2">
@@ -289,8 +305,9 @@ export default function App() {
           </div>
         </div>
 
-        <h2 className="text-base font-semibold mt-4 mb-2 text-center">
-                                                                        試合登録
+        <h2 className="text-base font-semibold mt-4 mb-2 text-center"
+        >
+           試合登録
         </h2>
 
         {/* 入力フォーム部分 */}
@@ -309,9 +326,10 @@ export default function App() {
                     key={`${side}-${i}`}
                     value={p}
                     onChange={handleSelect(side, i)}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1 focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-zinc-800 border border-zinc-700
+                    rounded p-2 text-sm mb-1 focus:ring-2 focus:ring-blue-500"
                   >
-                    {PROTOCOLS_FULL.map((x) => (
+                    {currentProtocols.map((x) => (
                       <option key={x} value={x}>
                         {x}
                       </option>
@@ -356,7 +374,7 @@ export default function App() {
             </div>
           </div>
         </div>
-        <RatioTable />
+        <RatioTable protocols={currentProtocols} />
       </div>
 
       <div className="p-3 md:p-6 overflow-x-auto">
@@ -389,16 +407,19 @@ export default function App() {
             t="通常戦 相性表(3試合以上)"
             m={nmat}
             bg="bg-orange-950/10"
+            protocols={currentProtocols}
           />
           <Matrix
             t="レシオ制 相性表(3試合以上)"
             m={rmat}
             bg="bg-blue-950/10"
+            protocols={currentProtocols}
           />
           <Matrix
             t="全試合 相性表(3試合以上)"
             m={amat}
             bg="bg-green-950/10"
+            protocols={currentProtocols}
           />
         </div>
 
