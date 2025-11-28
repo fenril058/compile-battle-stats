@@ -20,7 +20,6 @@ type WithId = { id?: string };
 
 export type StorageMode = "remote" | "local";
 
-
 // 旧データ互換のため id を文字列に正規化
 function normalizeId<T extends WithId>(x: T): T {
   const id =
@@ -150,8 +149,6 @@ export function useFirestore<T extends WithId>(
     await batch.commit();
     await loadRemote();
   }, [items, colRef, loadRemote]);
-
-
 
   // ★ ローカルのキャッシュを明示的に読み戻す（Localモード用の“手動同期”）
   const reloadLocal = useCallback(() => {

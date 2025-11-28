@@ -1,4 +1,4 @@
-import {RATIOS, ALL_PROTOCOLS} from "../config"
+import { RATIOS, ALL_PROTOCOLS} from "../config"
 import type { Protocol, Trio, Match, StatsResult, SideStats, StatEntry } from "../types";
 
 export const ratioSum = (t: Protocol[]): number =>
@@ -109,4 +109,41 @@ export const matchup = (list: Match[]) => {
   }
 
   return m;
+};
+
+/**
+ * CSVの1行（文字列配列）を Match のペイロードにパースする。
+ * @param row - CSVの行データ ([L1, L2, L3, R1, R2, R3, Winner, ...] の形式)
+ * @param validProtocols - 現在選択されているシーズンで有効なプロトコルのリスト
+ * @returns Match のペイロード (id/timestampなし) または null (パース失敗)
+ */
+export const parseMatchCsvRow = (
+  row: string[],
+  validProtocols: readonly Protocol[]
+): Omit<Match, "id" | "timestamp"> | null => {
+  // 試合データとして最低限必要な7列 (L3  R3  Winner) があるか確認
+  if (row.length < 7) return null;
+
+  const upperRow = row.map(s => s.trim().toUpperCase());
+  const [L1, L2, L3, R1, R2, R3, W, ..._rest] = upperRow;
+
+  const protocols = [L1, L2, L3, R1, R2, R3] as Protocol[];
+
+  // 全プロトコル名が有効なものか検証
+  if (protocols.some(p => !validProtocols.includes(p))) {
+      return null;
+  }
+
+  const winner = W as "L" | "R";
+  if (winner !== "L" && winner !== "R") return null;
+
+  // ratio は logic.ts の既存関数で再計算
+  const ratio = isRatioBattle([L1, L2, L3] as Trio, [R1, R2, R3] as Trio);
+
+  return {
+    left: [L1, L2, L3] as Trio,
+    right: [R1, R2, R3] as Trio,
+    winner: winner,
+    ratio: ratio,
+  };
 };

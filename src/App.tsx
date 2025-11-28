@@ -34,6 +34,7 @@ import { useFirestore } from "./hooks/useFirestore";
 import { isRatioBattle } from "./utils/logic"; // 判定ロジックは単純なのでここで使用
 import { useMatchStats } from "./hooks/useMatchStats";
 import { useCsvExport } from "./hooks/useCsvExport";
+import { useCsvImport } from "./hooks/useCsvImport";
 
 // Components
 import { Stat } from "./components/Stat";
@@ -84,6 +85,12 @@ export default function App() {
 
   // CSV出力ロジック（Hooksへ委譲）
   const { exportToCsv } = useCsvExport(matches, selectedSeason);
+
+  // CSV入力ロジック（Hooksへ委譲）
+  const { handleImportCsv } = useCsvImport(
+    addMatchItem,
+    currentProtocols
+  );
 
   // 表示用ソート済みリスト
   const sortedMatches = useMemo(() => {
@@ -293,6 +300,25 @@ export default function App() {
           >
              CSVエクスポート
           </button>
+        </div>
+
+        {/* ★ 追加: CSVインポート用フォーム ★ */}
+        <div className="flex flex-col items-center justify-center mt-6 mb-6 p-4
+        border border-zinc-700 rounded-lg">
+          <label htmlFor="csv-upload" className="font-semibold mb-2 text-zinc-300"
+          >
+             CSVから試合データをインポート
+          </label>
+          <input
+            type="file"
+            id="csv-upload"
+            accept=".csv"
+            onChange={handleImportCsv}
+            className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full
+            file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700
+            hover:file:bg-violet-100"
+          />
+          <p className="text-xs text-zinc-500 mt-2">（L1, L2, L3, R1, R2, R3, Winner の順で7列必須）</p>
         </div>
 
         <Footer />

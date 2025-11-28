@@ -13,7 +13,7 @@ export const useCsvExport = (
     }
 
     const headers = [
-      "ID",
+      // "ID",
       "先攻プロトコル1",
       "先攻プロトコル2",
       "先攻プロトコル3",
@@ -27,7 +27,7 @@ export const useCsvExport = (
 
     const csvRows = matches.map((m) =>
       [
-        m.id,
+        // m.id,
         ...m.left,
         ...m.right,
         m.winner,
