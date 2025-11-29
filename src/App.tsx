@@ -76,6 +76,7 @@ export default function App() {
     mode,
     items: matches,
     add: addMatchItem,
+    addBatch: addMatchBatch,
     remove: removeMatchItem,
     reloadLocal,
   } = useFirestore<Match>(selectedSeason, LOCAL_STORAGE_KEY);
@@ -88,7 +89,7 @@ export default function App() {
 
   // CSV入力ロジック（Hooksへ委譲）
   const { handleImportCsv } = useCsvImport(
-    addMatchItem,
+    addMatchBatch,
     currentProtocols
   );
 

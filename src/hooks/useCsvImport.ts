@@ -1,12 +1,11 @@
-
 import { toast } from 'react-toastify';
 import React, { useCallback } from 'react';
 import type { Match, Protocol } from '../types';
 import { parseMatchCsvRow } from '../utils/logic';
 
 // useFirestoreから渡される add 関数用の型定義
-type AddMatchItem = (
-  payload: Omit<Match, "id" | "timestamp">
+type AddMatchItemBatch= (
+  payload: Omit<Match, "id" | "timestamp">[]
 ) => Promise<void>;
 
 /**
@@ -17,7 +16,7 @@ type AddMatchItem = (
  * @returns handleImportCsv 関数 (React.ChangeEvent<HTMLInputElement>を受け取る)
  */
 export const useCsvImport = (
-  addMatchItem: AddMatchItem,
+  addMatchItemBatch: AddMatchItemBatch,
   currentProtocols: readonly Protocol[]
 ) => {
 
@@ -36,7 +35,7 @@ export const useCsvImport = (
       const text = e.target?.result as string;
       const lines = text.trim().split('\n');
 
-      let successCount = 0;
+      const payloadsToImport: Omit<Match, "id" | "timestamp">[] = [];
       let failCount = 0;
 
       // ヘッダー行をスキップ
@@ -52,8 +51,11 @@ export const useCsvImport = (
         const payload = parseMatchCsvRow(row, currentProtocols);
 
         if (payload) {
-          await addMatchItem(payload); // useFirestore 経由でデータ登録 (timestamp付与)
-          successCount++;
+          // 都度書き込む方式（よくない）
+          // await addMatchItem(payload); // useFirestore 経由でデータ登録 (timestamp付与)
+          // Batch処理するための配列に追加
+          payloadsToImport.push(payload);
+
         } else {
           failCount++;
           console.warn("CSV Row Parse Failed:", line);
@@ -62,18 +64,22 @@ export const useCsvImport = (
         }
       }
 
-      if (successCount > 0) {
-        toast.success(`${successCount}件の試合データをインポートしました！`);
+      // ▼ 【変更】 ループが終わった後に、まとめて保存を実行
+      if (payloadsToImport.length > 0) {
+        await addMatchItemBatch(payloadsToImport);
+        toast.success(`${payloadsToImport.length}件の試合データをインポートしました！`);
       }
+
       if (failCount > 0) {
-        toast.warn(`インポートに失敗したデータが${failCount}件あります。プロトコル名や形式を確認してください。`);
+        toast.warn(`インポートに失敗したデータが${failCount}件あります。
+        プロトコル名や形式を確認してください。`);
       }
     };
 
     reader.readAsText(file);
     // ファイル入力の値をリセットし、同じファイルを再度選択できるようにする（ブラウザの仕様対応）
     event.target.value = '';
-  }, [addMatchItem, currentProtocols]);
+  }, [addMatchItemBatch, currentProtocols]);
 
   return { handleImportCsv };
 };

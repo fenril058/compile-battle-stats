@@ -95,6 +95,40 @@ export function useFirestore<T extends WithId>(
     [mode, colRef]
   );
 
+  // まとめて追加
+  const addBatch = useCallback(async (dataList: Omit<T, "id" | "timestamp">[]) => {
+    const timestamp = Date.now();
+    // すべてのデータにタイムスタンプを付与
+    const listWithMeta = dataList.map(d => ({ ...d, timestamp }));
+
+    if (mode === "remote" && db && colRef) {
+      // --- Remote (Firestore) の場合 ---
+      const batch = writeBatch(db);
+
+      listWithMeta.forEach(data => {
+        // 新しいドキュメント参照（ID）を生成
+        const ref = doc(colRef);
+        // IDを含まないデータ部分をセット
+        batch.set(ref, data as DocumentData);
+      });
+
+      // まとめて送信！
+      await batch.commit();
+      toast.success(`${listWithMeta.length}件を一括追加しました`);
+
+    } else {
+      // --- Local (LocalStorage) の場合 ---
+      const newItems = listWithMeta.map(d => ({
+        ...(d as unknown as T),
+        id: crypto.randomUUID() // ローカル用のID生成
+      }));
+
+      // 既存のリストに新しいリストを結合して、一度だけ更新
+      setItems(prev => [...prev, ...newItems]);
+      toast.success(`${newItems.length}件を一括追加しました`);
+    }
+  }, [mode, colRef, localKey]); // 依存配列
+
   // 削除（悲観的更新：成功後にUI反映）
   const remove = useCallback(
     async (id: string) => {
@@ -175,6 +209,7 @@ export function useFirestore<T extends WithId>(
     mode,                // 'remote' | 'local'
     items,               // T[]
     add,                 // (data: Omit<T, 'id'>) => Promise<void>
+    addBatch,            //
     remove,              // (id: string) => Promise<void>
     loadRemote,          // () => Promise<void>
     pushAllLocalToRemote,// () => Promise<void>
