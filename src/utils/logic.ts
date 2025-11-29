@@ -1,5 +1,7 @@
 import { RATIOS, ALL_PROTOCOLS} from "../config"
-import type { Protocol, Trio, Match, StatsResult, SideStats, StatEntry } from "../types";
+import type { Protocol, Trio, Match,
+  StatRow, StatsResult, SideStats, StatEntry
+} from "../types";
 
 export const ratioSum = (t: Protocol[]): number =>
   t.reduce((a, p) => a + (RATIOS[p] ?? 0), 0);
@@ -58,26 +60,38 @@ export const makeStats = (list: Match[]): StatsResult => {
   return s;
 };
 
+/**
+ * SideStats から StatRow[] への変換
+ * @param stats - makeStatsで生成された統計結果の一部分 (SideStats)
+ * @param key - どの統計項目か (single, pair, trio, first, second)
+ * @param minPair - ペアの最小試合数 (configから取得)
+ * @param minTrio - トリオの最小試合数 (configから取得)
+ * @returns ソート・整形された StatRow の配列
+ */
 export const rows = (
-  m: SideStats,
-  filterType?: "pair" | "trio" | string,
-  minPair: number = 5, //default値
-  minTrio: number = 3, //default値
-) =>
-  Object.entries(m)
-    .map(([k, v]) => ({
-      n: k,
-      g: v.g,
-      w: v.w,
-      l: v.g - v.w,
-      p: percent(v.w, v.g),
-  }))
-    .filter((r) => {
-    if (filterType === "pair") return r.g >= minPair;
-    if (filterType === "trio") return r.g >= minTrio;
-    return true;
-  })
+  stats: SideStats,
+  key: keyof StatsResult,
+  minPair: number,
+  minTrio: number
+): StatRow[] => { // ← 戻り値の型を StatRow[] に指定
+  const data: StatRow[] = Object.entries(stats) // ★ data の型を StatRow[] で明示
+    .map(([n, { g, w }]) => ({
+      n,
+      g,
+      w,
+      l: g - w,
+      p: percent(w, g),
+    }))
+    .filter((v) => {
+      // 最小試合数に満たないデータを除外するフィルター
+      if (key === "pair" && v.g < minPair) return false;
+      if (key === "trio" && v.g < minTrio) return false;
+      return true;
+    })
     .sort((a, b) => b.p - a.p);
+
+  return data;
+};
 
 export const matchup = (list: Match[]) => {
   const r: Record<string, StatEntry> = {};

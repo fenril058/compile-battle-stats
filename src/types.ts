@@ -31,6 +31,18 @@ export type StatEntry = { g: number; w: number };
 export type SideStats = Record<string, StatEntry>;
 
 /**
+ * 統計表の1行のデータ構造を定義
+ * rows 関数から返される配列の要素の型
+ */
+export type StatRow = {
+  n: string; // 名前 (プロトコル名, ペア名, トリオ名)
+  g: number; // ゲーム数 (Game)
+  w: number; // 勝利数 (Win)
+  l: number; // 敗北数 (Lose)
+  p: number; // 勝率 (%)
+};
+
+/**
  * makeStats が返す統計結果の完全な構造
  * Stat.tsx の m prop はこの StatsResult 全体を想定しているため、型を明確にする
  */

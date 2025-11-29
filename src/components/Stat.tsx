@@ -1,6 +1,6 @@
 import React from "react";
 import { rows } from "../utils/logic";
-import type { StatsResult } from "../types";
+import type { StatsResult, StatRow } from "../types";
 
 // SideStats型を利用して、mの型を具体化
 type StatProps = {
@@ -49,7 +49,7 @@ export const Stat: React.FC<StatProps> = ({ t, m, color, minPair, minTrio }) => 
                 </tr>
               </thead>
               <tbody>
-                {r.map((v: any, i: number) => ( // rowsの戻り値型が不明なため、ここだけany許容か、logic側で型定義が必要
+                {r.map((v: StatRow, i: number) => (
                   <tr
                     key={`${key}-${v.n}`}
                     className={`border-t border-zinc-800 text-center ${
