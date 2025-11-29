@@ -68,7 +68,7 @@ export default function App() {
   }, []);
 
   const isRegistrationAllowed = useMemo(() => {
-    return !UNAVAILABLE_SEASONS.includes(selectedSeason as any);
+    return !UNAVAILABLE_SEASONS.includes(selectedSeason);
   }, [selectedSeason]);
 
   // === データ管理 & 統計計算Hooks ===

@@ -81,7 +81,7 @@ export const SEASON_COLLECTIONS_CONFIG = {
 } as const;
 
 // 登録期間が終了し、編集不可なシーズン（コレクション名）のリスト
-export const UNAVAILABLE_SEASONS = [
+export const UNAVAILABLE_SEASONS: readonly string[] = [
   "compile_season1"
 ] as const;
 
