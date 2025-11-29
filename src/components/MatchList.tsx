@@ -39,19 +39,19 @@ export const MatchList: React.FC<MatchListProps> = ({
               <td className="p-2">{i + 1}</td>
               <td
                 className={`p-2 ${
-                  m.winner === "L" ? "font-bold text-white" : "text-zinc-300"
+                  m.winner === "FIRST" ? "font-bold text-white" : "text-zinc-300"
                 }`}
               >
-                {m.left.join(", ")}
+                {m.first.join(", ")}
               </td>
               <td
                 className={`p-2 ${
-                  m.winner === "R" ? "font-bold text-white" : "text-zinc-300"
+                  m.winner === "SECOND" ? "font-bold text-white" : "text-zinc-300"
                 }`}
               >
-                {m.right.join(", ")}
+                {m.second.join(", ")}
               </td>
-              <td className="p-2">{m.winner === "L" ? "先攻" : "後攻"}</td>
+              <td className="p-2">{m.winner === "FIRST" ? "先攻" : "後攻"}</td>
               <td className="p-2">{m.ratio ? "◯" : ""}</td>
               <td className="p-2">
                 <button

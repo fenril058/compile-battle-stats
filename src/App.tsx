@@ -121,24 +121,24 @@ export default function App() {
   };
 
   // === UI入力状態 ===
-  const [left, setLeft] = useState<Trio>(["DARKNESS", "FIRE", "HATE"]);
-  const [right, setRight] = useState<Trio>(["PSYCHIC", "GRAVITY", "WATER"]);
+  const [first, setFirst] = useState<Trio>(["DARKNESS", "FIRE", "HATE"]);
+  const [second, setSecond] = useState<Trio>(["PSYCHIC", "GRAVITY", "WATER"]);
 
   // === アクション ===
-  const addMatch = (winner: "L" | "R") => {
+  const addMatch = (winner: "FIRST" | "SECOND") => {
     if (!isRegistrationAllowed) {
       toast.error(`「${selectedSeason}」は登録期間が終了しています。`);
       return;
     }
-    if (left.some(p => p === null) || right.some(p => p === null)) {
+    if (first.some(p => p === null) || second.some(p => p === null)) {
       toast.error("プロトコルをすべて選択してください");
       return;
     }
     const payload = {
-      left,
-      right,
+      first,
+      second,
       winner,
-      ratio: isRatioBattle(left, right),
+      ratio: isRatioBattle(first, second),
     };
     void addMatchItem(payload);
   };
@@ -223,10 +223,10 @@ export default function App() {
         {/* 登録フォームコンポーネント */}
         <MatchForm
           protocols={currentProtocols}
-          left={left}
-          right={right}
-          setLeft={setLeft}
-          setRight={setRight}
+          first={first}
+          second={second}
+          setFirst={setFirst}
+          setSecond={setSecond}
           onAddMatch={addMatch}
           isRegistrationAllowed={isRegistrationAllowed}
           onSyncLocal={syncLocal}

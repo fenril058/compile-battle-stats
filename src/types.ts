@@ -12,9 +12,9 @@ export type Trio = [Protocol, Protocol, Protocol];
 
 export type Match = {
   id: string;
-  left: Trio;
-  right: Trio;
-  winner: "L" | "R";
+  first: Trio;
+  second: Trio;
+  winner: "FIRST" | "SECOND";
   ratio: boolean;
   timestamp: number;
 };

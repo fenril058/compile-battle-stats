@@ -3,11 +3,11 @@ import type { Protocol, Trio } from "../types";
 
 type MatchFormProps = {
   protocols: Protocol[];
-  left: Trio;
-  right: Trio;
-  setLeft: React.Dispatch<React.SetStateAction<Trio>>;
-  setRight: React.Dispatch<React.SetStateAction<Trio>>;
-  onAddMatch: (winner: "L" | "R") => void;
+  first: Trio;
+  second: Trio;
+  setFirst: React.Dispatch<React.SetStateAction<Trio>>;
+  setSecond: React.Dispatch<React.SetStateAction<Trio>>;
+  onAddMatch: (winner: "FIRST" | "SECOND") => void;
   isRegistrationAllowed: boolean; // ★このフラグで表示を切り替える★
   onSyncLocal?: () => void;
   ratioSum: (t: Trio) => number;
@@ -16,10 +16,10 @@ type MatchFormProps = {
 
 export const MatchForm: React.FC<MatchFormProps> = ({
   protocols,
-  left,
-  right,
-  setLeft,
-  setRight,
+  first,
+  second,
+  setFirst,
+  setSecond,
   onAddMatch,
   isRegistrationAllowed,
   onSyncLocal,
@@ -27,10 +27,10 @@ export const MatchForm: React.FC<MatchFormProps> = ({
   mode,
 }) => {
   const handleSelect =
-    (side: "L" | "R", index: number) =>
+    (side: "FIRST" | "SECOND", index: number) =>
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const v = e.target.value as Protocol;
-      const setter = side === "L" ? setLeft : setRight;
+      const setter = side === "FIRST" ? setFirst : setSecond;
       setter((prev) => {
         const next = [...prev] as Trio;
         next[index] = v;
@@ -39,12 +39,12 @@ export const MatchForm: React.FC<MatchFormProps> = ({
     };
 
   const handleSwap = () => {
-    setLeft(right);
-    setRight(left);
+    setFirst(second);
+    setSecond(first);
   };
 
   const isFormValid =
-    left.every((p) => p !== null) && right.every((p) => p !== null);
+    first.every((p) => p !== null) && second.every((p) => p !== null);
 
   return (
     <>
@@ -60,7 +60,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
           // 通常の試合登録フォーム (3カラムグリッド)
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {/* 左側・右側セレクター (2 columns) */}
-            {[{ label: "先攻", side: "L" as const, data: left }, { label: "後攻", side: "R" as const, data: right }].map(
+            {[{ label: "先攻", side: "FIRST" as const, data: first }, { label: "後攻", side: "SECOND" as const, data: second }].map(
               ({ label, side, data }) => (
                 <div key={side} className="border border-zinc-700 rounded-xl p-2 relative">
                   <p className="text-sm text-zinc-400 mb-1 text-center">{label}</p>
@@ -98,14 +98,14 @@ export const MatchForm: React.FC<MatchFormProps> = ({
               {/* WIN ボタン */}
               <div className="flex gap-2 justify-center">
                 <button
-                  onClick={() => onAddMatch("L")}
+                  onClick={() => onAddMatch("FIRST")}
                   className="py-2 px-4 rounded-lg transition-colors bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 disabled:text-zinc-500 text-sm font-bold"
                   disabled={!isFormValid}
                 >
                   先攻WIN
                 </button>
                 <button
-                  onClick={() => onAddMatch("R")}
+                  onClick={() => onAddMatch("SECOND")}
                   className="py-2 px-4 rounded-lg transition-colors bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 disabled:text-zinc-500 text-sm font-bold"
                   disabled={!isFormValid}
                 >

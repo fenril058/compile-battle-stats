@@ -28,8 +28,8 @@ export const useCsvExport = (
     const csvRows = matches.map((m) =>
       [
         // m.id,
-        ...m.left,
-        ...m.right,
+        ...m.first,
+        ...m.second,
         m.winner,
         m.ratio ? "TRUE" : "FALSE",
         m.timestamp,
