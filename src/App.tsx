@@ -157,14 +157,22 @@ export default function App() {
 
         {/* Data Management Section */}
         <section>
-          <MatchList matches={sortedMatches} onRemove={handleRemoveMatch} isRegistrationAllowed={isRegistrationAllowed} />
+          <MatchList matches={sortedMatches}
+            onRemove={handleRemoveMatch}
+            isRegistrationAllowed={isRegistrationAllowed} />
 
-          <div className="flex justify-center gap-4 mt-4 border-t border-zinc-800 pt-6">
-             <button onClick={exportToCsv} className="btn-secondary">CSV Export</button>
-             <div className="relative overflow-hidden inline-block">
-                <button className="btn-secondary">CSV Import</button>
-                <input type="file" accept=".csv" onChange={handleImportCsv} className="absolute left-0 top-0 opacity-0 cursor-pointer h-full w-full" />
-             </div>
+          <div className="flex justify-center mt-6 mb-6">
+            <button onClick={exportToCsv}
+              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xm"
+            >CSV Export</button>
+          </div>
+          <div className="flex justify-center mt-6 mb-6">
+            <button onClick={exportToCsv}
+              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-sm"
+            >CSV Import</button>
+            <input type="file" accept=".csv"
+              onChange={handleImportCsv}
+              className="absolute left-0 top-0 opacity-0 cursor-pointer h-full w-full" />
           </div>
         </section>
         <Footer />
