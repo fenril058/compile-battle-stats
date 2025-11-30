@@ -22,8 +22,9 @@ export const MatchList: React.FC<MatchListProps> = React.memo(({
 
   return (
     <div className="bg-zinc-900 p-3 rounded-2xl overflow-x-auto mb-6">
-      <h2 className="font-semibold mb-2 text-center">
-                                                       登録試合一覧({matches.length})
+      <h2 className="font-semibold mb-2 text-center"
+      >
+         登録試合一覧({matches.length})
       </h2>
       <table className="text-xs w-full border-collapse">
         <thead className="bg-zinc-800 text-zinc-300">
@@ -37,45 +38,51 @@ export const MatchList: React.FC<MatchListProps> = React.memo(({
           </tr>
         </thead>
         <tbody>
-          {displayMatches.map((m, i) => (
-            <tr
-              key={m.id}
-              className={`border-t border-zinc-800 text-center ${
-                i % 2 === 0 ? "bg-zinc-900" : "bg-zinc-950"
-              }`}
-            >
-              <td className="p-2">{i + 1}</td>
-              <td
-                className={`p-2 ${
-                  m.winner === "FIRST" ? "font-bold text-white" : "text-zinc-300"
+          {displayMatches.map((m, i) => {
+            // matches は App.tsx で最新順（timestamp降順）にソートされているため、
+            // 配列の要素数から現在のインデックスを引くと、古い順の番号になる。
+            // 例: (要素数5 - インデックス0) = 5番, (要素数5 - インデックス4) = 1番
+            const displayIndex = matches.length - i;
+            return (
+              <tr
+                key={m.id}
+                className={`border-t border-zinc-800 text-center ${
+                  i % 2 === 0 ? "bg-zinc-900" : "bg-zinc-950"
                 }`}
               >
-                {m.first.join(", ")}
-              </td>
-              <td
-                className={`p-2 ${
-                  m.winner === "SECOND" ? "font-bold text-white" : "text-zinc-300"
-                }`}
-              >
-                {m.second.join(", ")}
-              </td>
-              <td className="p-2">{m.winner === "FIRST" ? "先攻" : "後攻"}</td>
-              <td className="p-2">{m.ratio ? "◯" : ""}</td>
-              <td className="p-2">
-                <button
-                  onClick={() => onRemove(m.id)}
-                  disabled={!isRegistrationAllowed}
-                  className={`text-xs px-2 py-1 rounded ${
-                    isRegistrationAllowed
-                      ? "text-red-400 hover:bg-red-900/30 hover:text-red-300"
-                      : "text-zinc-600 cursor-not-allowed"
+                <td className="p-2">{displayIndex}</td>
+                <td
+                  className={`p-2 ${
+                    m.winner === "FIRST" ? "font-bold text-white" : "text-zinc-300"
                   }`}
                 >
-                   削除
-                </button>
-              </td>
-            </tr>
-          ))}
+                  {m.first.join(", ")}
+                </td>
+                <td
+                  className={`p-2 ${
+                    m.winner === "SECOND" ? "font-bold text-white" : "text-zinc-300"
+                  }`}
+                >
+                  {m.second.join(", ")}
+                </td>
+                <td className="p-2">{m.winner === "FIRST" ? "先攻" : "後攻"}</td>
+                <td className="p-2">{m.ratio ? "◯" : ""}</td>
+                <td className="p-2">
+                  <button
+                    onClick={() => onRemove(m.id)}
+                    disabled={!isRegistrationAllowed}
+                    className={`text-xs px-2 py-1 rounded ${
+                      isRegistrationAllowed
+                        ? "text-red-400 hover:bg-red-900/30 hover:text-red-300"
+                        : "text-zinc-600 cursor-not-allowed"
+                    }`}
+                  >
+                     削除
+                  </button>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
       {!showAll && matches.length > 100 && (
