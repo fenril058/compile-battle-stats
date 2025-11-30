@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -15,7 +15,8 @@ import type {
   Protocol,
   Trio,
   Match,
-  SeasonCollectionName
+  SeasonCollectionName,
+  Winner
 } from "./types";
 
 // Firebase
@@ -70,13 +71,15 @@ export default function App() {
     return !UNAVAILABLE_SEASONS.includes(selectedSeason);
   }, [selectedSeason]);
 
+  const isLocked = !isRegistrationAllowed;
+
   // === データ管理 & 統計計算Hooks ===
   const {
     mode,
     items: matches,
-    add: addMatchItem,
+    add: addMatch,
     addBatch: addMatchBatch,
-    remove: removeMatchItem,
+    remove: removeMatch,
     reloadLocal,
   } = useFirestore<Match>(selectedSeason);
 
@@ -125,31 +128,44 @@ export default function App() {
   const [second, setSecond] = useState<Trio>(["PSYCHIC", "GRAVITY", "WATER"]);
 
   // === アクション ===
-  const addMatch = (winner: "FIRST" | "SECOND") => {
-    if (!isRegistrationAllowed) {
-      toast.error(`「${selectedSeason}」は登録期間が終了しています。`);
-      return;
-    }
-    if (first.some(p => p === null) || second.some(p => p === null)) {
-      toast.error("プロトコルをすべて選択してください");
-      return;
-    }
-    const payload = {
-      first,
-      second,
-      winner,
-      ratio: isRatioBattle(first, second),
-    };
-    void addMatchItem(payload);
-  };
+  const handleAddMatch = useCallback((data: { first: Trio, second: Trio, winner: Winner }) => {
+    if (isLocked) { toast.error("Locked season"); return; }
+    void addMatch({
+      ...data,
+      ratio: isRatioBattle(data.first, data.second),
+    });
+  }, [addMatch, isLocked]);
 
-  const removeMatch = (id: string) => {
-    if (!isRegistrationAllowed) {
-      toast.error(`データは確定済みのため削除できません。`);
-      return;
-    }
-    void removeMatchItem(id);
-  };
+  const handleRemoveMatch = useCallback((id: string) => {
+    if (isLocked) return;
+    void removeMatch(id);
+  }, [removeMatch, isLocked]);
+
+  // const addMatch = (winner: "FIRST" | "SECOND") => {
+  //   if (!isRegistrationAllowed) {
+  //     toast.error(`「${selectedSeason}」は登録期間が終了しています。`);
+  //     return;
+  //   }
+  //   if (first.some(p => p === null) || second.some(p => p === null)) {
+  //     toast.error("プロトコルをすべて選択してください");
+  //     return;
+  //   }
+  //   const payload = {
+  //     first,
+  //     second,
+  //     winner,
+  //     ratio: isRatioBattle(first, second),
+  //   };
+  //   void addMatchItem(payload);
+  // };
+
+  // const removeMatch = (id: string) => {
+  //   if (!isRegistrationAllowed) {
+  //     toast.error(`データは確定済みのため削除できません。`);
+  //     return;
+  //   }
+  //   void removeMatchItem(id);
+  // };
 
   const syncLocal = () => {
     try {
@@ -225,7 +241,7 @@ export default function App() {
           second={second}
           setFirst={setFirst}
           setSecond={setSecond}
-          onAddMatch={addMatch}
+          onAddMatch={handleAddMatch}
           isRegistrationAllowed={isRegistrationAllowed}
           onSyncLocal={syncLocal}
           ratioSum={ratioSum}
@@ -287,7 +303,7 @@ export default function App() {
         {/* 試合一覧コンポーネント */}
         <MatchList
           matches={sortedMatches}
-          onRemove={removeMatch}
+          onRemove={handleRemoveMatch}
           isRegistrationAllowed={isRegistrationAllowed}
         />
 

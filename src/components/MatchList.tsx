@@ -23,7 +23,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(({
   return (
     <div className="bg-zinc-900 p-3 rounded-2xl overflow-x-auto mb-6">
       <h2 className="font-semibold mb-2 text-center">
-        登録試合一覧({matches.length})
+                                                       登録試合一覧({matches.length})
       </h2>
       <table className="text-xs w-full border-collapse">
         <thead className="bg-zinc-800 text-zinc-300">
@@ -37,7 +37,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(({
           </tr>
         </thead>
         <tbody>
-          {matches.map((m, i) => (
+          {displayMatches.map((m, i) => (
             <tr
               key={m.id}
               className={`border-t border-zinc-800 text-center ${
@@ -71,13 +71,21 @@ export const MatchList: React.FC<MatchListProps> = React.memo(({
                       : "text-zinc-600 cursor-not-allowed"
                   }`}
                 >
-                  削除
+                   削除
                 </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {!showAll && matches.length > 100 && (
+        <div className="text-center mt-2">
+          <button onClick={() => setShowAll(true)} className="text-blue-400 text-xs hover:underline"
+          >
+             Show All {matches.length} Matches
+          </button>
+        </div>
+      )}
     </div>
   );
 });

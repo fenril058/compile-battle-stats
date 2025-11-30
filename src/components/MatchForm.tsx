@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import type { Protocol, Trio, Winner } from "../types";
 
 type MatchFormProps = {
@@ -42,6 +42,11 @@ export const MatchForm: React.FC<MatchFormProps> = ({
     setSecond(first);
   };
 
+  const handleSubmit = (winner: Winner) => {
+    onAddMatch({ first, second, winner });
+    // Optional: Reset form or keep selection? Usually keeping is better for repeated entry.
+  };
+
   const isFormValid =
     first.every((p) => p !== null) && second.every((p) => p !== null);
 
@@ -62,73 +67,63 @@ export const MatchForm: React.FC<MatchFormProps> = ({
   return (
     <div className="mb-3">
       {/*  通常の試合登録フォーム (3カラムグリッド) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        {/* 左側・右側セレクター (2 columns) */}
-        {[{ label: "先攻", side: "FIRST" as const, data: first },
-          { label: "後攻", side: "SECOND" as const, data: second }].map(
-            ({ label, side, data }) => (
-              <div key={side} className="border border-zinc-700 rounded-xl p-2 relative">
-                <p className="text-sm text-zinc-400 mb-1 text-center">{label}</p>
-                {data.map((p, i) => (
-                  <select
-                    key={`${side}-${i}`}
-                    value={p}
-                    onChange={handleSelect(side, i)}
-                    className="w-full bg-zinc-800 border border-zinc-700
-                    rounded p-2 text-sm mb-1 focus:ring-2 focus:ring-blue-500"
-                  >
-                    {protocols.map((x) => (
-                      <option key={x} value={x}>
-                        {x}
-                      </option>
-                    ))}
-                  </select>
-                ))}
-                <p className="text-xs text-center text-zinc-400 mt-1"
-                >
-                   合計レシオ: {ratioSum(data)}
-                </p>
-              </div>
-            )
-          )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+        <div className="border border-zinc-700 rounded-xl p-2 relative">
+          <p className="text-sm text-zinc-400 mb-1 text-center">先攻</p>
+          {first.map((p, i) => (
+            <select
+              key={`first-${i}`}
+              value={p}
+              onChange={handleSelect("FIRST", i)}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1"
+            >
+              {protocols.map((x) => <option key={x} value={x}>{x}</option>)}
+            </select>
+          ))}
+          <p className="text-xs text-center text-zinc-400 mt-1">Sum: {ratioSum(first)}</p>
+        </div>
+        <div className="border border-zinc-700 rounded-xl p-2 relative">
+          <p className="text-sm text-zinc-400 mb-1 text-center">後攻</p>
+          {first.map((p, i) => (
+            <select
+              key={`second-${i}`}
+              value={p}
+              onChange={handleSelect("SECOND", i)}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1"
+            >
+              {protocols.map((x) => <option key={x} value={x}>{x}</option>)}
+            </select>
+          ))}
+          <p className="text-xs text-center text-zinc-400 mt-1">Sum: {ratioSum(first)}</p>
+        </div>
 
-        {/* アクションエリア (1 column) */}
+        {/* Action Column */}
         <div className="flex flex-col justify-center items-center border border-zinc-700 rounded-xl p-2 gap-2">
-          {/* 左右入れ替えボタン */}
-          <button
-            onClick={handleSwap}
+          <button onClick={handleSwap}
             className="text-xs text-zinc-400 border border-zinc-600 px-2 py-1 rounded hover:bg-zinc-800 mb-1"
           >
-             🔄 先後入れ替え
+             🔄 入れ替え
           </button>
-
-          {/* WIN ボタン */}
           <div className="flex gap-2 justify-center">
             <button
-              onClick={() => onAddMatch("FIRST")}
-              className="py-2 px-4 rounded-lg transition-colors bg-green-600
-              hover:bg-green-700 disabled:bg-zinc-700 disabled:text-zinc-500 text-sm font-bold"
+              onClick={() => handleSubmit("FIRST")}
               disabled={!isFormValid}
+              className="py-2 px-4 rounded-lg bg-green-600
+              hover:bg-green-700 disabled:bg-zinc-700 text-sm font-bold"
             >
                先攻WIN
             </button>
             <button
-              onClick={() => onAddMatch("SECOND")}
-              className="py-2 px-4 rounded-lg transition-colors bg-green-600
-              hover:bg-green-700 disabled:bg-zinc-700 disabled:text-zinc-500 text-sm font-bold"
+              onClick={() => handleSubmit("SECOND")}
               disabled={!isFormValid}
+              className="py-2 px-4 rounded-lg bg-green-600
+              hover:bg-green-700 disabled:bg-zinc-700 text-sm font-bold"
             >
                後攻WIN
             </button>
           </div>
-
           {mode === "local" && onSyncLocal && (
-            <button
-              onClick={onSyncLocal}
-              className="px-3 py-1 mt-1 rounded text-xs text-white bg-blue-600 hover:bg-blue-700"
-            >
-               ローカル再読込
-            </button>
+            <button onClick={onSyncLocal} className="text-xs text-blue-400 underline mt-2">Local Sync</button>
           )}
         </div>
       </div>
