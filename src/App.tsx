@@ -139,6 +139,18 @@ export default function App() {
 
         <section className="overflow-x-auto">
            <div className="flex flex-col gap-6">
+              <Matrix t="通常戦 相性表" m={matrices.normal} bg="bg-zinc-900/50" protocols={currentProtocols} />
+           </div>
+        </section>
+
+        <section className="overflow-x-auto">
+           <div className="flex flex-col gap-6">
+              <Matrix t="レシオ 相性表" m={matrices.ratio} bg="bg-zinc-900/50" protocols={currentProtocols} />
+           </div>
+        </section>
+
+        <section className="overflow-x-auto">
+           <div className="flex flex-col gap-6">
               <Matrix t="全試合 相性表" m={matrices.all} bg="bg-zinc-900/50" protocols={currentProtocols} />
            </div>
         </section>
