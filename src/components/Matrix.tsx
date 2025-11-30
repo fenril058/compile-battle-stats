@@ -10,12 +10,12 @@ type MatrixProps = {
 };
 
 export const Matrix: React.FC<MatrixProps> = ({ t, m, bg, protocols }) => (
-  <div className={`p-4 rounded-2xl mb-6 ${bg} overflow-x-auto`}>
+  <div className={`p-4 rounded-2xl mb-6 ${bg}`}>
     <h2 className="text-lg font-semibold mb-2 text-center">{t}</h2>
-    <table className="w-full text-xs border border-zinc-800 rounded-md overflow-hidden min-w-[300px]">
+    <table className="w-full text-xs border border-zinc-800 rounded-md overflow-x-auto min-w-[300px]">
       <thead className="bg-zinc-800 text-zinc-300">
         <tr>
-          <th className="px-2 py-1">PRO</th>
+          <th className="px-2 py-1 sticky left-0 z-10 bg-zinc-800">PRO</th>
           {protocols.map((p) => (
             <th key={`h-${p}`} className="px-2 py-1">
               {ABBR[p] ?? p.slice(0,3)}
@@ -26,7 +26,8 @@ export const Matrix: React.FC<MatrixProps> = ({ t, m, bg, protocols }) => (
       <tbody>
         {protocols.map((a) => (
           <tr key={`r-${a}`}>
-            <th className="bg-zinc-800 px-2 py-1">{ABBR[a] ?? a.slice(0,3)}</th>
+            <th className="bg-zinc-800 px-2 py-1 sticky left-0 z-10 bg-zinc-800">
+              {ABBR[a] ?? a.slice(0,3)}</th>
             {protocols.map((b) => {
               const row = m[a];
               const v = row ? row[b] : null;
