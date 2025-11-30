@@ -39,7 +39,7 @@ export const useCsvImport = (
       let failCount = 0;
 
       // ヘッダー行をスキップ
-      // 既存のCSVエクスポートのヘッダーは "L1,L2,L3,R1,R2,R3,WINNER,..." のようなもの
+      // "WINNER"が含まれていれば、ヘッダーとみなす
       const dataLines = lines[0].toUpperCase().includes("WINNER") ? lines.slice(1) : lines;
 
       // CSVを解析し、マッチデータを追加
@@ -51,11 +51,8 @@ export const useCsvImport = (
         const payload = parseMatchCsvRow(row, currentProtocols);
 
         if (payload) {
-          // 都度書き込む方式（よくない）
-          // await addMatchItem(payload); // useFirestore 経由でデータ登録 (timestamp付与)
           // Batch処理するための配列に追加
           payloadsToImport.push(payload);
-
         } else {
           failCount++;
           console.warn("CSV Row Parse Failed:", line);
@@ -67,7 +64,6 @@ export const useCsvImport = (
       // ▼ 【変更】 ループが終わった後に、まとめて保存を実行
       if (payloadsToImport.length > 0) {
         await addMatchItemBatch(payloadsToImport);
-        toast.success(`${payloadsToImport.length}件の試合データをインポートしました！`);
       }
 
       if (failCount > 0) {

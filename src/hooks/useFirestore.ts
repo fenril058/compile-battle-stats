@@ -191,8 +191,7 @@ export function useFirestore<T extends WithId>(
           console.error("[useFirestore] remote batch add failed:", e);
           toast.error("リモートへの一括登録に失敗しました。");
       }
-    },
-    [colRef]
+    }, [colRef]
   );
 
 

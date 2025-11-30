@@ -67,11 +67,7 @@ export default function App() {
     return (t: Trio): number => t.reduce((a, p) => a + (RATIOS[p] ?? 0), 0);
   }, []);
 
-  const isRegistrationAllowed = useMemo(() => {
-    return !UNAVAILABLE_SEASONS.includes(selectedSeason);
-  }, [selectedSeason]);
-
-  const isLocked = !isRegistrationAllowed;
+  const isLocked = UNAVAILABLE_SEASONS.includes(selectedSeason);
 
   // === データ管理 & 統計計算Hooks ===
   const {
@@ -123,10 +119,6 @@ export default function App() {
     if (auth) await signOut(auth);
   };
 
-  // === UI入力状態 ===
-  const [first, setFirst] = useState<Trio>(["DARKNESS", "FIRE", "HATE"]);
-  const [second, setSecond] = useState<Trio>(["PSYCHIC", "GRAVITY", "WATER"]);
-
   // === アクション ===
   const handleAddMatch = useCallback((data: { first: Trio, second: Trio, winner: Winner }) => {
     if (isLocked) { toast.error("Locked season"); return; }
@@ -140,32 +132,6 @@ export default function App() {
     if (isLocked) return;
     void removeMatch(id);
   }, [removeMatch, isLocked]);
-
-  // const addMatch = (winner: "FIRST" | "SECOND") => {
-  //   if (!isRegistrationAllowed) {
-  //     toast.error(`「${selectedSeason}」は登録期間が終了しています。`);
-  //     return;
-  //   }
-  //   if (first.some(p => p === null) || second.some(p => p === null)) {
-  //     toast.error("プロトコルをすべて選択してください");
-  //     return;
-  //   }
-  //   const payload = {
-  //     first,
-  //     second,
-  //     winner,
-  //     ratio: isRatioBattle(first, second),
-  //   };
-  //   void addMatchItem(payload);
-  // };
-
-  // const removeMatch = (id: string) => {
-  //   if (!isRegistrationAllowed) {
-  //     toast.error(`データは確定済みのため削除できません。`);
-  //     return;
-  //   }
-  //   void removeMatchItem(id);
-  // };
 
   const syncLocal = () => {
     try {
@@ -237,12 +203,8 @@ export default function App() {
         {/* 登録フォームコンポーネント */}
         <MatchForm
           protocols={currentProtocols}
-          first={first}
-          second={second}
-          setFirst={setFirst}
-          setSecond={setSecond}
           onAddMatch={handleAddMatch}
-          isRegistrationAllowed={isRegistrationAllowed}
+          isRegistrationAllowed={!isLocked}
           onSyncLocal={syncLocal}
           ratioSum={ratioSum}
           mode={mode}
@@ -304,7 +266,7 @@ export default function App() {
         <MatchList
           matches={sortedMatches}
           onRemove={handleRemoveMatch}
-          isRegistrationAllowed={isRegistrationAllowed}
+          isRegistrationAllowed={!isLocked}
         />
 
         <div className="flex justify-center mt-6 mb-6">
