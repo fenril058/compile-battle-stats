@@ -134,12 +134,7 @@ export default function App() {
   }, [removeMatch, isLocked]);
 
   const syncLocal = () => {
-    try {
-      reloadLocal();
-      toast.success("ローカルデータを再読込しました");
-    } catch {
-      toast.error("読込失敗");
-    }
+    reloadLocal();
   };
 
   return (
