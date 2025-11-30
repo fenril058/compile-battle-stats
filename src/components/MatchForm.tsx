@@ -1,31 +1,30 @@
-import React from "react";
-import type { Protocol, Trio } from "../types";
+import React, { useState, useEffect } from "react";
+import type { Protocol, Trio, Winner } from "../types";
 
 type MatchFormProps = {
   protocols: Protocol[];
-  first: Trio;
-  second: Trio;
-  setFirst: React.Dispatch<React.SetStateAction<Trio>>;
-  setSecond: React.Dispatch<React.SetStateAction<Trio>>;
-  onAddMatch: (winner: "FIRST" | "SECOND") => void;
-  isRegistrationAllowed: boolean; // ★このフラグで表示を切り替える★
+  onAddMatch: (data: { first: Trio; second: Trio; winner: Winner }) => void;
+  isRegistrationAllowed: boolean;
   onSyncLocal?: () => void;
-  ratioSum: (t: Trio) => number;
   mode: string;
+  ratioSum: (t: Trio) => number;
 };
+
+// Initial state helpers
+const INITIAL_FIRST: Trio = ["DARKNESS", "FIRE", "HATE"] as unknown as Trio;
+const INITIAL_SECOND: Trio = ["PSYCHIC", "GRAVITY", "WATER"] as unknown as Trio;
 
 export const MatchForm: React.FC<MatchFormProps> = ({
   protocols,
-  first,
-  second,
-  setFirst,
-  setSecond,
   onAddMatch,
   isRegistrationAllowed,
   onSyncLocal,
   ratioSum,
   mode,
 }) => {
+  const [first, setFirst] = useState<Trio>(INITIAL_FIRST);
+  const [second, setSecond] = useState<Trio>(INITIAL_SECOND);
+
   const handleSelect =
     (side: "FIRST" | "SECOND", index: number) =>
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -46,44 +45,51 @@ export const MatchForm: React.FC<MatchFormProps> = ({
   const isFormValid =
     first.every((p) => p !== null) && second.every((p) => p !== null);
 
-  return (
-    <>
+  {/* ★ 登録期間終了の場合は専用メッセージを表示し、フォーム全体を隠す ★ */}
+  if(!isRegistrationAllowed) {
+    return(
       <div className="mb-3">
-        {/* ★ 変更点: 登録期間終了の場合は専用メッセージを表示し、フォーム全体を隠す ★ */}
-        {!isRegistrationAllowed ? (
-          <div className="flex justify-center items-center h-24 border border-red-700 rounded-xl bg-red-950/20">
-            <p className="text-xl font-bold text-red-400">
-              登録期間が終了しました
-            </p>
-          </div>
-        ) : (
-          // 通常の試合登録フォーム (3カラムグリッド)
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {/* 左側・右側セレクター (2 columns) */}
-            {[{ label: "先攻", side: "FIRST" as const, data: first }, { label: "後攻", side: "SECOND" as const, data: second }].map(
-              ({ label, side, data }) => (
-                <div key={side} className="border border-zinc-700 rounded-xl p-2 relative">
-                  <p className="text-sm text-zinc-400 mb-1 text-center">{label}</p>
-                  {data.map((p, i) => (
-                    <select
-                      key={`${side}-${i}`}
-                      value={p}
-                      onChange={handleSelect(side, i)}
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1 focus:ring-2 focus:ring-blue-500"
-                    >
-                      {protocols.map((x) => (
-                        <option key={x} value={x}>
-                          {x}
-                        </option>
-                      ))}
-                    </select>
-                  ))}
-                  <p className="text-xs text-center text-zinc-400 mt-1">
-                    合計レシオ: {ratioSum(data)}
-                  </p>
-                </div>
-              )
-            )}
+        <div className="flex justify-center items-center h-24 border border-red-700 rounded-xl bg-red-950/20">
+          <p className="text-xl font-bold text-red-400"
+          >
+             登録期間が終了しました
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mb-3">
+      {/*  通常の試合登録フォーム (3カラムグリッド) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        {/* 左側・右側セレクター (2 columns) */}
+        {[{ label: "先攻", side: "FIRST" as const, data: first },
+          { label: "後攻", side: "SECOND" as const, data: second }].map(
+            ({ label, side, data }) => (
+              <div key={side} className="border border-zinc-700 rounded-xl p-2 relative">
+                <p className="text-sm text-zinc-400 mb-1 text-center">{label}</p>
+                {data.map((p, i) => (
+                  <select
+                    key={`${side}-${i}`}
+                    value={p}
+                    onChange={handleSelect(side, i)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1 focus:ring-2 focus:ring-blue-500"
+                  >
+                    {protocols.map((x) => (
+                      <option key={x} value={x}>
+                        {x}
+                      </option>
+                    ))}
+                  </select>
+                ))}
+                <p className="text-xs text-center text-zinc-400 mt-1"
+                >
+                   合計レシオ: {ratioSum(data)}
+                </p>
+              </div>
+            )
+          )}
 
             {/* アクションエリア (1 column) */}
             <div className="flex flex-col justify-center items-center border border-zinc-700 rounded-xl p-2 gap-2">
@@ -92,7 +98,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                 onClick={handleSwap}
                 className="text-xs text-zinc-400 border border-zinc-600 px-2 py-1 rounded hover:bg-zinc-800 mb-1"
               >
-                🔄 左右入れ替え
+                🔄 先後入れ替え
               </button>
 
               {/* WIN ボタン */}
@@ -123,8 +129,6 @@ export const MatchForm: React.FC<MatchFormProps> = ({
               )}
             </div>
           </div>
-        )}
-      </div>
-    </>
+    </div>
   );
 };
