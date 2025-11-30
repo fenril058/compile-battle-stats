@@ -1,6 +1,7 @@
-import { RATIOS, ALL_PROTOCOLS} from "../config"
-import type { Protocol, Trio, Match, MatrixData,
-  StatRow, StatsResult, SideStats, StatEntry
+import { RATIOS, ALL_PROTOCOLS } from "../config";
+import type {
+  Protocol, Trio, Match, MatrixData,
+  StatsResult, SideStats, StatRow, StatEntry
 } from "../types";
 
 export const ratioSum = (t: Protocol[]): number =>
@@ -112,19 +113,28 @@ export const matchup = (list: Match[]) => {
       }
     }
   }
-
-  // マトリクス初期化
+  // Matrix Initialization with Strict Types
   const m: MatrixData = {};
-  ALL_PROTOCOLS.forEach((a) => {
+
+  // Cast ALL_PROTOCOLS to ensure TS knows we are iterating valid keys
+  (ALL_PROTOCOLS as readonly Protocol[]).forEach((a) => {
     m[a] = {};
-    ALL_PROTOCOLS.forEach((b) => {
-      m[a][b] = null;
+    (ALL_PROTOCOLS as readonly Protocol[]).forEach((b) => {
+      // Use ! to assert m[a] is defined (since we just defined it above)
+      m[a]![b] = null;
     });
   });
-
   for (const [k, v] of Object.entries(r)) {
-    const [a, b] = k.split("__");
-    if (v.g >= 3) m[a][b] = percent(v.w, v.g);
+    const [aStr, bStr] = k.split("__");
+
+    // Cast strings back to Protocol
+    const a = aStr as Protocol;
+    const b = bStr as Protocol;
+
+    // Check if m[a] exists (it should) and strictly assign
+    if (m[a] && v.g >= 3) {
+      m[a]![b] = percent(v.w, v.g);
+    }
   }
 
   return m;

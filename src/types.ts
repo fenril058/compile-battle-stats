@@ -1,31 +1,31 @@
 import {
   ALL_PROTOCOLS,
   RATIOS,
-  ABBR,
-  PROTOCOL_SETS,
   SEASON_COLLECTIONS_CONFIG,
 } from "./config";
 
 export type Protocol = (typeof ALL_PROTOCOLS)[number];
-
 export type Trio = [Protocol, Protocol, Protocol];
+export type Winner = "FIRST" | "SECOND";
 
 export type Match = {
   id: string;
   first: Trio;
   second: Trio;
-  winner: "FIRST" | "SECOND";
+  winner: Winner;
   ratio: boolean;
   timestamp: number;
 };
 
-// Matrixデータ構造の型定義
-// 本当は(Record<Protocol, Record<Protocol, number | null>>)にしたい。
-export type MatrixData = Record<string, Record<string, number | null>>;
+// Strict Typing for Matrix to prevent string access errors
+// Allows accessing matrix[protocolA][protocolB] safely
+export type MatrixData = {
+  [K in Protocol]?: {
+    [SubK in Protocol]?: number | null;
+  };
+};
 
 export type Ratios = typeof RATIOS;
-export type Abbr = typeof ABBR;
-export type ProtocolSetKey = keyof typeof PROTOCOL_SETS;
 export type SeasonCollectionName = keyof typeof SEASON_COLLECTIONS_CONFIG;
 
 // makeStats で使用する型定義
@@ -51,9 +51,9 @@ export type StatRow = {
  * Stat.tsx の m prop はこの StatsResult 全体を想定しているため、型を明確にする
  */
 export type StatsResult = {
-  single: SideStats; // プロトコル単体
-  pair: SideStats;   // ペア
-  trio: SideStats;   // トリオ
-  first: SideStats;  // 1枠目
-  second: SideStats; // 2枠目
+  single: Record<string, { g: number; w: number }>;
+  pair: Record<string, { g: number; w: number }>;
+  trio: Record<string, { g: number; w: number }>;
+  first: Record<string, { g: number; w: number }>;
+  second: Record<string, { g: number; w: number }>;
 };
