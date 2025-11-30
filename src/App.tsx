@@ -11,7 +11,6 @@ import {
   MIN_GAMES_FOR_PAIR_STATS,
   MIN_GAMES_FOR_TRIO_STATS
 } from "./config";
-import {LOCAL_STORAGE_KEY} from "./config/env"
 import type {
   Protocol,
   Trio,
@@ -79,7 +78,7 @@ export default function App() {
     addBatch: addMatchBatch,
     remove: removeMatchItem,
     reloadLocal,
-  } = useFirestore<Match>(selectedSeason, LOCAL_STORAGE_KEY);
+  } = useFirestore<Match>(selectedSeason);
 
   // 統計計算ロジック（Hooksへ委譲）
   const { stats, matrices } = useMatchStats(matches);
@@ -319,7 +318,7 @@ export default function App() {
             file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700
             hover:file:bg-violet-100"
           />
-          <p className="text-xs text-zinc-500 mt-2">（L1, L2, L3, R1, R2, R3, Winner の順で7列必須）</p>
+          <p className="text-xs text-zinc-500 mt-2">（F1, F2, F3, S1, S2, S3, Winner の順で7列必須）</p>
         </div>
 
         <Footer />

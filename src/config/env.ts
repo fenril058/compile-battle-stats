@@ -42,10 +42,3 @@ const isValid = isConfigValid(rawConfig);
  * firebase.ts や useFirestore.ts は、この値によって LocalStorage モードへのフォールバックを判断します。
  */
 export const FIREBASE_CONFIG: FirebaseConfig | null = isValid ? rawConfig : null;
-
-/**
- * LocalStorage のキー。
- * .envに設定があればそれを使用し、なければデフォルト値を使用します。
- */
-export const LOCAL_STORAGE_KEY: string =
-  import.meta.env.VITE_LOCAL_STORAGE_KEY || "compile_stats_matches";

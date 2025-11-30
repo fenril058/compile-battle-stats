@@ -1,4 +1,5 @@
 // src/hooks/useFirestore.ts
+
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { toast } from 'react-toastify';
 import { db } from "../firebase";
@@ -7,168 +8,195 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDocs,
   writeBatch,
   type DocumentData,
   onSnapshot,
 } from "firebase/firestore";
 
 /**
- * T は { id?: string } を含む前提（追加時に id を付与）
+ * T は { id: string, timestamp: number } を継承
  */
-type WithId = { id?: string };
+type WithId = { id: string; timestamp: number };
 
 export type StorageMode = "remote" | "local";
 
-// 旧データ互換のため id を文字列に正規化
-function normalizeId<T extends WithId>(x: T): T {
-  const id =
-    typeof x.id === "string"
-      ? x.id
-      : x.id != null
-      ? String(x.id)
-      : undefined;
-  return { ...x, id };
+// IDがstringでない場合は、データ破損とみなし新規UUIDを付与して整合性を確保する
+function normalizeId<T extends WithId | { id?: any }>(x: T): T {
+  const id = typeof x.id === "string" ? x.id : crypto.randomUUID();
+  return { ...x, id } as T;
 }
+
+// ローカルストレージを直接操作するヘルパー関数
+// ★修正: T の型を WithId に限定。これにより timestamp の存在が保証される。
+const updateLocalCache = <T extends WithId>(key: string, items: T[]): void => {
+  // timestampでソートして保存
+  // RemoteからのデータはFirestoreのTimestampでソートされるべきだが、ここではローカルのtimestampを使用
+  // b.timestamp - a.timestamp で安全にソート可能
+  const sorted = [...items].sort((a, b) => b.timestamp - a.timestamp);
+  localStorage.setItem(key, JSON.stringify(sorted));
+};
+
 
 export function useFirestore<T extends WithId>(
   collectionName: string,
-  localKey: string
 ) {
+  const localKey = collectionName;
   const [items, setItems] = useState<T[]>([]);
   const mode: StorageMode = db ? "remote" : "local";
   const colRef = useMemo(() => (db ? collection(db, collectionName) : null), [db, collectionName]);
 
-  // 初回ロード：localStorage
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(localKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          setItems((parsed as T[]).map((x) => normalizeId(x)));
-        }
-      }
-    } catch (e) {
-      console.error("[useFirestore] Initial load failed:", e);
-    }
-  }, [localKey]);
-
-  // リアルタイム購読：Remote時はサーバー正で items を維持（複数人操作のズレを最小化）
-  useEffect(() => {
-    if (!db || !colRef) return;
-    const unsubscribe = onSnapshot(colRef, (snap) => {
-      const loaded = snap.docs.map((d) => ({ id: d.id, ...(d.data() as T) }));
-      setItems(loaded);
-    });
-    return unsubscribe;
-  }, [db, colRef]);
-
-  // items の変更を検知して LocalStorage へ自動で保存する
-  useEffect(() => {
-    if (mode === 'local' && items.length > 0) {
-      try {
-        localStorage.setItem(localKey, JSON.stringify(items));
-      } catch (e) {
-        console.error("[useFirestore] Autosave to localStorage failed:", e);
-        // 保存失敗時はユーザーに通知する
-        toast.error("ローカルストレージへの自動保存に失敗しました。");
-      }
-    }
-  }, [items, localKey, mode]); // items が変更されるたびに実行
-
-  // 追加
-  const add = useCallback(
-    async (data: Omit<T, "id" | "timestamp">) => {
-      const dataWithTimestamp = { ...data, timestamp: Date.now() };
-
-      if (mode === "remote" && colRef) {
-        const docRef = await addDoc(colRef, dataWithTimestamp as DocumentData);
-        toast.success(`追加しました: id=${docRef.id}`);
-        // ✅ Remoteでは onSnapshot に任せる（ここでは setItems しない）
-        //    → スナップショット到着時に docRef.id を含むサーバー正で全置換される
-      } else {
-        const id = crypto.randomUUID();
-        setItems((prev) => [...prev, { ...(dataWithTimestamp as unknown as T), id }]);
-      }
-    },
-    [mode, colRef]
-  );
-
-  // まとめて追加
-  const addBatch = useCallback(async (dataList: Omit<T, "id" | "timestamp">[]) => {
-    const timestamp = Date.now();
-    // すべてのデータにタイムスタンプを付与
-    const listWithMeta = dataList.map(d => ({ ...d, timestamp }));
-
-    if (mode === "remote" && db && colRef) {
-      // --- Remote (Firestore) の場合 ---
-      const batch = writeBatch(db);
-
-      listWithMeta.forEach(data => {
-        // 新しいドキュメント参照（ID）を生成
-        const ref = doc(colRef);
-        // IDを含まないデータ部分をセット
-        batch.set(ref, data as DocumentData);
-      });
-
-      // まとめて送信！
-      await batch.commit();
-      toast.success(`${listWithMeta.length}件を一括追加しました`);
-
-    } else {
-      // --- Local (LocalStorage) の場合 ---
-      const newItems = listWithMeta.map(d => ({
-        ...(d as unknown as T),
-        id: crypto.randomUUID() // ローカル用のID生成
-      }));
-
-      // 既存のリストに新しいリストを結合して、一度だけ更新
-      setItems(prev => [...prev, ...newItems]);
-      toast.success(`${newItems.length}件を一括追加しました`);
-    }
-  }, [mode, colRef, localKey]); // 依存配列
-
-  // 削除（悲観的更新：成功後にUI反映）
-  const remove = useCallback(
-    async (id: string) => {
-      const idStr = String(id);
-      try {
-        if (mode === "remote") {
-          if (!db || !colRef) throw new Error("Firestore not initialized.");
-          // Firestore ドキュメント削除（成功を確認してからUI反映）
-          await deleteDoc(doc(db, collectionName, idStr));
-
-          // 成功したのでUIから消す
-          setItems((prev) => prev.filter((x) => String(x.id) !== idStr));
-
-          // サーバーを正として再同期（任意だが今回の事象確認に有効）
-          try {
-            const snap = await getDocs(colRef);
-            const loaded = snap.docs.map((d) => ({ id: d.id, ...(d.data() as T) }));
-            setItems(loaded);
-          } catch {
-            /* noop */
-          }
-        } else {
-          // local モード：UIから消すだけ（localStorage は useEffect で同期）
-          setItems((prev) => prev.filter((x) => String(x.id) !== idStr));
-        }
-      } catch (err) {
-        console.error("[useFirestore] remove failed:", err);
-        alert("削除に失敗しました。通信状況または権限を確認してください。");
-      }
-    },
-    [mode, collectionName, colRef]
-  );
-
-  // リモートを正にするロード
+  // loadRemoteをuseCallbackで定義 (onSnapshotのリスナーとして使用)
   const loadRemote = useCallback(async () => {
     if (!db || !colRef) return;
-    const snap = await getDocs(colRef);
-    const loaded = snap.docs.map((d) => ({ id: d.id, ...(d.data() as T) }));
-    setItems(loaded);
-  }, [colRef]);
+
+    // onSnapshotでリアルタイム更新を購読
+    return onSnapshot(colRef, (snapshot) => {
+        const loaded = snapshot.docs.map((d) => ({
+            ...d.data(),
+            id: d.id, // FirestoreのドキュメントIDをidとして採用
+        })) as T[];
+
+        // キャッシュとしてローカルストレージも更新
+        updateLocalCache(localKey, loaded);
+        setItems(loaded);
+    }, (error) => {
+        console.error("[useFirestore] Remote loading failed (onSnapshot):", error);
+        toast.error("リモートデータの同期に失敗しました。ローカルキャッシュを表示します。");
+        // エラー発生時はローカルキャッシュを読み込む (reloadLocalのロジックを再利用)
+        reloadLocal();
+    });
+  }, [colRef, localKey]);
+
+
+  // 初回ロード：ローカルストレージ（キャッシュ）の読み込み
+  useEffect(() => {
+    // 常にまずローカルキャッシュから読み込む
+    const raw = localStorage.getItem(localKey);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          // normalizeIdでIDの整合性をチェックしながらStateに設定
+          setItems((parsed as T[]).map((x) => normalizeId(x)));
+        }
+      } catch (e) {
+        console.error("[useFirestore] initial load failed:", e);
+      }
+    }
+
+    let unsubscribe: (() => void) | undefined;
+    if (mode === "remote") {
+      // Remoteモードの場合、リモートから読み込みを開始 (onSnapshot)
+      loadRemote().then(unsub => {
+          unsubscribe = unsub;
+      });
+    }
+
+    return () => {
+      // Remoteモード終了時に onSnapshot を解除
+      if (unsubscribe) unsubscribe();
+    };
+  }, [localKey, mode, loadRemote]);
+
+
+  const add = useCallback(
+    async (
+      itemWithoutMeta: Omit<T, "id" | "timestamp">
+    ) => {
+      // データの完全な形を生成 (一時的なIDを付与)
+      const newItem = {
+        ...itemWithoutMeta,
+        id: crypto.randomUUID(),
+        timestamp: Date.now(),
+      } as T;
+
+      // 1. Local StorageとStateを即座に更新 (キャッシュとして)
+      setItems((prev) => {
+        const updated = [...prev, newItem];
+        updateLocalCache(localKey, updated); // LocalStorageも更新
+        return updated;
+      });
+      toast.success("試合を追加しました。"); // 即座に成功を通知
+
+      if (mode === "remote" && db && colRef) {
+        // 2. Firestoreへの保存 (非同期)
+        try {
+          // Firestoreに保存する際は id フィールドを含めない
+          const { id, ...rest } = newItem;
+          await addDoc(colRef, rest as DocumentData);
+        } catch (e) {
+          console.error("[useFirestore] remote add failed. Data is only in local cache:", e);
+          toast.error("リモートへの登録に失敗しました。ローカルキャッシュにのみ保存されました。");
+        }
+      }
+    },
+    [colRef, mode, localKey]
+  );
+
+  const remove = useCallback(
+    async (idToRemove: string) => {
+      if (!confirm("本当にこの試合を削除しますか？")) return;
+
+      // 1. Local StorageとStateを即座に更新
+      let removedItem: T | undefined;
+      setItems((prev) => {
+        const updated = prev.filter((item) => {
+            const normalizedId = normalizeId(item).id;
+            const match = normalizedId === idToRemove;
+            if (match) removedItem = item;
+            return !match;
+        });
+        updateLocalCache(localKey, updated); // LocalStorageも更新
+        return updated;
+      });
+      toast.success("試合を削除しました。");
+
+      if (mode === "remote" && db && colRef && removedItem) {
+        // 2. Firestoreからの削除 (非同期)
+        try {
+          const docRef = doc(db, collectionName, idToRemove);
+          await deleteDoc(docRef);
+        } catch (e) {
+          console.error("[useFirestore] remote remove failed. Local cache cleaned, but remote item might remain:", e);
+          toast.error("リモートからの削除に失敗しました。手動で削除する必要があるかもしれません。");
+        }
+      }
+    },
+    [colRef, mode, localKey]
+  );
+
+  // ★追加: 複数の試合データを一括登録するためのバッチ処理
+  const addBatch = useCallback(
+    async (itemsWithoutMeta: Omit<T, "id" | "timestamp">[]) => {
+      if (!db || !colRef || itemsWithoutMeta.length === 0) {
+        toast.info("登録するデータがありません。");
+        return;
+      }
+
+      const batch = writeBatch(db);
+
+      for (const item of itemsWithoutMeta) {
+          const ref = doc(colRef); // Firestore auto-IDを生成
+          const itemWithTimestamp = {
+              ...item,
+              timestamp: Date.now(),
+          };
+          // Document IDはFirestoreが自動で生成するため、データに id フィールドは含めない
+          batch.set(ref, itemWithTimestamp as DocumentData);
+      }
+
+      try {
+          await batch.commit();
+          toast.success(`${itemsWithoutMeta.length}件の試合を一括登録しました。`);
+          // onSnapshotでリアルタイムにStateが更新されるため、setItemsは不要
+      } catch (e) {
+          console.error("[useFirestore] remote batch add failed:", e);
+          toast.error("リモートへの一括登録に失敗しました。");
+      }
+    },
+    [colRef]
+  );
+
 
   // ローカル全件をリモートへバッチ投入 → その後リモート再読込
   const pushAllLocalToRemote = useCallback(async () => {
@@ -182,17 +210,22 @@ export function useFirestore<T extends WithId>(
     }
     await batch.commit();
     await loadRemote();
+    toast.success("ローカルデータをリモートに移行しました。");
   }, [items, colRef, loadRemote]);
 
-  // ★ ローカルのキャッシュを明示的に読み戻す（Localモード用の“手動同期”）
+  // ローカルのキャッシュを明示的に読み戻す（Localモード用の“手動同期”）
   const reloadLocal = useCallback(() => {
     try {
       const raw = localStorage.getItem(localKey);
-      if (!raw) return;
+      if (!raw) {
+        setItems([]);
+        return;
+      }
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
         setItems((parsed as T[]).map((x) => normalizeId(x)));
       }
+      toast.info("ローカルキャッシュを再読込しました。");
     } catch (e) {
       console.error("[useFirestore] reloadLocal failed:", e);
       alert("ローカルデータの読込に失敗しました");
@@ -201,19 +234,22 @@ export function useFirestore<T extends WithId>(
 
   // すべてクリア（ローカルだけ）
   const clearLocal = useCallback(() => {
+    if (!confirm("本当にローカルキャッシュをすべて削除しますか？")) return;
     setItems([]);
     localStorage.removeItem(localKey);
+    toast.success("ローカルキャッシュをクリアしました。");
   }, [localKey]);
 
+
   return {
-    mode,                // 'remote' | 'local'
-    items,               // T[]
-    add,                 // (data: Omit<T, 'id'>) => Promise<void>
-    addBatch,            //
-    remove,              // (id: string) => Promise<void>
-    loadRemote,          // () => Promise<void>
-    pushAllLocalToRemote,// () => Promise<void>
-    reloadLocal,         // () => void
-    clearLocal,          // () => void
+    mode,
+    items,
+    add,
+    remove,
+    addBatch, // ★追加: 一括追加関数を公開
+    pushAllLocalToRemote,
+    reloadLocal,
+    clearLocal,
+    loadRemote,
   };
-}
+};
