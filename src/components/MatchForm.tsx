@@ -27,15 +27,15 @@ export const MatchForm: React.FC<MatchFormProps> = ({
 
   const handleSelect =
     (side: "FIRST" | "SECOND", index: number) =>
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const v = e.target.value as Protocol;
-      const setter = side === "FIRST" ? setFirst : setSecond;
-      setter((prev) => {
-        const next = [...prev] as Trio;
-        next[index] = v;
-        return next;
-      });
-    };
+      (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const v = e.target.value as Protocol;
+        const setter = side === "FIRST" ? setFirst : setSecond;
+        setter((prev) => {
+          const next = [...prev] as Trio;
+          next[index] = v;
+          return next;
+        });
+      };
 
   const handleSwap = () => {
     setFirst(second);
@@ -74,7 +74,8 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                     key={`${side}-${i}`}
                     value={p}
                     onChange={handleSelect(side, i)}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1 focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-zinc-800 border border-zinc-700
+                    rounded p-2 text-sm mb-1 focus:ring-2 focus:ring-blue-500"
                   >
                     {protocols.map((x) => (
                       <option key={x} value={x}>
@@ -91,44 +92,46 @@ export const MatchForm: React.FC<MatchFormProps> = ({
             )
           )}
 
-            {/* アクションエリア (1 column) */}
-            <div className="flex flex-col justify-center items-center border border-zinc-700 rounded-xl p-2 gap-2">
-              {/* 左右入れ替えボタン */}
-              <button
-                onClick={handleSwap}
-                className="text-xs text-zinc-400 border border-zinc-600 px-2 py-1 rounded hover:bg-zinc-800 mb-1"
-              >
-                🔄 先後入れ替え
-              </button>
+        {/* アクションエリア (1 column) */}
+        <div className="flex flex-col justify-center items-center border border-zinc-700 rounded-xl p-2 gap-2">
+          {/* 左右入れ替えボタン */}
+          <button
+            onClick={handleSwap}
+            className="text-xs text-zinc-400 border border-zinc-600 px-2 py-1 rounded hover:bg-zinc-800 mb-1"
+          >
+             🔄 先後入れ替え
+          </button>
 
-              {/* WIN ボタン */}
-              <div className="flex gap-2 justify-center">
-                <button
-                  onClick={() => onAddMatch("FIRST")}
-                  className="py-2 px-4 rounded-lg transition-colors bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 disabled:text-zinc-500 text-sm font-bold"
-                  disabled={!isFormValid}
-                >
-                  先攻WIN
-                </button>
-                <button
-                  onClick={() => onAddMatch("SECOND")}
-                  className="py-2 px-4 rounded-lg transition-colors bg-green-600 hover:bg-green-700 disabled:bg-zinc-700 disabled:text-zinc-500 text-sm font-bold"
-                  disabled={!isFormValid}
-                >
-                  後攻WIN
-                </button>
-              </div>
-
-              {mode === "local" && onSyncLocal && (
-                <button
-                  onClick={onSyncLocal}
-                  className="px-3 py-1 mt-1 rounded text-xs text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  ローカル再読込
-                </button>
-              )}
-            </div>
+          {/* WIN ボタン */}
+          <div className="flex gap-2 justify-center">
+            <button
+              onClick={() => onAddMatch("FIRST")}
+              className="py-2 px-4 rounded-lg transition-colors bg-green-600
+              hover:bg-green-700 disabled:bg-zinc-700 disabled:text-zinc-500 text-sm font-bold"
+              disabled={!isFormValid}
+            >
+               先攻WIN
+            </button>
+            <button
+              onClick={() => onAddMatch("SECOND")}
+              className="py-2 px-4 rounded-lg transition-colors bg-green-600
+              hover:bg-green-700 disabled:bg-zinc-700 disabled:text-zinc-500 text-sm font-bold"
+              disabled={!isFormValid}
+            >
+               後攻WIN
+            </button>
           </div>
+
+          {mode === "local" && onSyncLocal && (
+            <button
+              onClick={onSyncLocal}
+              className="px-3 py-1 mt-1 rounded text-xs text-white bg-blue-600 hover:bg-blue-700"
+            >
+               ローカル再読込
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
