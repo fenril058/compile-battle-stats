@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import type { Match } from "../types";
 
 type MatchListProps = {
@@ -7,11 +7,19 @@ type MatchListProps = {
   isRegistrationAllowed: boolean;
 };
 
-export const MatchList: React.FC<MatchListProps> = ({
+// ★ Wrap in React.memo to prevent re-render when typing in Form
+export const MatchList: React.FC<MatchListProps> = React.memo(({
   matches,
   onRemove,
   isRegistrationAllowed,
 }) => {
+  const [showAll, setShowAll] = useState(false);
+  // Optimization: Only render first 100 unless requested
+  const displayMatches = useMemo(() => {
+    if (showAll) return matches;
+    return matches.slice(0, 100); // Assumes matches are already sorted NEWEST first
+  }, [matches, showAll]);
+
   return (
     <div className="bg-zinc-900 p-3 rounded-2xl overflow-x-auto mb-6">
       <h2 className="font-semibold mb-2 text-center">
@@ -72,4 +80,4 @@ export const MatchList: React.FC<MatchListProps> = ({
       </table>
     </div>
   );
-};
+});
