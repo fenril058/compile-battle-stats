@@ -1,5 +1,3 @@
-// src/hooks/useFirestore.ts
-
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { toast } from 'react-toastify';
 import { db } from "../firebase";
@@ -228,7 +226,7 @@ export function useFirestore<T extends WithId>(
       toast.info("ローカルキャッシュを再読込しました。");
     } catch (e) {
       console.error("[useFirestore] reloadLocal failed:", e);
-      alert("ローカルデータの読込に失敗しました");
+      toast.warn("ローカルデータの読込に失敗しました");
     }
   }, [localKey]);
 

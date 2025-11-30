@@ -111,7 +111,7 @@ export default function App() {
 
   const login = async () => {
     if (!auth) {
-      alert("Firebase Config Error");
+      toast.warn("Firebase Config Error");
       return;
     }
     await signInWithPopup(auth, new GoogleAuthProvider());
@@ -148,9 +148,7 @@ export default function App() {
       toast.error(`データは確定済みのため削除できません。`);
       return;
     }
-    if (window.confirm("削除しますか？")) {
-      void removeMatchItem(id);
-    }
+    void removeMatchItem(id);
   };
 
   const syncLocal = () => {

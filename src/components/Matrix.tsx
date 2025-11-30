@@ -1,9 +1,6 @@
 import React from "react";
 import { ABBR } from "../config";
-import type { Protocol } from "../types";
-
-// Matrixデータ構造の型定義 (Record<Protocol, Record<Protocol, number | null>>)
-type MatrixData = Record<string, Record<string, number | null>>;
+import type { Protocol, MatrixData } from "../types";
 
 type MatrixProps = {
   t: string;

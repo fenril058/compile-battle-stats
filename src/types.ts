@@ -19,6 +19,10 @@ export type Match = {
   timestamp: number;
 };
 
+// Matrixデータ構造の型定義
+// 本当は(Record<Protocol, Record<Protocol, number | null>>)にしたい。
+export type MatrixData = Record<string, Record<string, number | null>>;
+
 export type Ratios = typeof RATIOS;
 export type Abbr = typeof ABBR;
 export type ProtocolSetKey = keyof typeof PROTOCOL_SETS;

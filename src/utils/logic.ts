@@ -1,5 +1,5 @@
 import { RATIOS, ALL_PROTOCOLS} from "../config"
-import type { Protocol, Trio, Match,
+import type { Protocol, Trio, Match, MatrixData,
   StatRow, StatsResult, SideStats, StatEntry
 } from "../types";
 
@@ -114,7 +114,7 @@ export const matchup = (list: Match[]) => {
   }
 
   // マトリクス初期化
-  const m: Record<string, Record<string, number | null>> = {};
+  const m: MatrixData = {};
   ALL_PROTOCOLS.forEach((a) => {
     m[a] = {};
     ALL_PROTOCOLS.forEach((b) => {
