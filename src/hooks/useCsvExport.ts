@@ -32,7 +32,7 @@ export const useCsvExport = (
         ...m.second,
         m.winner,
         m.ratio ? "TRUE" : "FALSE",
-        m.timestamp,
+        m.createdAt,
       ]
         .map((field) => `"${field}"`)
         .join(",")

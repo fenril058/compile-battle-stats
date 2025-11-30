@@ -144,12 +144,12 @@ export const matchup = (list: Match[]) => {
  * CSVの1行（文字列配列）を Match のペイロードにパースする。
  * @param row - CSVの行データ ([F1, F2, F3, S1, S2, S3, Winner, ...] の形式)
  * @param validProtocols - 現在選択されているシーズンで有効なプロトコルのリスト
- * @returns Match のペイロード (id/timestampなし) または null (パース失敗)
+ * @returns Match のペイロード (id/createdAtなし) または null (パース失敗)
  */
 export const parseMatchCsvRow = (
   row: string[],
   validProtocols: readonly Protocol[]
-): Omit<Match, "id" | "timestamp"> | null => {
+): Omit<Match, "id" | "createdAt"> | null => {
   // 試合データとして最低限必要な7列 (F3  S3  Winner) があるか確認
   if (row.length < 7) return null;
 

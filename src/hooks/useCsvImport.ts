@@ -5,7 +5,7 @@ import { parseMatchCsvRow } from '../utils/logic';
 
 // useFirestoreから渡される add 関数用の型定義
 type AddMatchItemBatch= (
-  payload: Omit<Match, "id" | "timestamp">[]
+  payload: Omit<Match, "id" | "createdAt">[]
 ) => Promise<void>;
 
 /**
@@ -35,7 +35,7 @@ export const useCsvImport = (
       const text = e.target?.result as string;
       const lines = text.trim().split('\n');
 
-      const payloadsToImport: Omit<Match, "id" | "timestamp">[] = [];
+      const payloadsToImport: Omit<Match, "id" | "createdAt">[] = [];
       let failCount = 0;
 
       // ヘッダー行をスキップ

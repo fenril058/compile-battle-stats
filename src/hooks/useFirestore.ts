@@ -13,9 +13,9 @@ import {
 } from "firebase/firestore";
 
 /**
- * T は { id: string, timestamp: number } を継承
+ * T は { id: string, createdAt: number } を継承
  */
-type WithId = { id: string; timestamp: number };
+type WithId = { id: string; createdAt: number };
 
 // IDがstringでない場合は、データ破損とみなし新規UUIDを付与して整合性を確保する
 function normalizeId<T extends WithId | { id?: any }>(x: T): T {
@@ -24,12 +24,12 @@ function normalizeId<T extends WithId | { id?: any }>(x: T): T {
 }
 
 // ローカルストレージを直接操作するヘルパー関数
-// ★修正: T の型を WithId に限定。これにより timestamp の存在が保証される。
+// ★修正: T の型を WithId に限定。これにより createdAt の存在が保証される。
 const updateLocalCache = <T extends WithId>(key: string, items: T[]): void => {
-  // timestampでソートして保存
-  // RemoteからのデータはFirestoreのTimestampでソートされるべきだが、ここではローカルのtimestampを使用
-  // b.timestamp - a.timestamp で安全にソート可能
-  const sorted = [...items].sort((a, b) => b.timestamp - a.timestamp);
+  // createdAtでソートして保存
+  // RemoteからのデータはFirestoreのCreatedAtでソートされるべきだが、ここではローカルのcreatedAtを使用
+  // b.createdAt - a.createdAt で安全にソート可能
+  const sorted = [...items].sort((a, b) => b.createdAt - a.createdAt);
   localStorage.setItem(key, JSON.stringify(sorted));
 };
 
@@ -98,13 +98,13 @@ export function useFirestore<T extends WithId>(
 
   const add = useCallback(
     async (
-      itemWithoutMeta: Omit<T, "id" | "timestamp">
+      itemWithoutMeta: Omit<T, "id" | "createdAt">
     ) => {
       // データの完全な形を生成 (一時的なIDを付与)
       const newItem = {
         ...itemWithoutMeta,
         id: crypto.randomUUID(),
-        timestamp: Date.now(),
+        createdAt: Date.now(),
       } as T;
 
       // 1. Local StorageとStateを即座に更新 (キャッシュとして)
@@ -164,7 +164,7 @@ export function useFirestore<T extends WithId>(
 
   // ★追加: 複数の試合データを一括登録するためのバッチ処理
   const addBatch = useCallback(
-    async (itemsWithoutMeta: Omit<T, "id" | "timestamp">[]) => {
+    async (itemsWithoutMeta: Omit<T, "id" | "createdAt">[]) => {
       if (!db || !colRef || itemsWithoutMeta.length === 0) {
         toast.info("登録するデータがありません。");
         return;

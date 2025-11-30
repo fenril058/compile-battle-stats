@@ -98,7 +98,7 @@ export default function App() {
 
 
   const sortedMatches = useMemo(() => {
-    return [...matches].sort((a, b) => b.timestamp - a.timestamp);
+    return [...matches].sort((a, b) => b.createdAt - a.createdAt);
   }, [matches]);
 
 

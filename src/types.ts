@@ -16,7 +16,7 @@ export type Match = {
   second: Trio;
   winner: Winner;
   ratio: boolean;
-  timestamp: number;
+  createdAt: number;
 };
 
 // Strict Typing for Matrix to prevent string access errors
