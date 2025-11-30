@@ -166,13 +166,30 @@ export default function App() {
               className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xm"
             >CSV Export</button>
           </div>
-          <div className="flex justify-center mt-6 mb-6">
-            <button onClick={exportToCsv}
-              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-sm"
-            >CSV Import</button>
-            <input type="file" accept=".csv"
-              onChange={handleImportCsv}
-              className="absolute left-0 top-0 opacity-0 cursor-pointer h-full w-full" />
+
+          <div className="flex flex-col items-center justify-center mt-6 mb-6 p-4
+          border border-zinc-700 rounded-lg">
+            <label htmlFor="csv-upload" className="font-semibold mb-2 text-zinc-300"
+            >
+               CSVから試合データをインポート
+            </label>
+            {/* ★ FIX: CSV Importボタンとinputタグの構造を変更し、ボタンにファイル選択を委譲する */}
+            <div className="relative overflow-hidden inline-block">
+              {/* ユーザーに見せるボタン */}
+              <button
+                className="btn-secondary px-4 py-2 bg-zinc-700 text-white rounded-lg text-xm"
+              >ファイルを選択</button>
+              {/* 実際に入力を受け付けるinput (非表示) */}
+              <input
+                type="file"
+                id="csv-upload"
+                accept=".csv"
+                onChange={handleImportCsv}
+                // input要素を絶対配置でボタンの上に重ね、透過させる
+                className="absolute left-0 top-0 opacity-0 cursor-pointer h-full w-full"
+              />
+            </div>
+            <p className="text-xs text-zinc-300 mt-2">（F1, F2, F3, S1, S2, S3, Winner の順で7列必須）</p>
           </div>
         </section>
         <Footer />
