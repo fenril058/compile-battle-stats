@@ -4,6 +4,8 @@ import {
   SEASON_COLLECTIONS_CONFIG,
 } from "./config";
 
+export type StorageMode = "remote" | "local";
+
 export type Protocol = (typeof ALL_PROTOCOLS)[number];
 export type Trio = [Protocol, Protocol, Protocol];
 export type Winner = "FIRST" | "SECOND";

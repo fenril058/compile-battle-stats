@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { toast } from 'react-toastify';
 import { db } from "../firebase";
+import type { StorageMode } from "../types";
 import {
   addDoc,
   collection,
@@ -15,8 +16,6 @@ import {
  * T は { id: string, timestamp: number } を継承
  */
 type WithId = { id: string; timestamp: number };
-
-export type StorageMode = "remote" | "local";
 
 // IDがstringでない場合は、データ破損とみなし新規UUIDを付与して整合性を確保する
 function normalizeId<T extends WithId | { id?: any }>(x: T): T {

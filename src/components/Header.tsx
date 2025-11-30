@@ -6,7 +6,7 @@ type HeaderProps = {
     season: SeasonCollectionName;
     seasonCollections: SeasonCollectionName[];
     handleSeasonChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-    mode: StorageMode; // useFirestoreから取得
+    mode: StorageMode;
 };
 
 export const Header: React.FC<HeaderProps> = ({

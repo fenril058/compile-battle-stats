@@ -16,7 +16,8 @@ import type {
   Protocol,
   Trio,
   Match,
-  SeasonCollectionName
+  SeasonCollectionName,
+  Winner
 } from "./types";
 
 // ★ FIX: Firebase/Auth関連のインポートをすべて削除
@@ -47,8 +48,7 @@ export default function App() {
     (localStorage.getItem('selectedSeason') as SeasonCollectionName) || SEASON_COLLECTIONS[0]
   );
 
-  // 登録可否フラグ（useMemoは不要）
-  const currentProtocols = PROTOCOL_SETS[SEASON_COLLECTIONS_CONFIG[season]] as Protocol[];
+  const currentProtocols = PROTOCOL_SETS[SEASON_COLLECTIONS_CONFIG[season]];
   const isRegistrationAllowed = !UNAVAILABLE_SEASONS.includes(season);
 
   // --- Data Hook ---
@@ -73,7 +73,7 @@ export default function App() {
     localStorage.setItem('selectedSeason', s);
   };
 
-  const handleAddMatch = useCallback((data: { first: Trio, second: Trio, winner: 'FIRST' | 'SECOND' }) => {
+  const handleAddMatch = useCallback((data: { first: Trio, second: Trio, winner: Winner }) => {
     if (!isRegistrationAllowed) { /* toastはMatchForm側で出す */ return; }
 
     void addMatchItem({
