@@ -48,7 +48,7 @@ export default function App() {
     (localStorage.getItem('selectedSeason') as SeasonCollectionName) || SEASON_COLLECTIONS[0]
   );
 
-  const currentProtocols = PROTOCOL_SETS[SEASON_COLLECTIONS_CONFIG[season]];
+  const currentProtocols = PROTOCOL_SETS[SEASON_COLLECTIONS_CONFIG[season]] as readonly Protocol[];
   const isRegistrationAllowed = !UNAVAILABLE_SEASONS.includes(season);
 
   // --- Data Hook ---

@@ -6,7 +6,7 @@ type MatrixProps = {
   t: string;
   m: MatrixData;
   bg: string;
-  protocols: Protocol[];
+  protocols: readonly Protocol[];
 };
 
 export const Matrix: React.FC<MatrixProps> = ({ t, m, bg, protocols }) => (

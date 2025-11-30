@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'; // toastは handleSubmit 内で使用さ
 import type { Protocol, Trio, Winner } from "../types";
 
 type MatchFormProps = {
-  protocols: Protocol[];
+  protocols: readonly Protocol[];
   onAddMatch: (data: { first: Trio; second: Trio; winner: Winner }) => void;
   isRegistrationAllowed: boolean;
   onSyncLocal?: () => void;
