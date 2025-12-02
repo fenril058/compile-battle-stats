@@ -176,7 +176,7 @@ export function useFirestore<T extends WithId>(
           const ref = doc(colRef); // Firestore auto-IDを生成
           const itemWithTimestamp = {
               ...item,
-              timestamp: Date.now(),
+              createdAt: Date.now(),
           };
           // Document IDはFirestoreが自動で生成するため、データに id フィールドは含めない
           batch.set(ref, itemWithTimestamp as DocumentData);

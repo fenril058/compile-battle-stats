@@ -39,7 +39,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(({
         </thead>
         <tbody>
           {displayMatches.map((m, i) => {
-            // matches は App.tsx で最新順（timestamp降順）にソートされているため、
+            // matches は App.tsx で最新順（createdAt 降順）にソートされているため、
             // 配列の要素数から現在のインデックスを引くと、古い順の番号になる。
             // 例: (要素数5 - インデックス0) = 5番, (要素数5 - インデックス4) = 1番
             const displayIndex = matches.length - i;
