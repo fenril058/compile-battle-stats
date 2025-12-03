@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify';
 import React, { useCallback } from 'react';
-import type { Match, Protocol } from '../types';
+import type { Match, Protocol, Ratios } from '../types';
 import { parseMatchCsvRow } from '../utils/logic';
 
 // useFirestoreから渡される add 関数用の型定義
@@ -11,13 +11,17 @@ type AddMatchItemBatch= (
 /**
  * CSVインポート機能を提供するカスタムフック。
  * ファイル選択時の処理、CSVのパース、マッチデータのバリデーションと登録を行います。
- * * @param addMatchItem - 試合データを保存するための非同期関数 (useFirestoreから取得)
+ * @param addMatchItem - 試合データを保存するための非同期関数 (useFirestoreから取得)
  * @param currentProtocols - 現在のシーズンで有効なプロトコルのリスト
+ * @param currentRatios - 現在のシーズンでのレシオ
+ * @param maxRatio - 現在のシーズンでのレシオ値の上限
  * @returns handleImportCsv 関数 (React.ChangeEvent<HTMLInputElement>を受け取る)
  */
 export const useCsvImport = (
   addMatchItemBatch: AddMatchItemBatch,
-  currentProtocols: readonly Protocol[]
+  currentProtocols: readonly Protocol[],
+  ratios: Ratios,
+  maxRatio: number
 ) => {
 
   const handleImportCsv = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +52,7 @@ export const useCsvImport = (
         const row = line.split(',').map(s => s.trim().toUpperCase());
 
         // logic.ts で定義したパーサーで検証・変換
-        const payload = parseMatchCsvRow(row, currentProtocols);
+        const payload = parseMatchCsvRow(row, currentProtocols, ratios, maxRatio);
 
         if (payload) {
           // Batch処理するための配列に追加

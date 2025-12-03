@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
-import { RATIOS } from "../config";
-import type { Protocol } from "../types";
+import type { Protocol, Ratios } from "../types";
 
-export const RatioTable: React.FC<{ protocols: readonly Protocol[] }> = ({ protocols }) => {
+export const RatioTable: React.FC<{ protocols: readonly Protocol[], ratios: Ratios }>
+  = ({ protocols, ratios } ) => {
   const groups = useMemo(() => {
     const map = new Map<number, Protocol[]>();
     for (const p of protocols) {
-      const score = RATIOS[p] ?? 0;
+      const score = ratios[p] ?? 0;
       const list = map.get(score) ?? [];
       list.push(p);
       map.set(score, list);

@@ -1,12 +1,12 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
-import type { SeasonCollectionName, StorageMode } from '../types';
+import type { SeasonKey, StorageMode } from '../types';
 
 type HeaderProps = {
-    season: SeasonCollectionName;
-    seasonCollections: SeasonCollectionName[];
-    handleSeasonChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-    mode: StorageMode;
+  season: SeasonKey;
+  seasonCollections: SeasonKey[];
+  handleSeasonChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  mode: StorageMode;
 };
 
 export const Header: React.FC<HeaderProps> = ({

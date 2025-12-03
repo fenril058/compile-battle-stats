@@ -1,7 +1,7 @@
 import {
   ALL_PROTOCOLS,
-  RATIOS,
-  SEASON_COLLECTIONS_CONFIG,
+  SEASONS_CONFIG,
+  RATIO_SETS,
 } from "./config";
 
 export type StorageMode = "remote" | "local";
@@ -29,8 +29,11 @@ export type MatrixData = {
   };
 };
 
-export type Ratios = typeof RATIOS;
-export type SeasonCollectionName = keyof typeof SEASON_COLLECTIONS_CONFIG;
+// 特定の定数ではなく、RATIO_SETS の値の型を参照するようにする
+export type Ratios = typeof RATIO_SETS.V1;
+
+// SeasonCollectionName を SEASONS_CONFIG のキーから生成
+export type SeasonKey = keyof typeof SEASONS_CONFIG;
 
 // makeStats で使用する型定義
 export type StatEntry = { g: number; w: number };

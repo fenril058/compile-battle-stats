@@ -5,10 +5,9 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // Config & Types
 import {
-  RATIOS,
-  SEASON_COLLECTIONS_CONFIG,
+  SEASONS_CONFIG,
   PROTOCOL_SETS,
-  UNAVAILABLE_SEASONS,
+  RATIO_SETS,
   MIN_GAMES_FOR_PAIR_STATS,
   MIN_GAMES_FOR_TRIO_STATS
 } from "./config";
@@ -16,7 +15,7 @@ import type {
   Protocol,
   Trio,
   Match,
-  SeasonCollectionName,
+  SeasonKey,
   Winner
 } from "./types";
 
@@ -43,33 +42,41 @@ export default function App() {
   const { user } = useAuth();
 
   // === シーズン選択 ===
-  const SEASON_COLLECTIONS = Object.keys(SEASON_COLLECTIONS_CONFIG) as SeasonCollectionName[];
-  const [season, setSeason] = useState<SeasonCollectionName>(() =>
-    (localStorage.getItem('selectedSeason') as SeasonCollectionName) || SEASON_COLLECTIONS[0]
+  // Object.keys の戻り値を SeasonKey[] にキャスト
+  const SEASON_KEYS = Object.keys(SEASONS_CONFIG) as SeasonKey[];
+
+  const [seasonKey, setSeasonKey] = useState<SeasonKey>(() =>
+    (localStorage.getItem('selectedSeason') as SeasonKey) || SEASON_KEYS[0]
   );
 
-  const currentProtocols = PROTOCOL_SETS[SEASON_COLLECTIONS_CONFIG[season]] as readonly Protocol[];
-  const isRegistrationAllowed = !UNAVAILABLE_SEASONS.includes(season);
+  // ★ 設定オブジェクトから現在の設定を取得
+  const currentConfig = SEASONS_CONFIG[seasonKey];
+  const currentProtocols = PROTOCOL_SETS[currentConfig.protocolVer] as readonly Protocol[];
+  const currentRatios = RATIO_SETS[currentConfig.ratioVer];
+  const isRegistrationAllowed = !currentConfig.isReadOnly;
+  const maxRatio = currentConfig.maxRatio;
 
   // --- Data Hook ---
+  // Firestoreのコレクション名は config から取得
   const {
     items: matches,
     add: addMatchItem,
     remove: removeMatch,
     addBatch: addMatchItemBatch,
     mode,
-    reloadLocal // ローカル再読込関数
-  } = useFirestore<Match>(season);
+    reloadLocal
+  } = useFirestore<Match>(currentConfig.collectionName);
 
   // --- Derived Stats (Expensive Calcs) ---
   const { stats, matrices } = useMatchStats(matches);
-  const { exportToCsv } = useCsvExport(matches, season);
-  const { handleImportCsv } = useCsvImport(addMatchItemBatch, currentProtocols);
+  const { exportToCsv } = useCsvExport(matches, seasonKey);
+  // 要修正
+  const { handleImportCsv } = useCsvImport(addMatchItemBatch, currentProtocols, currentRatios, maxRatio);
 
   // --- Callbacks ---
   const handleSeasonChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const s = e.target.value as SeasonCollectionName;
-    setSeason(s);
+    const s = e.target.value as SeasonKey;
+    setSeasonKey(s);
     localStorage.setItem('selectedSeason', s);
   };
 
@@ -77,17 +84,23 @@ export default function App() {
     first: Trio,
     second: Trio,
     winner: Winner,
-    matchDate: number | null
-  }) => {
-    if (!isRegistrationAllowed) { /* toastはMatchForm側で出す */ return; }
+    matchDate: number | null }) => {
+    if (!isRegistrationAllowed) return;
 
     void addMatchItem({
       ...data,
-      ratio: isRatioBattle(data.first, data.second),
-      userId: user?.uid ?? undefined, // ログインしていなければ undefined
-      matchDate: data.matchDate ?? null,
+      // ★ logic関数に現在の設定(ratios, maxRatio)を渡す
+      ratio: isRatioBattle(data.first, data.second, currentRatios, maxRatio),
+      userId: user?.uid,
+      matchDate: data.matchDate
     });
-  }, [addMatchItem, isRegistrationAllowed, user]);
+  }, [addMatchItem, isRegistrationAllowed, currentRatios, maxRatio, user]);
+
+  // ★ MatchForm に渡すためのヘルパー (カリー化)
+  // MatchForm自体は Ratios オブジェクト全体を知らなくても、計算できれば良いため
+  const ratioSumHelper = useCallback((t: Trio) => {
+    return t.reduce((a, p) => a + (currentRatios[p] ?? 0), 0);
+  }, [currentRatios]); // currentRatios が変われば再生成される
 
 
   const handleRemoveMatch = useCallback((id: string) => {
@@ -95,7 +108,6 @@ export default function App() {
     void removeMatch(id);
   }, [removeMatch, isRegistrationAllowed]);
 
-  const ratioSumHelper = useCallback((t: Trio) => t.reduce((a, p) => a + (RATIOS[p] ?? 0), 0), []);
 
   // ★ FIX: reloadLocalをシンプルにラップ
   // useFirestore側で通知を出すため、App.tsx側ではロジックを持たせない
@@ -116,8 +128,8 @@ export default function App() {
       {/* Header Area */}
       {/* ★ Header コンポーネントを呼び出し、必要な Props のみ渡す */}
       <Header
-        season={season}
-        seasonCollections={SEASON_COLLECTIONS}
+        season={seasonKey}
+        seasonCollections={SEASON_KEYS}
         handleSeasonChange={handleSeasonChange}
         mode={mode}
       />
@@ -134,7 +146,10 @@ export default function App() {
             mode={mode}
             ratioSum={ratioSumHelper}
           />
-          <RatioTable protocols={currentProtocols} />
+          <RatioTable
+            protocols={currentProtocols}
+            ratios={currentRatios}
+          />
         </section>
 
         {/* Visualization Section */}

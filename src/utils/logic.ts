@@ -1,14 +1,17 @@
-import { RATIOS, ALL_PROTOCOLS } from "../config";
 import type {
   Protocol, Trio, Match, MatrixData,
-  StatsResult, SideStats, StatRow, StatEntry
+  StatsResult, SideStats, StatRow, StatEntry,
+  Ratios
 } from "../types";
+import { ALL_PROTOCOLS } from "../config";
 
-export const ratioSum = (t: Protocol[]): number =>
-  t.reduce((a, p) => a + (RATIOS[p] ?? 0), 0);
+// ratios を引数で受け取る
+export const ratioSum = (t: Trio, ratios: Ratios): number =>
+  t.reduce((a, p) => a + (ratios[p] ?? 0), 0);
 
-export const isRatioBattle = (a: Trio, b: Trio): boolean =>
-  ratioSum(a) <= 8 && ratioSum(b) <= 8;
+// ratios と maxRatio(閾値) を受け取る
+export const isRatioBattle = (a: Trio, b: Trio, ratios: Ratios, maxRatio = 8): boolean =>
+  ratioSum(a, ratios) <= maxRatio && ratioSum(b, ratios) <= maxRatio;
 
 export const percent = (w: number, g: number): number =>
   (g ? Math.round((w / g) * 1000) / 10 : 0);
@@ -140,39 +143,51 @@ export const matchup = (list: Match[]) => {
   return m;
 };
 
-/**
- * CSVの1行（文字列配列）を Match のペイロードにパースする。
- * @param row - CSVの行データ ([F1, F2, F3, S1, S2, S3, Winner, ...] の形式)
- * @param validProtocols - 現在選択されているシーズンで有効なプロトコルのリスト
- * @returns Match のペイロード (id/createdAtなし) または null (パース失敗)
- */
 export const parseMatchCsvRow = (
   row: string[],
-  validProtocols: readonly Protocol[]
+  validProtocols: readonly Protocol[],
+  ratios: Ratios,
+  maxRatio: number
 ): Omit<Match, "id" | "createdAt"> | null => {
   // 試合データとして最低限必要な7列 (F3  S3  Winner) があるか確認
   if (row.length < 7) return null;
 
   const upperRow = row.map(s => s.trim().toUpperCase());
-  const [F1, F2, F3, S1, S2, S3, W, ..._rest] = upperRow;
+  const [F1, F2, F3, S1, S2, S3, W, DateStr] = upperRow;
 
   const protocols = [F1, F2, F3, S1, S2, S3] as Protocol[];
-
-  // 全プロトコル名が有効なものか検証
   if (protocols.some(p => !validProtocols.includes(p))) {
-      return null;
+    return null;
   }
 
   const winner = W as "FIRST" | "SECOND";
   if (winner !== "FIRST" && winner !== "SECOND") return null;
 
-  // ratio は logic.ts の既存関数で再計算
-  const ratio = isRatioBattle([F1, F2, F3] as Trio, [S1, S2, S3] as Trio);
+  const firstTrio = [F1, F2, F3] as Trio;
+  const secondTrio = [S1, S2, S3] as Trio;
+
+  // 注入された ratios を使用して計算
+  const ratio = isRatioBattle(firstTrio, secondTrio, ratios, maxRatio);
+
+  // 対戦日 (matchDate) のパース処理
+  let matchDate: number | null = null;
+
+  if (DateStr && DateStr.trim() !== "") {
+    // スラッシュ(/)やハイフン(-)区切りなどを標準Dateコンストラクタで解析
+    // "2025/12/03", "2025-12-03" などに対応
+    const parsed = new Date(DateStr).getTime();
+
+    // 無効な日付(NaN)でなければ採用
+    if (!isNaN(parsed)) {
+      matchDate = parsed;
+    }
+  }
 
   return {
-    first: [F1, F2, F3] as Trio,
-    second: [S1, S2, S3] as Trio,
+    first: firstTrio,
+    second: secondTrio,
     winner: winner,
     ratio: ratio,
+    matchDate: matchDate,
   };
 };

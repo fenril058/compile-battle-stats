@@ -1,14 +1,23 @@
-// --- 1. プロトコルの基本定義とデータ ---
+// src/config.ts
+
+// --- 1. プロトコル定義 ---
 const PROTOCOLS_MAIN1 = [
   "DARKNESS", "FIRE", "PSYCHIC", "DEATH", "GRAVITY",
   "WATER", "LIFE", "PLAGUE", "LIGHT", "SPEED",
-  "SPIRIT", "METAL", // 12種
+  "SPIRIT", "METAL",
 ] as const;
 
 const PROTOCOLS_AUX1 = [
-  "HATE", "LOVE", "APATHY", // 3種
+  "HATE", "LOVE", "APATHY",
 ] as const;
 
+export const PROTOCOL_SETS = {
+  V1: PROTOCOLS_MAIN1,
+  V1_AUX: [...PROTOCOLS_MAIN1, ...PROTOCOLS_AUX1] as const,
+} as const;
+
+// 最新のプロトコル（型定義用）
+export const ALL_PROTOCOLS = PROTOCOL_SETS.V1_AUX;
 export const ABBR = {
   DARKNESS: "DAR",
   FIRE: "FIR",
@@ -27,64 +36,44 @@ export const ABBR = {
   METAL: "MET",
 };
 
-export const RATIOS = {
-  DARKNESS: 5,
-  FIRE: 5,
-  HATE: 5,
-  PSYCHIC: 5,
-  DEATH: 3,
-  GRAVITY: 3,
-  WATER: 3,
-  LIFE: 2,
-  LOVE: 2,
-  PLAGUE: 2,
-  LIGHT: 1,
-  SPEED: 1,
-  SPIRIT: 1,
-  APATHY: 0,
-  METAL: 0,
-};
 
-// --- 2. シーズンとバージョンのマッピング ---
-
-// 定義済みのリストを参照し、新しいセットは前のセットをベースに作成します（積み上げ）
-export const PROTOCOL_SETS = {
-  // V1: S1のベースセット
-  V1: PROTOCOLS_MAIN1,
-
-  // V1_AUX: V1 + AUX1追加分
-  V1_AUX: [
-    ...PROTOCOLS_MAIN1,
-    ...PROTOCOLS_AUX1,
-  ] as const,
-
-  // 将来 V2 が追加される場合は、以下のように前のセットを継承
-  /* V2: [
-    ...PROTOCOL_SETS.V1_AUX,
-    ...PROTOCOLS_MAIN2, // 新しいプロトコルがあれば、それだけを定義
-  ] as const,
-  */
+// --- 2. レシオ定義 (★NEW: バージョン管理化) ---
+const RATIOS_V1 = {
+  DARKNESS: 5, FIRE: 5, HATE: 5, PSYCHIC: 5,
+  DEATH: 3, GRAVITY: 3, WATER: 3,
+  LIFE: 2, LOVE: 2, PLAGUE: 2,
+  LIGHT: 1, SPEED: 1, SPIRIT: 1,
+  APATHY: 0, METAL: 0,
 } as const;
 
-// すべてのプロトコル（最新版）を定義（Protocol型定義のソース）
-// 現在はV1_AUXが最新
-export const ALL_PROTOCOLS = PROTOCOL_SETS.V1_AUX;
-
-// コレクション名とプロトコルバージョンを紐づける
-// シーズン名が変わっても、プロトコルセットが変わらなければ、キーは同じでOK
-// 一番上がデフォルトで表示されるデータになる
-export const SEASON_COLLECTIONS_CONFIG = {
-  // "compile_season2_aux": "V1_AUX", // S2_AUXもV1_AUXと同じセットを使用
-  // "compile_season2": "V1_AUX", // S2はS1_AUXと同じセットを使用
-  "compile_season1_aux": "V1_AUX",
-  "compile_season1": "V1",
+export const RATIO_SETS = {
+  V1: RATIOS_V1,
+  // 将来 V2 ができたらここに追加
+  // V2: { ...RATIOS_V1, DARKNESS: 6 },
 } as const;
 
-// 登録期間が終了し、編集不可なシーズン（コレクション名）のリスト
-export const UNAVAILABLE_SEASONS: readonly string[] = [
-  "compile_season1"
-] as const;
 
-// --- 3. 統計計算の閾値など ---
-export const MIN_GAMES_FOR_PAIR_STATS = 5; // pair (2枚組) の表示に必要な最小試合数
-export const MIN_GAMES_FOR_TRIO_STATS = 3; // trio (3枚組) の表示に必要な最小試合数
+// --- 3. シーズン定義 (★NEW: 集約設定) ---
+// key はアプリ内で扱うID (URLパラメータやlocalStorageのキーになる)
+export const SEASONS_CONFIG = {
+  "compile_season1_aux": {
+    displayName: "Season 1 (Aux)",
+    collectionName: "compile_season1_aux", // Firestoreのコレクション名
+    protocolVer: "V1_AUX",                 // PROTOCOL_SETS のキー
+    ratioVer: "V1",                        // RATIO_SETS のキー
+    isReadOnly: false,
+    maxRatio: 8,                           // レシオ上限も設定に持たせるとより柔軟
+  },
+  "compile_season1": {
+    displayName: "Season 1",
+    collectionName: "compile_season1",
+    protocolVer: "V1",
+    ratioVer: "V1",
+    isReadOnly: true, // 書き込み不可
+    maxRatio: 8,
+  },
+} as const;
+
+// --- 4. 統計計算の閾値 ---
+export const MIN_GAMES_FOR_PAIR_STATS = 5;
+export const MIN_GAMES_FOR_TRIO_STATS = 3;
