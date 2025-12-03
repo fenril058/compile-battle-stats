@@ -147,7 +147,6 @@ export default function App() {
       <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-8">
         {/* Input Section */}
         <section>
-          <h2 className="text-base font-semibold mt-4 mb-2 text-center">試合登録</h2>
           <MatchForm
             protocols={currentProtocols}
             onAddMatch={handleAddMatch}
