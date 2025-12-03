@@ -77,3 +77,4 @@ export const SEASONS_CONFIG = {
 // --- 4. 統計計算の閾値 ---
 export const MIN_GAMES_FOR_PAIR_STATS = 5;
 export const MIN_GAMES_FOR_TRIO_STATS = 3;
+export const MIN_GAMES_FOR_MATRIX = 3;

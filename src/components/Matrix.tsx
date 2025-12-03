@@ -1,5 +1,5 @@
 import React from "react";
-import { ABBR } from "../config";
+import { ABBR, MIN_GAMES_FOR_MATRIX } from "../config";
 import type { Protocol, MatrixData } from "../types";
 
 type MatrixProps = {
@@ -11,7 +11,9 @@ type MatrixProps = {
 
 export const Matrix: React.FC<MatrixProps> = ({ t, m, bg, protocols }) => (
   <div className={`p-4 rounded-2xl mb-6 ${bg}`}>
-    <h2 className="text-lg font-semibold mb-2 text-center">{t}</h2>
+    <h2 className="text-lg font-semibold mb-2 text-center">
+      {t}（{MIN_GAMES_FOR_MATRIX} 戦以上）
+    </h2>
     <table className="w-full text-xs border border-zinc-800 rounded-md overflow-x-auto min-w-[300px]">
       <thead className="bg-zinc-800 text-zinc-300">
         <tr>

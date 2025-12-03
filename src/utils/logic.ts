@@ -3,7 +3,7 @@ import type {
   StatsResult, SideStats, StatRow, StatEntry,
   Ratios
 } from "../types";
-import { ALL_PROTOCOLS } from "../config";
+import { ALL_PROTOCOLS, MIN_GAMES_FOR_MATRIX } from "../config";
 
 // ratios を引数で受け取る
 export const ratioSum = (t: Trio, ratios: Ratios): number =>
@@ -135,7 +135,7 @@ export const matchup = (list: Match[]) => {
     const b = bStr as Protocol;
 
     // Check if m[a] exists (it should) and strictly assign
-    if (m[a] && v.g >= 3) {
+    if (m[a] && v.g >= MIN_GAMES_FOR_MATRIX) {
       m[a]![b] = percent(v.w, v.g);
     }
   }

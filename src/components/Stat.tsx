@@ -1,3 +1,5 @@
+// src/components/Stat.tsx
+
 import React, { useMemo } from "react";
 import { rows } from "../utils/logic";
 import type { StatsResult } from "../types";
@@ -38,8 +40,17 @@ export const Stat: React.FC<StatProps> = React.memo(({ t, m, color, minPair, min
   );
 });
 
+// ★ NEW: StatSectionPropsの型定義 (anyを置き換える)
+type StatSectionProps = {
+    label: string;
+    data: any;
+    type: (typeof KEYS)[number];
+    minPair: number;
+    minTrio: number;
+};
+
 // ★ Split into sub-component for cleaner memoization
-const StatSection = ({ label, data, type, minPair, minTrio }: any) => {
+const StatSection: React.FC<StatSectionProps> = ({ label, data, type, minPair, minTrio }) => {
   // ★ CRITICAL: Memoize the sorting logic
   const r = useMemo(() => {
     if (!data) return [];
@@ -48,27 +59,37 @@ const StatSection = ({ label, data, type, minPair, minTrio }: any) => {
 
   if (!r.length) return null;
 
+  // ★ 修正: typeに応じてラベル文字列を動的に生成
+  let displayLabel = label;
+  if (type === 'pair') {
+    displayLabel = `${label}（${minPair}戦以上）`; // 2枚組勝率にminPairを適用
+  } else if (type === 'trio') {
+    displayLabel = `${label}（${minTrio}戦以上）`; // 3枚組勝率にminTrioを適用
+  }
+  // single, first, second はそのまま
+
   return (
     <div className="mb-3">
-      <h3 className="text-sm text-zinc-400 mb-1 text-center">{label}</h3>
+      {/* ★ displayLabelを使用 */}
+      <h3 className="text-sm text-zinc-400 mb-1 text-center">{displayLabel}</h3>
       <table className="text-xs w-full border border-zinc-800">
         <thead className="bg-zinc-800 text-zinc-300">
-           <tr>
-             <th className="p-1">#</th><th className="p-1">PRO</th>
-             <th className="p-1">G</th><th className="p-1">W</th>
-             <th className="p-1">L</th><th className="p-1">%</th>
-           </tr>
+            <tr>
+              <th className="p-1">#</th><th className="p-1">PRO</th>
+              <th className="p-1">G</th><th className="p-1">W</th>
+              <th className="p-1">L</th><th className="p-1">%</th>
+            </tr>
         </thead>
         <tbody>
           {r.map((v, i) => (
-             <tr key={v.n} className={`border-t border-zinc-800 text-center ${v.p > 60 ? 'bg-green-900/30' : v.p < 40 ? 'bg-red-900/30' : ''}`}>
-               <td className="p-1">{i + 1}</td>
-               <td className="p-1">{v.n}</td>
-               <td className="p-1">{v.g}</td>
-               <td className="p-1">{v.w}</td>
-               <td className="p-1">{v.l}</td>
-               <td className="p-1">{v.p.toFixed(1)}</td>
-             </tr>
+              <tr key={v.n} className={`border-t border-zinc-800 text-center ${v.p > 60 ? 'bg-green-900/30' : v.p < 40 ? 'bg-red-900/30' : ''}`}>
+                <td className="p-1">{i + 1}</td>
+                <td className="p-1">{v.n}</td>
+                <td className="p-1">{v.g}</td>
+                <td className="p-1">{v.w}</td>
+                <td className="p-1">{v.l}</td>
+                <td className="p-1">{v.p.toFixed(1)}</td>
+              </tr>
           ))}
         </tbody>
       </table>
