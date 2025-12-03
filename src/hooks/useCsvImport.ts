@@ -42,9 +42,12 @@ export const useCsvImport = (
       const payloadsToImport: Omit<Match, "id" | "createdAt">[] = [];
       let failCount = 0;
 
-      // ヘッダー行をスキップ
-      // "WINNER"が含まれていれば、ヘッダーとみなす
-      const dataLines = lines[0].toUpperCase().includes("WINNER") ? lines.slice(1) : lines;
+      // 行頭が '#' の行と空行をスキップ
+      const dataLines = lines.filter(line => {
+        // trimStart()で行頭の空白を除去し、空行と'#'で始まるコメント行をスキップする
+        const trimmedLine = line.trimStart();
+        return trimmedLine.length > 0 && !trimmedLine.startsWith('#');
+      });
 
       // CSVを解析し、マッチデータを追加
       for (const line of dataLines) {
