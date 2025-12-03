@@ -157,7 +157,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                     value={dateInput}
                     onChange={(e) => setDateInput(e.target.value)}
                     disabled={!isRegistrationAllowed}
-                    className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm text-white"
+                    className="bg-zinc-300 border border-zinc-700 rounded px-2 py-1 text-sm text-zinc-800"
                   />
                 </div>
               </div>
