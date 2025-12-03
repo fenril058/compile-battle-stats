@@ -1,4 +1,4 @@
-// src/App.tsx
+import { Analytics } from "@vercel/analytics/react"
 import { useMemo, useState, useCallback } from "react";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -216,6 +216,7 @@ export default function App() {
           )}
         </section>
         <Footer />
+        <Analytics />
       </div>
     </div>
   );
