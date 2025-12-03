@@ -24,7 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <div className="p-3 border-b border-zinc-800 bg-zinc-900/50">
-      <div className="flex justify-between items-center max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:justify-between items-center max-w-7xl mx-auto gap-2">
 
         {/* 左側: タイトル、シーズン選択、モード表示 */}
         <div className="flex items-center gap-4">
@@ -46,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* 右側: 認証ボタン/ステータス */}
-        <div>
+        <div className="flex items-center">
           {!isAuthEnabled ? ( // Firebaseが有効でない場合
             <span className="text-red-500 text-xs">Offline (Firebase Disabled)</span>
           ) : user ? ( // ログイン済みの場合

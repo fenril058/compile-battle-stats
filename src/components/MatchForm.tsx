@@ -109,7 +109,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
       ) : (
         <div className="bg-zinc-900 p-4 rounded-2xl shadow-xl">
           <h2 className="text-xl font-semibold mb-4 text-center">試合結果の入力</h2>
-          <div className="grid grid-cols-3 gap-3 md:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8">
             {/* First Side */}
             <div className="flex flex-col items-center p-2 border border-zinc-700 rounded-xl">
               <h3 className="font-semibold mb-2">先攻</h3>
@@ -147,7 +147,9 @@ export const MatchForm: React.FC<MatchFormProps> = ({
             </div>
 
             {/* Action Column */}
-            <div className="flex flex-col justify-center items-center border border-zinc-700 rounded-xl p-2 gap-2">
+            <div className="col-span-2 md:col-span-1 flex flex-col justify-center items-center
+            border border-zinc-700 rounded-xl p-3 gap-3">
+
               {/* 日付選択 UI */}
               <div className="flex justify-center mb-4 mt-2">
                 <div className="flex flex-col items-center">
@@ -157,14 +159,15 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                     value={dateInput}
                     onChange={(e) => setDateInput(e.target.value)}
                     disabled={!isRegistrationAllowed}
-                    className="bg-zinc-300 border border-zinc-700 rounded px-2 py-1 text-sm text-zinc-800"
-                  />
+                    className="w-full bg-zinc-300 border border-zinc-700 rounded px-2 py-1
+                    text-sm text-zinc-800" />
                 </div>
               </div>
 
               {/* 左右入れ替えボタン */}
               <button onClick={handleSwap}
-                className="text-xs text-zinc-400 border border-zinc-600 px-2 py-1 rounded hover:bg-zinc-800 mb-1"
+                className="w-1/2 text-sm text-zinc-400 border border-zinc-600 px-2 py-1 rounded
+                hover:bg-zinc-800 mb-1"
               >
                  🔄 入れ替え
               </button>
