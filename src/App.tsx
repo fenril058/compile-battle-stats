@@ -220,7 +220,7 @@ export default function App() {
                   className="absolute left-0 top-0 opacity-0 cursor-pointer h-full w-full"
                 />
               </div>
-              <p className="text-xs text-zinc-300 mt-2">（F1, F2, F3, S1, S2, S3, Winner の順で7列必須）</p>
+              <p className="text-xs text-zinc-300 mt-2">（F1, F2, F3, S1, S2, S3, Winner, matchDateの順）</p>
             </div>
           )}
         </section>
