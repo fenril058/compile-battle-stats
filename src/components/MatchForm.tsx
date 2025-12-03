@@ -5,12 +5,15 @@ import type { Protocol, Trio, Winner } from "../types";
 
 type MatchFormProps = {
   protocols: readonly Protocol[];
-  onAddMatch: (data: { first: Trio; second: Trio; winner: Winner }) => void;
+  onAddMatch: (data: { first: Trio; second: Trio; winner: Winner; matchDate: number | null }) => void;
   isRegistrationAllowed: boolean;
   onSyncLocal?: () => void;
   mode: string;
   ratioSum: (t: Trio) => number;
 };
+
+// ヘルパー: 今日の日付を YYYY-MM-DD 形式で取得 (input type="date"用)
+const getTodayString = () => new Date().toISOString().split('T')[0];
 
 // Initial state helpers (コンポーネントの初回マウント時のみ使用される)
 const INITIAL_FIRST: Trio = ["DARKNESS", "FIRE", "HATE"] as unknown as Trio;
@@ -26,8 +29,10 @@ export const MatchForm: React.FC<MatchFormProps> = ({
 }) => {
   const [first, setFirst] = useState<Trio>(INITIAL_FIRST);
   const [second, setSecond] = useState<Trio>(INITIAL_SECOND);
+  // 日付入力用のステート (初期値は今日)
+  const [dateInput, setDateInput] = useState<string>(getTodayString());
 
-  // ★ FIX: protocols（シーズン）が変更されたときに状態をリセットする
+  // protocols（シーズン）が変更されたときに状態をリセットする
   useEffect(() => {
     // 新しいプロトコルリストが有効であることを確認
     if (protocols.length >= 3) {
@@ -80,8 +85,16 @@ export const MatchForm: React.FC<MatchFormProps> = ({
       return;
     }
 
-    // onAddMatch には Trio のデータ全体を渡す
-    onAddMatch({ first, second, winner });
+    // 日付文字列を number (timestamp) に変換
+    // ユーザーが日付を指定した場合、その日の 00:00:00 などを基準にするか、
+    // あるいは単純に Date.parse で変換する
+    let matchDateTimestamp: number | null = null;
+    if (dateInput) {
+      matchDateTimestamp = new Date(dateInput).getTime();
+    }
+
+    // 親コンポーネントへ渡す
+    onAddMatch({ first, second, winner, matchDate: matchDateTimestamp });
   };
 
   return (
@@ -135,6 +148,20 @@ export const MatchForm: React.FC<MatchFormProps> = ({
 
             {/* Action Column */}
             <div className="flex flex-col justify-center items-center border border-zinc-700 rounded-xl p-2 gap-2">
+              {/* 日付選択 UI */}
+              <div className="flex justify-center mb-4 mt-2">
+                <div className="flex flex-col items-center">
+                  <label className="text-xs text-zinc-400 mb-1">対戦日 (任意)</label>
+                  <input
+                    type="date"
+                    value={dateInput}
+                    onChange={(e) => setDateInput(e.target.value)}
+                    disabled={!isRegistrationAllowed}
+                    className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm text-white"
+                  />
+                </div>
+              </div>
+
               {/* 左右入れ替えボタン */}
               <button onClick={handleSwap}
                 className="text-xs text-zinc-400 border border-zinc-600 px-2 py-1 rounded hover:bg-zinc-800 mb-1"

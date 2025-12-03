@@ -10,6 +10,8 @@ import {
   writeBatch,
   type DocumentData,
   onSnapshot,
+  serverTimestamp,
+  Timestamp,
 } from "firebase/firestore";
 
 /**
@@ -48,10 +50,22 @@ export function useFirestore<T extends WithId>(
 
     // onSnapshotでリアルタイム更新を購読
     return onSnapshot(colRef, (snapshot) => {
-        const loaded = snapshot.docs.map((d) => ({
-            ...d.data(),
-            id: d.id, // FirestoreのドキュメントIDをidとして採用
-        })) as T[];
+      const loaded = snapshot.docs.map((d) => {
+        const data = d.data();
+
+        // ★ 読み込み時の変換 (Transfrom from DB to App)
+        // Firestore上の createdAt は Timestamp 型である可能性がある
+        let convertedCreatedAt = data.createdAt;
+        if (data.createdAt && typeof data.createdAt === 'object' && 'toMillis' in data.createdAt) {
+          convertedCreatedAt = (data.createdAt as Timestamp).toMillis();
+        }
+
+        return {
+          ...data,
+          id: d.id,
+          createdAt: convertedCreatedAt, // App内では常に number になる
+        };
+      }) as T[];
 
         // キャッシュとしてローカルストレージも更新
         updateLocalCache(localKey, loaded);
@@ -100,8 +114,9 @@ export function useFirestore<T extends WithId>(
     async (
       itemWithoutMeta: Omit<T, "id" | "createdAt">
     ) => {
+
       // データの完全な形を生成 (一時的なIDを付与)
-      const newItem = {
+      const newItemForLocal = {
         ...itemWithoutMeta,
         id: crypto.randomUUID(),
         createdAt: Date.now(),
@@ -109,7 +124,7 @@ export function useFirestore<T extends WithId>(
 
       // 1. Local StorageとStateを即座に更新 (キャッシュとして)
       setItems((prev) => {
-        const updated = [...prev, newItem];
+        const updated = [...prev, newItemForLocal];
         updateLocalCache(localKey, updated); // LocalStorageも更新
         return updated;
       });
@@ -119,8 +134,11 @@ export function useFirestore<T extends WithId>(
         // 2. Firestoreへの保存 (非同期)
         try {
           // Firestoreに保存する際は id フィールドを含めない
-          const { id, ...rest } = newItem;
-          await addDoc(colRef, rest as DocumentData);
+          const { id, ...rest } = newItemForLocal;
+          await addDoc(colRef, {
+            ...rest,
+            createdAt: serverTimestamp(),
+          } as DocumentData);
         } catch (e) {
           console.error("[useFirestore] remote add failed. Data is only in local cache:", e);
           toast.error("リモートへの登録に失敗しました。ローカルキャッシュにのみ保存されました。");

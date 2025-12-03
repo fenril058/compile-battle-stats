@@ -17,6 +17,8 @@ export type Match = {
   winner: Winner;
   ratio: boolean;
   createdAt: number;
+  userId?: string;
+  matchDate?: number | null;
 };
 
 // Strict Typing for Matrix to prevent string access errors

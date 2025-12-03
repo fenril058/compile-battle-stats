@@ -20,8 +20,8 @@ import type {
   Winner
 } from "./types";
 
-// ★ FIX: Firebase/Auth関連のインポートをすべて削除
 // Hooks & Logic
+import { useAuth } from "./hooks/useAuth";
 import { useFirestore } from "./hooks/useFirestore";
 import { isRatioBattle } from "./utils/logic";
 import { useMatchStats } from "./hooks/useMatchStats";
@@ -40,7 +40,7 @@ import { Header } from "./components/Header";
 
 
 export default function App() {
-  // ★ 削除: 認証関連のステート、useEffect、認証関数はすべて useAuth に移動
+  const { user } = useAuth();
 
   // === シーズン選択 ===
   const SEASON_COLLECTIONS = Object.keys(SEASON_COLLECTIONS_CONFIG) as SeasonCollectionName[];
@@ -73,14 +73,21 @@ export default function App() {
     localStorage.setItem('selectedSeason', s);
   };
 
-  const handleAddMatch = useCallback((data: { first: Trio, second: Trio, winner: Winner }) => {
+  const handleAddMatch = useCallback((data: {
+    first: Trio,
+    second: Trio,
+    winner: Winner,
+    matchDate: number | null
+  }) => {
     if (!isRegistrationAllowed) { /* toastはMatchForm側で出す */ return; }
 
     void addMatchItem({
       ...data,
       ratio: isRatioBattle(data.first, data.second),
+      userId: user?.uid ?? undefined, // ログインしていなければ undefined
+      matchDate: data.matchDate ?? null,
     });
-  }, [addMatchItem, isRegistrationAllowed]);
+  }, [addMatchItem, isRegistrationAllowed, user]);
 
 
   const handleRemoveMatch = useCallback((id: string) => {
