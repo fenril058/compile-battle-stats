@@ -117,7 +117,17 @@ export default function App() {
 
 
   const sortedMatches = useMemo(() => {
-    return [...matches].sort((a, b) => b.createdAt - a.createdAt);
+    return [...matches].sort((a, b) => {
+      // 1. matchDateが存在する場合、matchDateでソート (新しい日付が前)
+      const matchDateA = a.matchDate ?? 0;
+      const matchDateB = b.matchDate ?? 0;
+      if (matchDateA !== matchDateB) {
+        return matchDateB - matchDateA;
+      }
+
+      // 2. matchDateが同じか、存在しない場合、createdAtでソート (新しい登録が前)
+      return b.createdAt - a.createdAt;
+    });
   }, [matches]);
 
 
