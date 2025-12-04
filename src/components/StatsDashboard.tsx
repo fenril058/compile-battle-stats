@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { Stat } from "./Stat";
 import { Matrix } from "./Matrix";
 import type { MatrixData, StatsResult, Protocol } from "../types"; // types定義に合わせて調整してください

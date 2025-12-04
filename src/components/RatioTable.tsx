@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import type React from "react";
+import { useMemo } from "react";
 import type { Protocol, Ratios } from "../types";
 
 export const RatioTable: React.FC<{ protocols: readonly Protocol[], ratios: Ratios }>

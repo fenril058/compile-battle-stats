@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import type { SeasonKey, StorageMode } from '../types';
 

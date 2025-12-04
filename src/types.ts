@@ -1,4 +1,4 @@
-import {
+import type {
   ALL_PROTOCOLS,
   SEASONS_CONFIG,
   RATIO_SETS,

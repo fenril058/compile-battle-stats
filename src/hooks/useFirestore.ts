@@ -11,7 +11,7 @@ import {
   type DocumentData,
   onSnapshot,
   serverTimestamp,
-  Timestamp,
+  type Timestamp,
 } from "firebase/firestore";
 
 /**
@@ -109,7 +109,6 @@ export function useFirestore<T extends WithId>(
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
           // normalizeIdでIDの整合性をチェックしながらStateに設定
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setItems((parsed as T[]).map((x) => normalizeId(x)));
         }
       } catch (e) {

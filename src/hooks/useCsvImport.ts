@@ -1,5 +1,6 @@
 import { toast } from 'react-toastify';
-import React, { useCallback } from 'react';
+import type React from 'react';
+import { useCallback } from 'react';
 import type { Match, Protocol, Ratios } from '../types';
 import { parseMatchCsvRow } from '../utils/logic';
 

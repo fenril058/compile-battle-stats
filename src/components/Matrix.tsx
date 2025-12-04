@@ -1,4 +1,4 @@
-import React from "react";
+import type React from "react";
 import { ABBR, MIN_GAMES_FOR_MATRIX } from "../config";
 import type { Protocol, MatrixData } from "../types";
 
