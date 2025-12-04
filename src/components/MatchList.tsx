@@ -77,7 +77,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(({
     // ページネーションUIの表示を制限 (例: 現在ページとその前後2ページまで)
     const maxPagesToShow = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
     // 最終ページが近づいた場合の調整
     if (endPage - startPage + 1 < maxPagesToShow) {

@@ -20,13 +20,14 @@ import {
 type WithId = { id: string; createdAt: number };
 
 // IDがstringでない場合は、データ破損とみなし新規UUIDを付与して整合性を確保する
-function normalizeId<T extends WithId | { id?: any }>(x: T): T {
-  const id = typeof x.id === "string" ? x.id : crypto.randomUUID();
-  return { ...x, id } as T;
+function normalizeId<T extends WithId>(x: T): T {
+  const normalizedId = typeof x.id === "string" ? x.id : crypto.randomUUID();
+  // idを再代入せず、新しいオブジェクトとして返す
+  return { ...x, id: normalizedId } as T;
 }
 
 // ローカルストレージを直接操作するヘルパー関数
-// ★修正: T の型を WithId に限定。これにより createdAt の存在が保証される。
+// T の型を WithId に限定。これにより createdAt の存在が保証される。
 const updateLocalCache = <T extends WithId>(key: string, items: T[]): void => {
   // createdAtでソートして保存
   // RemoteからのデータはFirestoreのCreatedAtでソートされるべきだが、ここではローカルのcreatedAtを使用
@@ -42,7 +43,27 @@ export function useFirestore<T extends WithId>(
   const localKey = collectionName;
   const [items, setItems] = useState<T[]>([]);
   const mode: StorageMode = db ? "remote" : "local";
-  const colRef = useMemo(() => (db ? collection(db, collectionName) : null), [db, collectionName]);
+
+  const colRef = useMemo(() => (db ? collection(db, collectionName) : null), [collectionName]);
+
+  // ローカルのキャッシュを明示的に読み戻す（Localモード用の“手動同期”）
+  const reloadLocal = useCallback(() => {
+    try {
+      const raw = localStorage.getItem(localKey);
+      if (!raw) {
+        setItems([]);
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setItems((parsed as T[]).map((x) => normalizeId(x)));
+      }
+      toast.info("ローカルキャッシュを再読込しました。");
+    } catch (e) {
+      console.error("[useFirestore] reloadLocal failed:", e);
+      toast.warn("ローカルデータの読込に失敗しました");
+    }
+  }, [localKey]);
 
   // loadRemoteをuseCallbackで定義 (onSnapshotのリスナーとして使用)
   const loadRemote = useCallback(async () => {
@@ -53,7 +74,7 @@ export function useFirestore<T extends WithId>(
       const loaded = snapshot.docs.map((d) => {
         const data = d.data();
 
-        // ★ 読み込み時の変換 (Transfrom from DB to App)
+        // 読み込み時の変換 (Transfrom from DB to App)
         // Firestore上の createdAt は Timestamp 型である可能性がある
         let convertedCreatedAt = data.createdAt;
         if (data.createdAt && typeof data.createdAt === 'object' && 'toMillis' in data.createdAt) {
@@ -76,7 +97,7 @@ export function useFirestore<T extends WithId>(
         // エラー発生時はローカルキャッシュを読み込む (reloadLocalのロジックを再利用)
         reloadLocal();
     });
-  }, [colRef, localKey]);
+  }, [colRef, localKey, reloadLocal]);
 
 
   // 初回ロード：ローカルストレージ（キャッシュ）の読み込み
@@ -88,6 +109,7 @@ export function useFirestore<T extends WithId>(
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
           // normalizeIdでIDの整合性をチェックしながらStateに設定
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setItems((parsed as T[]).map((x) => normalizeId(x)));
         }
       } catch (e) {
@@ -134,7 +156,7 @@ export function useFirestore<T extends WithId>(
         // 2. Firestoreへの保存 (非同期)
         try {
           // Firestoreに保存する際は id フィールドを含めない
-          const { id, ...rest } = newItemForLocal;
+          const { id: _id, ...rest } = newItemForLocal;
           await addDoc(colRef, {
             ...rest,
             createdAt: serverTimestamp(),
@@ -177,10 +199,10 @@ export function useFirestore<T extends WithId>(
         }
       }
     },
-    [colRef, mode, localKey]
+    [colRef, mode, localKey, collectionName]
   );
 
-  // ★追加: 複数の試合データを一括登録するためのバッチ処理
+  // 複数の試合データを一括登録するためのバッチ処理
   const addBatch = useCallback(
     async (itemsWithoutMeta: Omit<T, "id" | "createdAt">[]) => {
       if (!db || !colRef || itemsWithoutMeta.length === 0) {
@@ -219,32 +241,13 @@ export function useFirestore<T extends WithId>(
     for (const item of items) {
       // id は Firestore に保存しなくても良い（重複防止のためフィールドとして残さない運用推奨）
       const ref = doc(colRef); // 自動ID
-      const { id, ...rest } = item;
+      const { id: _id, ...rest } = item;
       batch.set(ref, rest as DocumentData);
     }
     await batch.commit();
     await loadRemote();
     toast.success("ローカルデータをリモートに移行しました。");
   }, [items, colRef, loadRemote]);
-
-  // ローカルのキャッシュを明示的に読み戻す（Localモード用の“手動同期”）
-  const reloadLocal = useCallback(() => {
-    try {
-      const raw = localStorage.getItem(localKey);
-      if (!raw) {
-        setItems([]);
-        return;
-      }
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        setItems((parsed as T[]).map((x) => normalizeId(x)));
-      }
-      toast.info("ローカルキャッシュを再読込しました。");
-    } catch (e) {
-      console.error("[useFirestore] reloadLocal failed:", e);
-      toast.warn("ローカルデータの読込に失敗しました");
-    }
-  }, [localKey]);
 
   // すべてクリア（ローカルだけ）
   const clearLocal = useCallback(() => {

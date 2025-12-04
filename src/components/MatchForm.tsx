@@ -37,6 +37,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
     // 新しいプロトコルリストが有効であることを確認
     if (protocols.length >= 3) {
       // 新しいプロトコルリストの最初の3つをfirstに設定
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFirst(protocols.slice(0, 3) as Trio);
 
       // secondは、リストが6つ以上あれば次の3つ、なければ最初の3つを設定

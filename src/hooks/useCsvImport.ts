@@ -82,7 +82,7 @@ export const useCsvImport = (
     reader.readAsText(file);
     // ファイル入力の値をリセットし、同じファイルを再度選択できるようにする（ブラウザの仕様対応）
     event.target.value = '';
-  }, [addMatchItemBatch, currentProtocols]);
+  }, [addMatchItemBatch, currentProtocols, ratios, maxRatio]);
 
   return { handleImportCsv };
 };

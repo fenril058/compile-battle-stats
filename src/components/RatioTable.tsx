@@ -14,7 +14,7 @@ export const RatioTable: React.FC<{ protocols: readonly Protocol[], ratios: Rati
     return Array.from(map.entries())
       .sort((a, b) => b[0] - a[0])
       .map(([score, list]) => ({ score, list }));
-  }, [protocols]);
+  }, [protocols, ratios]);
 
   return (
     <div className="mt-3 bg-zinc-900 p-3 rounded-2xl text-center">
