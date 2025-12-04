@@ -114,10 +114,10 @@ export const MatchList: React.FC<MatchListProps> = React.memo(({
             <tr>
               <th className="p-2">#</th>
               <th className="p-2 min-w-[100px]">登録日</th>
-              <th className="p-2">先攻</th>
-              <th className="p-2">後攻</th>
-              <th className="p-2">勝者</th>
-              <th className="p-2">レシオ</th>
+              <th className="p-2 min-w-[50px]">先攻</th>
+              <th className="p-2 min-w-[50px]">後攻</th>
+              <th className="p-2 min-w-[50px]">勝者</th>
+              <th className="p-2 min-w-[60px]">レシオ</th>
               <th className="p-2 min-w-[100px]">対戦日</th>
               <th className="p-2"></th>
             </tr>
@@ -157,7 +157,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(({
                   <td className="p-2">
                     {formatDate(m.matchDate)}
                   </td>
-                  <td className="p-2">
+                  <td className="p-2 min-w-[60px]">
                     <button
                       onClick={() => onRemove(m.id)}
                       disabled={!isRegistrationAllowed}
