@@ -1,5 +1,5 @@
 import { Analytics } from "@vercel/analytics/react"
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -33,12 +33,11 @@ import { MatchForm } from "./components/MatchForm";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { RatioTable } from "./components/RatioTable";
 import { MatchList } from "./components/MatchList";
+import { DataToolbar } from "./components/DataToolbar";
 import { Footer } from "./components/Footer";
 
 export default function App() {
   const { user } = useAuth();
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // === シーズン選択 ===
   // Object.keys の戻り値を SeasonKey[] にキャスト
@@ -112,11 +111,6 @@ export default function App() {
     reloadLocal();
   }, [reloadLocal]);
 
-  // CSVボタンクリック時のハンドラ
-  const handleFileSelectClick = () => {
-    fileInputRef.current?.click();
-  };
-
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0 font-sans">
       <ToastContainer position="top-center" theme="dark" autoClose={2000} />
@@ -159,46 +153,14 @@ export default function App() {
         <section>
           <MatchList matches={sortedMatches}
             onRemove={handleRemoveMatch}
-            isRegistrationAllowed={isRegistrationAllowed} />
-
-          <div className="flex justify-center mt-6 mb-6">
-            <button onClick={exportToCsv}
-              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xm
-              transition-colors"
-            >
-               試合データをCSVでExport
-            </button>
-          </div>
-
-          {isRegistrationAllowed && (
-            <div className="flex flex-col items-center justify-center mt-6 mb-6 p-4
-            border border-zinc-700 rounded-lg">
-              <label htmlFor="csv-upload" className="font-semibold mb-2 text-zinc-300"
-              >
-                 CSVから試合データをimport
-              </label>
-              <div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept=".csv"
-                  onChange={handleImportCsv}
-                  className="hidden"
-                />
-                <button
-                  onClick={handleFileSelectClick}
-                  className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xm
-                  transition-colors"
-                >
-                   ファイルを選択
-                </button>
-              </div>
-              <p className="text-xs text-zinc-300 mt-2"
-              >
-                 （形式: F1, F2, F3, S1, S2, S3, Winner, matchDate）
-              </p>
-            </div>
-          )}
+            isRegistrationAllowed={isRegistrationAllowed}
+          />
+          {/* CSV export and import */}
+          <DataToolbar
+            onExport={exportToCsv}
+            onImport={handleImportCsv}
+            isRegistrationAllowed={isRegistrationAllowed}
+          />
         </section>
 
         <Footer />
