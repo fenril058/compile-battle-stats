@@ -30,7 +30,7 @@ export type MatrixData = {
 };
 
 // 特定の定数ではなく、RATIO_SETS の値の型を参照するようにする
-export type Ratios = typeof RATIO_SETS.V1;
+export type Ratios = typeof RATIO_SETS[keyof typeof RATIO_SETS];
 
 // SeasonCollectionName を SEASONS_CONFIG のキーから生成
 export type SeasonKey = keyof typeof SEASONS_CONFIG;

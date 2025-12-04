@@ -1,5 +1,3 @@
-// src/config.ts
-
 // --- 1. プロトコル定義 ---
 const PROTOCOLS_MAIN1 = [
   "DARKNESS", "FIRE", "PSYCHIC", "DEATH", "GRAVITY",
