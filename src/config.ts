@@ -37,7 +37,7 @@ export const ABBR = {
 };
 
 
-// --- 2. レシオ定義 (★NEW: バージョン管理化) ---
+// --- 2. レシオ定義 ---
 const RATIOS_V1 = {
   DARKNESS: 5, FIRE: 5, HATE: 5, PSYCHIC: 5,
   DEATH: 3, GRAVITY: 3, WATER: 3,
@@ -48,14 +48,21 @@ const RATIOS_V1 = {
 
 export const RATIO_SETS = {
   V1: RATIOS_V1,
-  // 将来 V2 ができたらここに追加
-  // V2: { ...RATIOS_V1, DARKNESS: 6 },
+  V2: { ...RATIOS_V1, SPEED: 2, PLAGUE: 1, WATER: 2, LIFE: 3  },
 } as const;
 
 
 // --- 3. シーズン定義 (★NEW: 集約設定) ---
 // key はアプリ内で扱うID (URLパラメータやlocalStorageのキーになる)
 export const SEASONS_CONFIG = {
+  "compile_season2": {
+    displayName: "Season 2",
+    collectionName: "compile_season2",
+    protocolVer: "V1",
+    ratioVer: "V2",
+    isReadOnly: true,
+    maxRatio: 8,
+  },
   "compile_season1_aux": {
     displayName: "Season 1 (Aux)",
     collectionName: "compile_season1_aux", // Firestoreのコレクション名
