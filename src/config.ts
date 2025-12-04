@@ -71,7 +71,7 @@ export const SEASONS_CONFIG = {
   compile_season2: {
     displayName: "Season 2",
     collectionName: "compile_season2",
-    protocolVer: "V1",
+    protocolVer: "V1_AUX",
     ratioVer: "V2",
     isReadOnly: true,
     maxRatio: 8,
