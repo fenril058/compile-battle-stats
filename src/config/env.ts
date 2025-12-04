@@ -41,4 +41,6 @@ const isValid = isConfigValid(rawConfig);
  * 設定が有効でない場合（.envが未設定など）は null を返します。
  * firebase.ts や useFirestore.ts は、この値によって LocalStorage モードへのフォールバックを判断します。
  */
-export const FIREBASE_CONFIG: FirebaseConfig | null = isValid ? rawConfig : null;
+export const FIREBASE_CONFIG: FirebaseConfig | null = isValid
+  ? rawConfig
+  : null;

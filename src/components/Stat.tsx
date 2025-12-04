@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
-import { rows } from "../utils/logic";
 import type { StatsResult } from "../types";
+import { rows } from "../utils/logic";
 
 // SideStats型を利用して、mの型を具体化
 type StatProps = {
@@ -20,23 +20,25 @@ const HEADERS: Record<string, string> = {
   second: "2枠目配置勝率",
 } as const;
 
-export const Stat: React.FC<StatProps> = React.memo(({ t, m, color, minPair, minTrio }) => {
-  return (
-    <div className={`p-3 rounded-2xl shadow-md ${color}`}>
-      <h2 className="font-semibold mb-2 text-center">{t}</h2>
-      {KEYS.map((key) => (
-        <StatSection
-          key={key}
-          label={HEADERS[key]}
-          data={m[key]} // Pass specific subset
-          type={key}
-          minPair={minPair}
-          minTrio={minTrio}
-        />
-      ))}
-    </div>
-  );
-});
+export const Stat: React.FC<StatProps> = React.memo(
+  ({ t, m, color, minPair, minTrio }) => {
+    return (
+      <div className={`p-3 rounded-2xl shadow-md ${color}`}>
+        <h2 className="font-semibold mb-2 text-center">{t}</h2>
+        {KEYS.map((key) => (
+          <StatSection
+            key={key}
+            label={HEADERS[key]}
+            data={m[key]} // Pass specific subset
+            type={key}
+            minPair={minPair}
+            minTrio={minTrio}
+          />
+        ))}
+      </div>
+    );
+  },
+);
 
 type StatSectionProps = {
   label: string;
@@ -47,7 +49,13 @@ type StatSectionProps = {
 };
 
 // Split into sub-component for cleaner memoization
-const StatSection: React.FC<StatSectionProps> = ({ label, data, type, minPair, minTrio }) => {
+const StatSection: React.FC<StatSectionProps> = ({
+  label,
+  data,
+  type,
+  minPair,
+  minTrio,
+}) => {
   // ★ CRITICAL: Memoize the sorting logic
   const r = useMemo(() => {
     if (!data) return [];
@@ -57,9 +65,9 @@ const StatSection: React.FC<StatSectionProps> = ({ label, data, type, minPair, m
   if (!r.length) return null;
 
   let displayLabel = label;
-  if (type === 'pair') {
+  if (type === "pair") {
     displayLabel = `${label}（${minPair}戦以上）`; // 2枚組勝率にminPairを適用
-  } else if (type === 'trio') {
+  } else if (type === "trio") {
     displayLabel = `${label}（${minTrio}戦以上）`; // 3枚組勝率にminTrioを適用
   }
 
@@ -69,14 +77,20 @@ const StatSection: React.FC<StatSectionProps> = ({ label, data, type, minPair, m
       <table className="text-xs w-full border border-zinc-800">
         <thead className="bg-zinc-800 text-zinc-300">
           <tr>
-            <th className="p-1">#</th><th className="p-1">PRO</th>
-            <th className="p-1">G</th><th className="p-1">W</th>
-            <th className="p-1">L</th><th className="p-1">%</th>
+            <th className="p-1">#</th>
+            <th className="p-1">PRO</th>
+            <th className="p-1">G</th>
+            <th className="p-1">W</th>
+            <th className="p-1">L</th>
+            <th className="p-1">%</th>
           </tr>
         </thead>
         <tbody>
           {r.map((v, i) => (
-            <tr key={v.n} className={`border-t border-zinc-800 text-center ${v.p > 60 ? 'bg-green-900/30' : v.p < 40 ? 'bg-red-900/30' : ''}`}>
+            <tr
+              key={v.n}
+              className={`border-t border-zinc-800 text-center ${v.p > 60 ? "bg-green-900/30" : v.p < 40 ? "bg-red-900/30" : ""}`}
+            >
               <td className="p-1">{i + 1}</td>
               <td className="p-1">{v.n}</td>
               <td className="p-1">{v.g}</td>

@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
-import { toast } from 'react-toastify';
 import {
   GoogleAuthProvider,
+  onAuthStateChanged,
   signInWithPopup,
   signOut,
-  onAuthStateChanged,
   type User,
 } from "firebase/auth";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import { auth, isFirebaseEnabled } from "../firebase"; // Firebaseインスタンスをインポート
 
 type AuthState = {
@@ -37,26 +37,26 @@ export const useAuth = (): AuthState => {
 
   const handleLogin = useCallback(async () => {
     if (!auth) {
-        toast.error("Firebase認証が有効ではありません。");
-        return;
+      toast.error("Firebase認証が有効ではありません。");
+      return;
     }
     try {
-        await signInWithPopup(auth, new GoogleAuthProvider());
-        // onAuthStateChanged が state を更新するため、ここでは成功通知は不要
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      // onAuthStateChanged が state を更新するため、ここでは成功通知は不要
     } catch (error) {
-        console.error("Login Failed:", error);
-        toast.error("ログインに失敗しました。");
+      console.error("Login Failed:", error);
+      toast.error("ログインに失敗しました。");
     }
   }, []);
 
   const handleLogout = useCallback(async () => {
     if (!auth) return;
     try {
-        await signOut(auth);
-        toast.info("ログアウトしました");
+      await signOut(auth);
+      toast.info("ログアウトしました");
     } catch (error) {
-        console.error("Logout Failed:", error);
-        toast.error("ログアウトに失敗しました。");
+      console.error("Logout Failed:", error);
+      toast.error("ログアウトに失敗しました。");
     }
   }, []);
 

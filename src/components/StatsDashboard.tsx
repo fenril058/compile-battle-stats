@@ -1,7 +1,7 @@
-import type React from 'react';
-import { Stat } from "./Stat";
+import type React from "react";
+import type { MatrixData, Protocol, StatsResult } from "../types"; // types定義に合わせて調整してください
 import { Matrix } from "./Matrix";
-import type { MatrixData, StatsResult, Protocol } from "../types"; // types定義に合わせて調整してください
+import { Stat } from "./Stat";
 
 // Propsの定義
 interface StatsDashboardProps {
@@ -25,27 +25,60 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   matrices,
   protocols,
   minPair,
-  minTrio
+  minTrio,
 }) => {
   return (
     <>
       {/* Visualization Section: Stats */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Stat t="通常戦" m={stats.normal} color="bg-orange-950/20" minPair={minPair} minTrio={minTrio} />
-        <Stat t="レシオ" m={stats.ratio} color="bg-blue-950/20" minPair={minPair} minTrio={minTrio} />
-        <Stat t="全体" m={stats.all} color="bg-green-950/20" minPair={minPair} minTrio={minTrio} />
+        <Stat
+          t="通常戦"
+          m={stats.normal}
+          color="bg-orange-950/20"
+          minPair={minPair}
+          minTrio={minTrio}
+        />
+        <Stat
+          t="レシオ"
+          m={stats.ratio}
+          color="bg-blue-950/20"
+          minPair={minPair}
+          minTrio={minTrio}
+        />
+        <Stat
+          t="全体"
+          m={stats.all}
+          color="bg-green-950/20"
+          minPair={minPair}
+          minTrio={minTrio}
+        />
       </section>
 
       {/* Visualization Section: Matrices */}
       <section className="space-y-8">
         <div className="overflow-x-auto">
-          <Matrix t="通常戦 相性表" m={matrices.normal} bg="bg-zinc-900/50" protocols={protocols} />
+          <Matrix
+            t="通常戦 相性表"
+            m={matrices.normal}
+            bg="bg-zinc-900/50"
+            protocols={protocols}
+          />
         </div>
         <div className="overflow-x-auto">
-          <Matrix t="レシオ 相性表" m={matrices.ratio} bg="bg-zinc-900/50" protocols={protocols} />
+          <Matrix
+            t="レシオ 相性表"
+            m={matrices.ratio}
+            bg="bg-zinc-900/50"
+            protocols={protocols}
+          />
         </div>
         <div className="overflow-x-auto">
-           <Matrix t="全試合 相性表" m={matrices.all} bg="bg-zinc-900/50" protocols={protocols} />
+          <Matrix
+            t="全試合 相性表"
+            m={matrices.all}
+            bg="bg-zinc-900/50"
+            protocols={protocols}
+          />
         </div>
       </section>
     </>

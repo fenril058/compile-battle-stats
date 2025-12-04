@@ -1,11 +1,8 @@
 import { useCallback } from "react";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import type { Match, SeasonKey } from "../types";
 
-export const useCsvExport = (
-  matches: Match[],
-  selectedSeason: SeasonKey
-) => {
+export const useCsvExport = (matches: Match[], selectedSeason: SeasonKey) => {
   const exportToCsv = useCallback(() => {
     if (matches.length === 0) {
       toast.info("エクスポートするデータがありません");
@@ -29,11 +26,11 @@ export const useCsvExport = (
       // ★ 日付フォーマット処理
       // null の場合は空文字、値があればロケール形式 (YYYY/MM/DD等) に
       const matchDateStr = m.matchDate
-        ? new Date(m.matchDate).toLocaleDateString('ja-JP')
+        ? new Date(m.matchDate).toLocaleDateString("ja-JP")
         : "";
       // ★ 登録日時は詳細なISO形式か、読みやすい形式か選べますが、
       // ここでは可読性とExcelでの扱いやすさを考慮してローカル日時にします
-      const createdAtStr = new Date(m.createdAt).toLocaleString('ja-JP');
+      const createdAtStr = new Date(m.createdAt).toLocaleString("ja-JP");
 
       return [
         ...m.first,
@@ -44,7 +41,7 @@ export const useCsvExport = (
         createdAtStr,
       ]
         .map((field) => `"${field}"`)
-        .join(",")
+        .join(",");
     });
 
     const csvContent = [headers.join(","), ...csvRows].join("\n");

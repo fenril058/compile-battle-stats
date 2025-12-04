@@ -1,18 +1,18 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
-import { toast } from 'react-toastify';
-import { db } from "../firebase";
-import type { StorageMode } from "../types";
 import {
   addDoc,
   collection,
+  type DocumentData,
   deleteDoc,
   doc,
-  writeBatch,
-  type DocumentData,
   onSnapshot,
   serverTimestamp,
   type Timestamp,
+  writeBatch,
 } from "firebase/firestore";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import { db } from "../firebase";
+import type { StorageMode } from "../types";
 
 /**
  * T は { id: string, createdAt: number } を継承
@@ -36,15 +36,15 @@ const updateLocalCache = <T extends WithId>(key: string, items: T[]): void => {
   localStorage.setItem(key, JSON.stringify(sorted));
 };
 
-
-export function useFirestore<T extends WithId>(
-  collectionName: string,
-) {
+export function useFirestore<T extends WithId>(collectionName: string) {
   const localKey = collectionName;
   const [items, setItems] = useState<T[]>([]);
   const mode: StorageMode = db ? "remote" : "local";
 
-  const colRef = useMemo(() => (db ? collection(db, collectionName) : null), [collectionName]);
+  const colRef = useMemo(
+    () => (db ? collection(db, collectionName) : null),
+    [collectionName],
+  );
 
   // ローカルのキャッシュを明示的に読み戻す（Localモード用の“手動同期”）
   const reloadLocal = useCallback(() => {
@@ -70,35 +70,47 @@ export function useFirestore<T extends WithId>(
     if (!db || !colRef) return;
 
     // onSnapshotでリアルタイム更新を購読
-    return onSnapshot(colRef, (snapshot) => {
-      const loaded = snapshot.docs.map((d) => {
-        const data = d.data();
+    return onSnapshot(
+      colRef,
+      (snapshot) => {
+        const loaded = snapshot.docs.map((d) => {
+          const data = d.data();
 
-        // 読み込み時の変換 (Transfrom from DB to App)
-        // Firestore上の createdAt は Timestamp 型である可能性がある
-        let convertedCreatedAt = data.createdAt;
-        if (data.createdAt && typeof data.createdAt === 'object' && 'toMillis' in data.createdAt) {
-          convertedCreatedAt = (data.createdAt as Timestamp).toMillis();
-        }
+          // 読み込み時の変換 (Transfrom from DB to App)
+          // Firestore上の createdAt は Timestamp 型である可能性がある
+          let convertedCreatedAt = data.createdAt;
+          if (
+            data.createdAt &&
+            typeof data.createdAt === "object" &&
+            "toMillis" in data.createdAt
+          ) {
+            convertedCreatedAt = (data.createdAt as Timestamp).toMillis();
+          }
 
-        return {
-          ...data,
-          id: d.id,
-          createdAt: convertedCreatedAt, // App内では常に number になる
-        };
-      }) as T[];
+          return {
+            ...data,
+            id: d.id,
+            createdAt: convertedCreatedAt, // App内では常に number になる
+          };
+        }) as T[];
 
         // キャッシュとしてローカルストレージも更新
         updateLocalCache(localKey, loaded);
         setItems(loaded);
-    }, (error) => {
-        console.error("[useFirestore] Remote loading failed (onSnapshot):", error);
-        toast.error("リモートデータの同期に失敗しました。ローカルキャッシュを表示します。");
+      },
+      (error) => {
+        console.error(
+          "[useFirestore] Remote loading failed (onSnapshot):",
+          error,
+        );
+        toast.error(
+          "リモートデータの同期に失敗しました。ローカルキャッシュを表示します。",
+        );
         // エラー発生時はローカルキャッシュを読み込む (reloadLocalのロジックを再利用)
         reloadLocal();
-    });
+      },
+    );
   }, [colRef, localKey, reloadLocal]);
-
 
   // 初回ロード：ローカルストレージ（キャッシュ）の読み込み
   useEffect(() => {
@@ -119,8 +131,8 @@ export function useFirestore<T extends WithId>(
     let unsubscribe: (() => void) | undefined;
     if (mode === "remote") {
       // Remoteモードの場合、リモートから読み込みを開始 (onSnapshot)
-      loadRemote().then(unsub => {
-          unsubscribe = unsub;
+      loadRemote().then((unsub) => {
+        unsubscribe = unsub;
       });
     }
 
@@ -130,12 +142,8 @@ export function useFirestore<T extends WithId>(
     };
   }, [localKey, mode, loadRemote]);
 
-
   const add = useCallback(
-    async (
-      itemWithoutMeta: Omit<T, "id" | "createdAt">
-    ) => {
-
+    async (itemWithoutMeta: Omit<T, "id" | "createdAt">) => {
       // データの完全な形を生成 (一時的なIDを付与)
       const newItemForLocal = {
         ...itemWithoutMeta,
@@ -161,12 +169,17 @@ export function useFirestore<T extends WithId>(
             createdAt: serverTimestamp(),
           } as DocumentData);
         } catch (e) {
-          console.error("[useFirestore] remote add failed. Data is only in local cache:", e);
-          toast.error("リモートへの登録に失敗しました。ローカルキャッシュにのみ保存されました。");
+          console.error(
+            "[useFirestore] remote add failed. Data is only in local cache:",
+            e,
+          );
+          toast.error(
+            "リモートへの登録に失敗しました。ローカルキャッシュにのみ保存されました。",
+          );
         }
       }
     },
-    [colRef, mode, localKey]
+    [colRef, mode, localKey],
   );
 
   const remove = useCallback(
@@ -177,10 +190,10 @@ export function useFirestore<T extends WithId>(
       let removedItem: T | undefined;
       setItems((prev) => {
         const updated = prev.filter((item) => {
-            const normalizedId = normalizeId(item).id;
-            const match = normalizedId === idToRemove;
-            if (match) removedItem = item;
-            return !match;
+          const normalizedId = normalizeId(item).id;
+          const match = normalizedId === idToRemove;
+          if (match) removedItem = item;
+          return !match;
         });
         updateLocalCache(localKey, updated); // LocalStorageも更新
         return updated;
@@ -193,12 +206,17 @@ export function useFirestore<T extends WithId>(
           const docRef = doc(db, collectionName, idToRemove);
           await deleteDoc(docRef);
         } catch (e) {
-          console.error("[useFirestore] remote remove failed. Local cache cleaned, but remote item might remain:", e);
-          toast.error("リモートからの削除に失敗しました。手動で削除する必要があるかもしれません。");
+          console.error(
+            "[useFirestore] remote remove failed. Local cache cleaned, but remote item might remain:",
+            e,
+          );
+          toast.error(
+            "リモートからの削除に失敗しました。手動で削除する必要があるかもしれません。",
+          );
         }
       }
     },
-    [colRef, mode, localKey, collectionName]
+    [colRef, mode, localKey, collectionName],
   );
 
   // 複数の試合データを一括登録するためのバッチ処理
@@ -212,26 +230,26 @@ export function useFirestore<T extends WithId>(
       const batch = writeBatch(db);
 
       for (const item of itemsWithoutMeta) {
-          const ref = doc(colRef); // Firestore auto-IDを生成
-          const itemWithTimestamp = {
-              ...item,
-              createdAt: Date.now(),
-          };
-          // Document IDはFirestoreが自動で生成するため、データに id フィールドは含めない
-          batch.set(ref, itemWithTimestamp as DocumentData);
+        const ref = doc(colRef); // Firestore auto-IDを生成
+        const itemWithTimestamp = {
+          ...item,
+          createdAt: Date.now(),
+        };
+        // Document IDはFirestoreが自動で生成するため、データに id フィールドは含めない
+        batch.set(ref, itemWithTimestamp as DocumentData);
       }
 
       try {
-          await batch.commit();
-          toast.success(`${itemsWithoutMeta.length}件の試合を一括登録しました。`);
-          // onSnapshotでリアルタイムにStateが更新されるため、setItemsは不要
+        await batch.commit();
+        toast.success(`${itemsWithoutMeta.length}件の試合を一括登録しました。`);
+        // onSnapshotでリアルタイムにStateが更新されるため、setItemsは不要
       } catch (e) {
-          console.error("[useFirestore] remote batch add failed:", e);
-          toast.error("リモートへの一括登録に失敗しました。");
+        console.error("[useFirestore] remote batch add failed:", e);
+        toast.error("リモートへの一括登録に失敗しました。");
       }
-    }, [colRef]
+    },
+    [colRef],
   );
-
 
   // ローカル全件をリモートへバッチ投入 → その後リモート再読込
   const pushAllLocalToRemote = useCallback(async () => {
@@ -256,7 +274,6 @@ export function useFirestore<T extends WithId>(
     toast.success("ローカルキャッシュをクリアしました。");
   }, [localKey]);
 
-
   return {
     mode,
     items,
@@ -268,4 +285,4 @@ export function useFirestore<T extends WithId>(
     clearLocal,
     loadRemote,
   };
-};
+}

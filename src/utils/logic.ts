@@ -1,24 +1,41 @@
-import type {
-  Protocol, Trio, Match, MatrixData,
-  StatsResult, SideStats, StatRow, StatEntry,
-  Ratios
-} from "../types";
 import { ALL_PROTOCOLS, MIN_GAMES_FOR_MATRIX } from "../config";
+import type {
+  Match,
+  MatrixData,
+  Protocol,
+  Ratios,
+  SideStats,
+  StatEntry,
+  StatRow,
+  StatsResult,
+  Trio,
+} from "../types";
 
 // ratios を引数で受け取る
 export const ratioSum = (t: Trio, ratios: Ratios): number =>
   t.reduce((a, p) => a + (ratios[p] ?? 0), 0);
 
 // ratios と maxRatio(閾値) を受け取る
-export const isRatioBattle = (a: Trio, b: Trio, ratios: Ratios, maxRatio = 8): boolean =>
+export const isRatioBattle = (
+  a: Trio,
+  b: Trio,
+  ratios: Ratios,
+  maxRatio = 8,
+): boolean =>
   ratioSum(a, ratios) <= maxRatio && ratioSum(b, ratios) <= maxRatio;
 
 export const percent = (w: number, g: number): number =>
-  (g ? Math.round((w / g) * 1000) / 10 : 0);
+  g ? Math.round((w / g) * 1000) / 10 : 0;
 
 export const makeStats = (list: Match[]): StatsResult => {
   // 初期化
-  const s: StatsResult = { single: {}, pair: {}, trio: {}, first: {}, second: {} };
+  const s: StatsResult = {
+    single: {},
+    pair: {},
+    trio: {},
+    first: {},
+    second: {},
+  };
 
   const bump = (m: SideStats, k: string, w: boolean) => {
     if (!m[k]) m[k] = { g: 0, w: 0 };
@@ -30,8 +47,12 @@ export const makeStats = (list: Match[]): StatsResult => {
     const firstWin = mt.winner === "FIRST";
     const secondWin = mt.winner === "SECOND";
     // ★ 修正: Trio (配列) でない場合はスキップする
-    if (!Array.isArray(mt.first)
-      || mt.first.length !== 3 || !Array.isArray(mt.second) || mt.second.length !== 3) {
+    if (
+      !Array.isArray(mt.first) ||
+      mt.first.length !== 3 ||
+      !Array.isArray(mt.second) ||
+      mt.second.length !== 3
+    ) {
       console.warn("Skipping invalid match data:", mt);
       continue;
     }
@@ -80,8 +101,9 @@ export const rows = (
   stats: SideStats,
   key: keyof StatsResult,
   minPair: number,
-  minTrio: number
-): StatRow[] => { // ← 戻り値の型を StatRow[] に指定
+  minTrio: number,
+): StatRow[] => {
+  // ← 戻り値の型を StatRow[] に指定
   const data: StatRow[] = Object.entries(stats) // ★ data の型を StatRow[] で明示
     .map(([n, { g, w }]) => ({
       n,
@@ -153,16 +175,16 @@ export const parseMatchCsvRow = (
   row: string[],
   validProtocols: readonly Protocol[],
   ratios: Ratios,
-  maxRatio: number
+  maxRatio: number,
 ): Omit<Match, "id" | "createdAt"> | null => {
   // 試合データとして最低限必要な7列 (F3  S3  Winner) があるか確認
   if (row.length < 7) return null;
 
-  const upperRow = row.map(s => s.trim().toUpperCase());
+  const upperRow = row.map((s) => s.trim().toUpperCase());
   const [F1, F2, F3, S1, S2, S3, W, DateStr] = upperRow;
 
   const protocols = [F1, F2, F3, S1, S2, S3] as Protocol[];
-  if (protocols.some(p => !validProtocols.includes(p))) {
+  if (protocols.some((p) => !validProtocols.includes(p))) {
     return null;
   }
 

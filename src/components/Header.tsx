@@ -1,6 +1,6 @@
-import type React from 'react';
-import { useAuth } from '../hooks/useAuth';
-import type { SeasonKey, StorageMode } from '../types';
+import type React from "react";
+import { useAuth } from "../hooks/useAuth";
+import type { SeasonKey, StorageMode } from "../types";
 
 type HeaderProps = {
   season: SeasonKey;
@@ -18,14 +18,15 @@ export const Header: React.FC<HeaderProps> = ({
   // 認証ロジックをフックから取得
   const { user, handleLogin, handleLogout, isAuthEnabled } = useAuth();
 
-  const modeText = mode === 'local' ? 'Local Mode' : 'Cloud Mode';
-  const modeClass = mode === 'local' ? 'bg-orange-900/50 text-orange-300' : 'bg-green-900/50 text-green-300';
-
+  const modeText = mode === "local" ? "Local Mode" : "Cloud Mode";
+  const modeClass =
+    mode === "local"
+      ? "bg-orange-900/50 text-orange-300"
+      : "bg-green-900/50 text-green-300";
 
   return (
     <div className="p-3 border-b border-zinc-800 bg-zinc-900/50">
       <div className="flex flex-col sm:flex-row sm:justify-between items-center max-w-7xl mx-auto gap-2">
-
         {/* 左側: タイトル、シーズン選択、モード表示 */}
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-bold tracking-tight">BattleStats</h1>
@@ -36,7 +37,11 @@ export const Header: React.FC<HeaderProps> = ({
             onChange={handleSeasonChange}
             className="bg-zinc-800 border border-zinc-700 rounded text-sm py-1 px-2"
           >
-            {seasonCollections.map(s => <option key={s} value={s}>{s}</option>)}
+            {seasonCollections.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
           </select>
 
           {/* ストレージモード表示  */}
@@ -48,7 +53,9 @@ export const Header: React.FC<HeaderProps> = ({
         {/* 右側: 認証ボタン/ステータス */}
         <div className="flex items-center">
           {!isAuthEnabled ? ( // Firebaseが有効でない場合
-            <span className="text-red-500 text-xs">Offline (Firebase Disabled)</span>
+            <span className="text-red-500 text-xs">
+              Offline (Firebase Disabled)
+            </span>
           ) : user ? ( // ログイン済みの場合
             <div className="flex items-center gap-2">
               <span className="text-zinc-300 whitespace-nowrap">
@@ -58,18 +65,19 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 onClick={handleLogout}
                 className="text-xs bg-red-800 hover:bg-red-900 px-3 py-1 rounded
-                transition-colors">
-                 ログアウト
+                transition-colors"
+              >
+                ログアウト
               </button>
-            </div>
-          ) : ( // ログアウト状態の場合
+            </div> // ログアウト状態の場合
+          ) : (
             <button
               type="button"
               onClick={handleLogin}
               className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded
               transition-colors"
             >
-               Googleでログイン
+              Googleでログイン
             </button>
           )}
         </div>

@@ -1,12 +1,12 @@
-import { toast } from 'react-toastify';
-import type React from 'react';
-import { useCallback } from 'react';
-import type { Match, Protocol, Ratios } from '../types';
-import { parseMatchCsvRow } from '../utils/logic';
+import type React from "react";
+import { useCallback } from "react";
+import { toast } from "react-toastify";
+import type { Match, Protocol, Ratios } from "../types";
+import { parseMatchCsvRow } from "../utils/logic";
 
 // useFirestoreから渡される add 関数用の型定義
-type AddMatchItemBatch= (
-  payload: Omit<Match, "id" | "createdAt">[]
+type AddMatchItemBatch = (
+  payload: Omit<Match, "id" | "createdAt">[],
 ) => Promise<void>;
 
 /**
@@ -22,68 +22,77 @@ export const useCsvImport = (
   addMatchItemBatch: AddMatchItemBatch,
   currentProtocols: readonly Protocol[],
   ratios: Ratios,
-  maxRatio: number
+  maxRatio: number,
 ) => {
+  const handleImportCsv = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (!event.target.files || event.target.files.length === 0) return;
 
-  const handleImportCsv = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files || event.target.files.length === 0) return;
+      const file = event.target.files[0];
+      if (file.type !== "text/csv") {
+        toast.error("CSVファイルを選択してください。");
+        return;
+      }
 
-    const file = event.target.files[0];
-    if (file.type !== "text/csv") {
-      toast.error("CSVファイルを選択してください。");
-      return;
-    }
+      // ファイルリーダーで内容を読み込み
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const text = e.target?.result as string;
+        const lines = text.trim().split("\n");
 
-    // ファイルリーダーで内容を読み込み
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const text = e.target?.result as string;
-      const lines = text.trim().split('\n');
+        const payloadsToImport: Omit<Match, "id" | "createdAt">[] = [];
+        let failCount = 0;
 
-      const payloadsToImport: Omit<Match, "id" | "createdAt">[] = [];
-      let failCount = 0;
+        // 行頭が '#' の行と空行をスキップ
+        const dataLines = lines.filter((line) => {
+          // trimStart()で行頭の空白を除去し、空行と'#'で始まるコメント行をスキップする
+          const trimmedLine = line.trimStart();
+          return trimmedLine.length > 0 && !trimmedLine.startsWith("#");
+        });
 
-      // 行頭が '#' の行と空行をスキップ
-      const dataLines = lines.filter(line => {
-        // trimStart()で行頭の空白を除去し、空行と'#'で始まるコメント行をスキップする
-        const trimmedLine = line.trimStart();
-        return trimmedLine.length > 0 && !trimmedLine.startsWith('#');
-      });
+        // CSVを解析し、マッチデータを追加
+        for (const line of dataLines) {
+          // カンマ区切りでパース
+          const row = line.split(",").map((s) => s.trim().toUpperCase());
 
-      // CSVを解析し、マッチデータを追加
-      for (const line of dataLines) {
-        // カンマ区切りでパース
-        const row = line.split(',').map(s => s.trim().toUpperCase());
+          // logic.ts で定義したパーサーで検証・変換
+          const payload = parseMatchCsvRow(
+            row,
+            currentProtocols,
+            ratios,
+            maxRatio,
+          );
 
-        // logic.ts で定義したパーサーで検証・変換
-        const payload = parseMatchCsvRow(row, currentProtocols, ratios, maxRatio);
-
-        if (payload) {
-          // Batch処理するための配列に追加
-          payloadsToImport.push(payload);
-        } else {
-          failCount++;
-          console.warn("CSV Row Parse Failed:", line);
-          toast.error(`インポート失敗行（プロトコル名/形式エラー）: ${line.substring(0, 50)}...`,
-            { autoClose: 5000 });
+          if (payload) {
+            // Batch処理するための配列に追加
+            payloadsToImport.push(payload);
+          } else {
+            failCount++;
+            console.warn("CSV Row Parse Failed:", line);
+            toast.error(
+              `インポート失敗行（プロトコル名/形式エラー）: ${line.substring(0, 50)}...`,
+              { autoClose: 5000 },
+            );
+          }
         }
-      }
 
-      // ▼ 【変更】 ループが終わった後に、まとめて保存を実行
-      if (payloadsToImport.length > 0) {
-        await addMatchItemBatch(payloadsToImport);
-      }
+        // ▼ 【変更】 ループが終わった後に、まとめて保存を実行
+        if (payloadsToImport.length > 0) {
+          await addMatchItemBatch(payloadsToImport);
+        }
 
-      if (failCount > 0) {
-        toast.warn(`インポートに失敗したデータが${failCount}件あります。
+        if (failCount > 0) {
+          toast.warn(`インポートに失敗したデータが${failCount}件あります。
         プロトコル名や形式を確認してください。`);
-      }
-    };
+        }
+      };
 
-    reader.readAsText(file);
-    // ファイル入力の値をリセットし、同じファイルを再度選択できるようにする（ブラウザの仕様対応）
-    event.target.value = '';
-  }, [addMatchItemBatch, currentProtocols, ratios, maxRatio]);
+      reader.readAsText(file);
+      // ファイル入力の値をリセットし、同じファイルを再度選択できるようにする（ブラウザの仕様対応）
+      event.target.value = "";
+    },
+    [addMatchItemBatch, currentProtocols, ratios, maxRatio],
+  );
 
   return { handleImportCsv };
 };

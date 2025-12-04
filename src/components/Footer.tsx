@@ -1,4 +1,4 @@
-import type React from 'react';
+import type React from "react";
 
 export const Footer: React.FC = () => {
   return (
@@ -12,8 +12,7 @@ export const Footer: React.FC = () => {
       >
         @suke69
       </a>
-      )
-      & ril (
+      ) & ril (
       <a
         href="https://x.com/fenril_nh"
         target="_blank"

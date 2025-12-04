@@ -1,13 +1,20 @@
 // --- 1. プロトコル定義 ---
 const PROTOCOLS_MAIN1 = [
-  "DARKNESS", "FIRE", "PSYCHIC", "DEATH", "GRAVITY",
-  "WATER", "LIFE", "PLAGUE", "LIGHT", "SPEED",
-  "SPIRIT", "METAL",
+  "DARKNESS",
+  "FIRE",
+  "PSYCHIC",
+  "DEATH",
+  "GRAVITY",
+  "WATER",
+  "LIFE",
+  "PLAGUE",
+  "LIGHT",
+  "SPEED",
+  "SPIRIT",
+  "METAL",
 ] as const;
 
-const PROTOCOLS_AUX1 = [
-  "HATE", "LOVE", "APATHY",
-] as const;
+const PROTOCOLS_AUX1 = ["HATE", "LOVE", "APATHY"] as const;
 
 export const PROTOCOL_SETS = {
   V1: PROTOCOLS_MAIN1,
@@ -34,26 +41,34 @@ export const ABBR = {
   METAL: "MET",
 };
 
-
 // --- 2. レシオ定義 ---
 const RATIOS_V1 = {
-  DARKNESS: 5, FIRE: 5, HATE: 5, PSYCHIC: 5,
-  DEATH: 3, GRAVITY: 3, WATER: 3,
-  LIFE: 2, LOVE: 2, PLAGUE: 2,
-  LIGHT: 1, SPEED: 1, SPIRIT: 1,
-  APATHY: 0, METAL: 0,
+  DARKNESS: 5,
+  FIRE: 5,
+  HATE: 5,
+  PSYCHIC: 5,
+  DEATH: 3,
+  GRAVITY: 3,
+  WATER: 3,
+  LIFE: 2,
+  LOVE: 2,
+  PLAGUE: 2,
+  LIGHT: 1,
+  SPEED: 1,
+  SPIRIT: 1,
+  APATHY: 0,
+  METAL: 0,
 } as const;
 
 export const RATIO_SETS = {
   V1: RATIOS_V1,
-  V2: { ...RATIOS_V1, SPEED: 2, PLAGUE: 1, WATER: 2, LIFE: 3  },
+  V2: { ...RATIOS_V1, SPEED: 2, PLAGUE: 1, WATER: 2, LIFE: 3 },
 } as const;
-
 
 // --- 3. シーズン定義 ---
 // key はアプリ内で扱うID (URLパラメータやlocalStorageのキーになる)
 export const SEASONS_CONFIG = {
-  "compile_season2": {
+  compile_season2: {
     displayName: "Season 2",
     collectionName: "compile_season2",
     protocolVer: "V1",
@@ -61,15 +76,15 @@ export const SEASONS_CONFIG = {
     isReadOnly: true,
     maxRatio: 8,
   },
-  "compile_season1_aux": {
+  compile_season1_aux: {
     displayName: "Season 1 (Aux)",
     collectionName: "compile_season1_aux", // Firestoreのコレクション名
-    protocolVer: "V1_AUX",                 // PROTOCOL_SETS のキー
-    ratioVer: "V1",                        // RATIO_SETS のキー
+    protocolVer: "V1_AUX", // PROTOCOL_SETS のキー
+    ratioVer: "V1", // RATIO_SETS のキー
     isReadOnly: false,
-    maxRatio: 8,                           // レシオ上限も設定に持たせるとより柔軟
+    maxRatio: 8, // レシオ上限も設定に持たせるとより柔軟
   },
-  "compile_season1": {
+  compile_season1: {
     displayName: "Season 1",
     collectionName: "compile_season1",
     protocolVer: "V1",

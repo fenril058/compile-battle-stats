@@ -2,8 +2,10 @@ import type React from "react";
 import { useMemo } from "react";
 import type { Protocol, Ratios } from "../types";
 
-export const RatioTable: React.FC<{ protocols: readonly Protocol[], ratios: Ratios }>
-  = ({ protocols, ratios } ) => {
+export const RatioTable: React.FC<{
+  protocols: readonly Protocol[];
+  ratios: Ratios;
+}> = ({ protocols, ratios }) => {
   const groups = useMemo(() => {
     const map = new Map<number, Protocol[]>();
     for (const p of protocols) {
