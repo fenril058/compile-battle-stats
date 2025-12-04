@@ -260,7 +260,7 @@ export function useFirestore<T extends WithId>(
     items,
     add,
     remove,
-    addBatch, // ★追加: 一括追加関数を公開
+    addBatch,
     pushAllLocalToRemote,
     reloadLocal,
     clearLocal,

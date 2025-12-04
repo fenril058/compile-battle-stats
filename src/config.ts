@@ -50,7 +50,7 @@ export const RATIO_SETS = {
 } as const;
 
 
-// --- 3. シーズン定義 (★NEW: 集約設定) ---
+// --- 3. シーズン定義 ---
 // key はアプリ内で扱うID (URLパラメータやlocalStorageのキーになる)
 export const SEASONS_CONFIG = {
   "compile_season2": {

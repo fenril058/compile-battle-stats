@@ -9,9 +9,9 @@ type MatchListProps = {
 
 // --- 1. 定数を定義 ---
 // 1ページあたりの表示件数のオプション
-const DISPLAY_OPTIONS = [20, 50, 100];
+const DISPLAY_OPTIONS = [10, 20, 50, 100];
 // デフォルトの表示件数
-const DEFAULT_PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 10;
 
 // 日付フォーマット用のヘルパー関数
 // 引数が undefined/null の場合は "-" を返す

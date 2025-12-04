@@ -1,5 +1,5 @@
 import { Analytics } from "@vercel/analytics/react"
-import { useMemo, useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -28,18 +28,17 @@ import { useCsvExport } from "./hooks/useCsvExport";
 import { useCsvImport } from "./hooks/useCsvImport";
 
 // Components
-import { Stat } from "./components/Stat";
-import { Matrix } from "./components/Matrix";
+import { Header } from "./components/Header";
 import { MatchForm } from "./components/MatchForm";
+import { StatsDashboard } from "./components/StatsDashboard";
+import { RatioTable } from "./components/RatioTable";
 import { MatchList } from "./components/MatchList";
 import { Footer } from "./components/Footer";
-import { RatioTable } from "./components/RatioTable";
-// ★ NEW: Header コンポーネントをインポート
-import { Header } from "./components/Header";
-
 
 export default function App() {
   const { user } = useAuth();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // === シーズン選択 ===
   // Object.keys の戻り値を SeasonKey[] にキャスト
@@ -68,9 +67,8 @@ export default function App() {
   } = useFirestore<Match>(currentConfig.collectionName);
 
   // --- Derived Stats (Expensive Calcs) ---
-  const { stats, matrices } = useMatchStats(matches);
+  const { stats, matrices, sortedMatches } = useMatchStats(matches);
   const { exportToCsv } = useCsvExport(matches, seasonKey);
-  // 要修正
   const { handleImportCsv } = useCsvImport(addMatchItemBatch, currentProtocols, currentRatios, maxRatio);
 
   // --- Callbacks ---
@@ -108,35 +106,21 @@ export default function App() {
     void removeMatch(id);
   }, [removeMatch, isRegistrationAllowed]);
 
-
-  // ★ FIX: reloadLocalをシンプルにラップ
+  // reloadLocalをシンプルにラップ
   // useFirestore側で通知を出すため、App.tsx側ではロジックを持たせない
   const handleSyncLocal = useCallback(() => {
     reloadLocal();
   }, [reloadLocal]);
 
-
-  const sortedMatches = useMemo(() => {
-    return [...matches].sort((a, b) => {
-      // 1. matchDateが存在する場合、matchDateでソート (新しい日付が前)
-      const matchDateA = a.matchDate ?? 0;
-      const matchDateB = b.matchDate ?? 0;
-      if (matchDateA !== matchDateB) {
-        return matchDateB - matchDateA;
-      }
-
-      // 2. matchDateが同じか、存在しない場合、createdAtでソート (新しい登録が前)
-      return b.createdAt - a.createdAt;
-    });
-  }, [matches]);
-
+  // CSVボタンクリック時のハンドラ
+  const handleFileSelectClick = () => {
+    fileInputRef.current?.click();
+  };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0 font-sans">
       <ToastContainer position="top-center" theme="dark" autoClose={2000} />
 
-      {/* Header Area */}
-      {/* ★ Header コンポーネントを呼び出し、必要な Props のみ渡す */}
       <Header
         season={seasonKey}
         seasonCollections={SEASON_KEYS}
@@ -155,6 +139,7 @@ export default function App() {
             mode={mode}
             ratioSum={ratioSumHelper}
           />
+          {/* レシオ表は常に表示 */}
           <RatioTable
             protocols={currentProtocols}
             ratios={currentRatios}
@@ -162,29 +147,13 @@ export default function App() {
         </section>
 
         {/* Visualization Section */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Stat t="通常戦" m={stats.normal} color="bg-orange-950/20" minPair={MIN_GAMES_FOR_PAIR_STATS} minTrio={MIN_GAMES_FOR_TRIO_STATS} />
-            <Stat t="レシオ" m={stats.ratio} color="bg-blue-950/20" minPair={MIN_GAMES_FOR_PAIR_STATS} minTrio={MIN_GAMES_FOR_TRIO_STATS} />
-            <Stat t="全体" m={stats.all} color="bg-green-950/20" minPair={MIN_GAMES_FOR_PAIR_STATS} minTrio={MIN_GAMES_FOR_TRIO_STATS} />
-        </section>
-
-        <section className="overflow-x-auto">
-           <div className="flex flex-col gap-6">
-              <Matrix t="通常戦 相性表" m={matrices.normal} bg="bg-zinc-900/50" protocols={currentProtocols} />
-           </div>
-        </section>
-
-        <section className="overflow-x-auto">
-           <div className="flex flex-col gap-6">
-              <Matrix t="レシオ 相性表" m={matrices.ratio} bg="bg-zinc-900/50" protocols={currentProtocols} />
-           </div>
-        </section>
-
-        <section className="overflow-x-auto">
-           <div className="flex flex-col gap-6">
-              <Matrix t="全試合 相性表" m={matrices.all} bg="bg-zinc-900/50" protocols={currentProtocols} />
-           </div>
-        </section>
+        <StatsDashboard
+          stats={stats}
+          matrices={matrices}
+          protocols={currentProtocols}
+          minPair={MIN_GAMES_FOR_PAIR_STATS}
+          minTrio={MIN_GAMES_FOR_TRIO_STATS}
+        />
 
         {/* Data Management Section */}
         <section>
@@ -194,36 +163,44 @@ export default function App() {
 
           <div className="flex justify-center mt-6 mb-6">
             <button onClick={exportToCsv}
-              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xm"
-            >CSV Export</button>
+              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xm
+              transition-colors"
+            >
+               試合データをCSVでExport
+            </button>
           </div>
+
           {isRegistrationAllowed && (
             <div className="flex flex-col items-center justify-center mt-6 mb-6 p-4
             border border-zinc-700 rounded-lg">
               <label htmlFor="csv-upload" className="font-semibold mb-2 text-zinc-300"
               >
-                 CSVから試合データをインポート
+                 CSVから試合データをimport
               </label>
-              {/* ★ FIX: CSV Importボタンとinputタグの構造を変更し、ボタンにファイル選択を委譲する */}
-              <div className="relative overflow-hidden inline-block">
-                {/* ユーザーに見せるボタン */}
-                <button
-                  className="btn-secondary px-4 py-2 bg-zinc-700 text-white rounded-lg text-xm"
-                >ファイルを選択</button>
-                {/* 実際に入力を受け付けるinput (非表示) */}
+              <div>
                 <input
                   type="file"
-                  id="csv-upload"
+                  ref={fileInputRef}
                   accept=".csv"
                   onChange={handleImportCsv}
-                  // input要素を絶対配置でボタンの上に重ね、透過させる
-                  className="absolute left-0 top-0 opacity-0 cursor-pointer h-full w-full"
+                  className="hidden"
                 />
+                <button
+                  onClick={handleFileSelectClick}
+                  className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xm
+                  transition-colors"
+                >
+                   ファイルを選択
+                </button>
               </div>
-              <p className="text-xs text-zinc-300 mt-2">（F1, F2, F3, S1, S2, S3, Winner, matchDateの順）</p>
+              <p className="text-xs text-zinc-300 mt-2"
+              >
+                 （形式: F1, F2, F3, S1, S2, S3, Winner, matchDate）
+              </p>
             </div>
           )}
         </section>
+
         <Footer />
         <Analytics />
       </div>

@@ -56,15 +56,16 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
               <button
                 onClick={handleLogout}
-                className="text-xs bg-red-800 px-3 py-1 rounded"
-              >
+                className="text-xs bg-red-800 hover:bg-red-900 px-3 py-1 rounded
+                transition-colors">
                  ログアウト
               </button>
             </div>
           ) : ( // ログアウト状態の場合
             <button
               onClick={handleLogin}
-              className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded"
+              className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded
+              transition-colors"
             >
                Googleでログイン
             </button>
