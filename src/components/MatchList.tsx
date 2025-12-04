@@ -159,6 +159,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(({
                   </td>
                   <td className="p-2 min-w-[60px]">
                     <button
+                      type="button"
                       onClick={() => onRemove(m.id)}
                       disabled={!isRegistrationAllowed}
                       className={`text-xs px-2 py-1 rounded ${
@@ -234,6 +235,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
     {/* ページネーションボタン */}
     <div className="flex items-center space-x-1">
       <button
+        type="button"
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="px-2 py-1 rounded disabled:text-zinc-600 hover:bg-zinc-800/50"
@@ -245,6 +247,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
       {pageNumbers[0] > 1 && (
         <>
           <button
+            type="button"
             onClick={() => handlePageChange(1)}
             className="px-2 py-1 rounded hover:bg-zinc-800/50"
           >
@@ -257,6 +260,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
       {/* ページ番号ボタン */}
       {pageNumbers.map(page => (
         <button
+          type="button"
           key={page}
           onClick={() => handlePageChange(page)}
           className={`px-2 py-1 rounded ${
@@ -272,6 +276,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
         <>
           {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && <span className="px-1">...</span>}
           <button
+            type="button"
             onClick={() => handlePageChange(totalPages)}
             className="px-2 py-1 rounded hover:bg-zinc-800/50"
           >
@@ -281,6 +286,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
       )}
 
       <button
+        type="button"
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages || totalPages === 0}
         className="px-2 py-1 rounded disabled:text-zinc-600 hover:bg-zinc-800/50"

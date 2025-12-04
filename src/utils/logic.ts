@@ -42,7 +42,9 @@ export const makeStats = (list: Match[]): StatsResult => {
 
     for (const side of sides) {
       // Single
-      side.t.forEach((p) => bump(s.single, p, side.w));
+      side.t.forEach((p) => {
+        bump(s.single, p, side.w);
+      });
 
       // Pair
       for (let i = 0; i < 3; i += 1) {
@@ -57,7 +59,9 @@ export const makeStats = (list: Match[]): StatsResult => {
       bump(s.trio, trioKey, side.w);
 
       // First/Second
-      side.t.forEach((p) => bump(side.first ? s.first : s.second, p, side.w));
+      side.t.forEach((p) => {
+        bump(side.first ? s.first : s.second, p, side.w);
+      });
     }
   }
 
@@ -123,8 +127,10 @@ export const matchup = (list: Match[]) => {
   (ALL_PROTOCOLS as readonly Protocol[]).forEach((a) => {
     m[a] = {};
     (ALL_PROTOCOLS as readonly Protocol[]).forEach((b) => {
-      // Use ! to assert m[a] is defined (since we just defined it above)
-      m[a]![b] = null;
+      if (!m[a]) {
+        m[a] = {}; // Mapやオブジェクトであれば適切に初期化
+      }
+      m[a][b] = null;
     });
   });
   for (const [k, v] of Object.entries(r)) {
@@ -136,7 +142,7 @@ export const matchup = (list: Match[]) => {
 
     // Check if m[a] exists (it should) and strictly assign
     if (m[a] && v.g >= MIN_GAMES_FOR_MATRIX) {
-      m[a]![b] = percent(v.w, v.g);
+      m[a][b] = percent(v.w, v.g);
     }
   }
 
@@ -178,7 +184,7 @@ export const parseMatchCsvRow = (
     const parsed = new Date(DateStr).getTime();
 
     // 無効な日付(NaN)でなければ採用
-    if (!isNaN(parsed)) {
+    if (!Number.isNaN(parsed)) {
       matchDate = parsed;
     }
   }

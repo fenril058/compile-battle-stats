@@ -22,6 +22,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
     <div className="flex flex-col items-center gap-6 mt-8 mb-6">
       {/* Export Button */}
       <button
+        type="button"
         onClick={onExport}
         className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-sm transition-colors"
       >
@@ -31,12 +32,13 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
       {/* Import Section */}
       {isRegistrationAllowed && (
         <div className="flex flex-col items-center justify-center p-4 border border-zinc-700 rounded-lg bg-zinc-900/30 w-full max-w-md">
-          <label className="font-semibold mb-3 text-zinc-300">
+          <label htmlFor="csv-import-file" className="font-semibold mb-3 text-zinc-300">
             CSVから試合データをインポート
           </label>
 
           <div>
             <input
+              id="csv-import-file"
               type="file"
               ref={fileInputRef}
               accept=".csv"
@@ -44,6 +46,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
               className="hidden"
             />
             <button
+              type="button"
               onClick={handleFileSelectClick}
               className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-sm transition-colors"
             >

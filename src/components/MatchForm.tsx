@@ -116,7 +116,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
               <h3 className="font-semibold mb-2">先攻</h3>
               {first.map((p, i) => (
                 <select
-                  key={`first-${i}`}
+                  key={p}
                   value={p}
                   onChange={handleSelect("FIRST", i)}
                   disabled={!isRegistrationAllowed}
@@ -134,7 +134,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
               <h3 className="font-semibold mb-2">後攻</h3>
               {second.map((p, i) => (
                 <select
-                  key={`second-${i}`}
+                  key={p}
                   value={p}
                   onChange={handleSelect("SECOND", i)}
                   disabled={!isRegistrationAllowed}
@@ -154,8 +154,9 @@ export const MatchForm: React.FC<MatchFormProps> = ({
               {/* 日付選択 UI */}
               <div className="flex justify-center mb-4 mt-2">
                 <div className="flex flex-col items-center">
-                  <label className="text-xs text-zinc-400 mb-1">対戦日 (任意)</label>
+                  <label htmlFor="match-date" className="text-xs text-zinc-400 mb-1">対戦日 (任意)</label>
                   <input
+                    id="match-date"
                     type="date"
                     value={dateInput}
                     onChange={(e) => setDateInput(e.target.value)}
@@ -167,6 +168,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
 
               {/* 左右入れ替えボタン */}
               <button onClick={handleSwap}
+                type="button"
                 className="w-1/2 text-sm text-zinc-400 border border-zinc-600 px-2 py-1 rounded
                 hover:bg-zinc-800 mb-1"
               >
@@ -176,6 +178,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
               {/* WIN ボタン */}
               <div className="flex gap-2 justify-center">
                 <button
+                  type="button"
                   onClick={() => handleSubmit("FIRST")}
                   disabled={!isFormValid || !isRegistrationAllowed}
                   className="py-2 px-4 rounded-lg bg-green-600
@@ -184,6 +187,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                    先攻WIN
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleSubmit("SECOND")}
                   disabled={!isFormValid || !isRegistrationAllowed}
                   className="py-2 px-4 rounded-lg bg-green-600
@@ -194,6 +198,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
               </div>
               {mode === "local" && onSyncLocal && (
                 <button
+                  type="button"
                   onClick={onSyncLocal}
                   className="px-3 py-1 mt-1 rounded text-xs text-white bg-blue-600 hover:bg-blue-700"
                 >

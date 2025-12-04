@@ -55,6 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {user.displayName}
               </span>
               <button
+                type="button"
                 onClick={handleLogout}
                 className="text-xs bg-red-800 hover:bg-red-900 px-3 py-1 rounded
                 transition-colors">
@@ -63,6 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           ) : ( // ログアウト状態の場合
             <button
+              type="button"
               onClick={handleLogin}
               className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded
               transition-colors"
