@@ -14,9 +14,10 @@ export const Matrix: React.FC<MatrixProps> = ({ t, m, bg, protocols }) => (
     <h2 className="text-lg font-semibold mb-2 text-center">
       {t}（{MIN_GAMES_FOR_MATRIX} 戦以上）
     </h2>
-    <div className="overflow-x-auto border border-zinc-800 rounded-md">
+    <div className="relative overflow-x-auto overflow-x-auto max-h-[500px]
+    border border-zinc-800 rounded-md">
       <table className="w-full text-xs min-w-[300px]">
-        <thead className="bg-zinc-800 text-zinc-300">
+        <thead className="sticky top-0 z-20 bg-zinc-800 text-zinc-300">
           <tr>
             <th className="px-2 py-1 sticky left-0 z-10 bg-zinc-800">PRO</th>
             {protocols.map((p) => (
