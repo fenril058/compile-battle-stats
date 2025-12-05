@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { useCallback, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -172,6 +173,7 @@ export default function App() {
 
         <Footer />
         <Analytics />
+        <SpeedInsights />
       </div>
     </div>
   );
