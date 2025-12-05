@@ -1,7 +1,6 @@
-// src/components/MatchForm.tsx
-import type React from "react"; // ★ useEffectをインポート
-import { useEffect, useState } from "react";
-import { toast } from "react-toastify"; // toastは handleSubmit 内で使用されているため
+import type React from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import type { Protocol, Trio, Winner } from "../types";
 
 type MatchFormProps = {
@@ -38,8 +37,34 @@ export const MatchForm: React.FC<MatchFormProps> = ({
   // 日付入力用のステート (初期値は今日)
   const [dateInput, setDateInput] = useState<string>(getTodayString());
 
-  // protocols（シーズン）が変更されたときに状態をリセットする
+  // === バリデーションロジックの修正 ===
+  const isFormValid = (() => {
+    // 1. プロトコルが3つずつ選択されていること (lengthチェック)
+    if (first.length !== 3 || second.length !== 3) return false;
+
+    // 2. 先攻と後攻で同じプロトコルが使われていないこと
+    // (これは統計ロジックが排除すべきことなので、ここでは許容する)
+
+    // 3. フォームが有効な状態であれば True
+    return true;
+  })();
+
+  // チーム内プロトコル重複チェック関数
+  const hasDuplicateProtocols = useCallback((trio: Trio): boolean => {
+    // Trio の要素数が3つではない場合、重複チェックは行わない（バリデーション済みのため）
+    if (trio.length !== 3) return false;
+
+    // Setを使ってユニークな要素数をチェックし、3未満であれば重複あり
+    return new Set(trio).size < 3;
+  }, []);
+
+  // チーム間プロトコル重複チェック
+  // firstのいずれかの要素がsecondに含まれているかを確認
+  const hasInterTeamDuplication = first.some((p) => second.includes(p));
+
+  // === useEffect: プロトコル変更時のリセット処理 ===
   useEffect(() => {
+    // シーズンが変更されたときに状態をリセットする
     // 新しいプロトコルリストが有効であることを確認
     if (protocols.length >= 3) {
       // 新しいプロトコルリストの最初の3つをfirstに設定
@@ -55,6 +80,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
       setFirst(["", "", ""] as unknown as Trio);
       setSecond(["", "", ""] as unknown as Trio);
     }
+    // シーズン変更時には警告フラグもリセット
   }, [protocols]); // protocols が変わるたびに実行される
 
   const handleSelect =
@@ -74,12 +100,6 @@ export const MatchForm: React.FC<MatchFormProps> = ({
     setSecond(first);
   };
 
-  // フォームのバリデーション: 全てが null/空文字列でなく、かつ protocols に含まれていること
-  const isFormValid =
-    protocols.length > 0 &&
-    first.every((p) => p && protocols.includes(p)) &&
-    second.every((p) => p && protocols.includes(p));
-
   const handleSubmit = (winner: Winner) => {
     if (!isRegistrationAllowed) {
       toast.error("このシーズンは登録が許可されていません。");
@@ -88,6 +108,37 @@ export const MatchForm: React.FC<MatchFormProps> = ({
     if (!isFormValid) {
       toast.error("プロトコルが正しく選択されていません。");
       return;
+    }
+
+    // チーム内重複 (統計除外: 強い警告) のチェック
+    const hasIntraTeamDuplication =
+      hasDuplicateProtocols(first) || hasDuplicateProtocols(second);
+
+    // ★ 重複がある場合の二重確認ロジック
+    if (hasIntraTeamDuplication) {
+      // Scenario 1: チーム内重複 - 統計から除外されるため、強い警告
+      const confirmationMessage =
+        "【重要】チーム内のプロトコルに重複があります。この試合データは統計計算から除外されますが、登録してよろしいですか？\n\n[OK]：登録を続行\n[キャンセル]：入力を修正";
+      // window.confirm を使用してユーザーに確認を求める
+      const userConfirmed = window.confirm(confirmationMessage);
+      if (!userConfirmed) {
+        // キャンセルされた場合、処理を中断
+        toast.info("試合登録をキャンセルしました。入力を修正してください。");
+        return;
+      }
+    } else if (hasInterTeamDuplication) {
+      // Scenario 2: チーム間重複 - 統計に反映されるが、意図せぬ入力の可能性
+      const confirmationMessage =
+        "警告：先攻と後攻のプロトコルが重複しています（例: A, B, C vs C, D, E）。この試合は統計に反映されますが、意図した入力かご確認ください。\n\n[OK]：登録を続行\n[キャンセル]：入力を修正";
+
+      const userConfirmed = window.confirm(confirmationMessage);
+
+      if (!userConfirmed) {
+        toast.info(
+          "試合登録をキャンセルしました。（チーム間重複を修正してください）",
+        );
+        return;
+      }
     }
 
     // 日付文字列を number (timestamp) に変換
@@ -169,7 +220,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
             {/* Action Column */}
             <div
               className="col-span-2 md:col-span-1 flex flex-col justify-center items-center
-            border border-zinc-700 rounded-xl p-3 gap-3"
+              border border-zinc-700 rounded-xl p-3 gap-3"
             >
               {/* 日付選択 UI */}
               <div className="flex justify-center mb-4 mt-2">
