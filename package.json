@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "prepare": "husky",
     "test": "vitest run",
+    "test:staged": "vitest run related --changed",
     "test:watch": "vitest"
   },
   "dependencies": {
