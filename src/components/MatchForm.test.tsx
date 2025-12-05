@@ -1,7 +1,18 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Protocol, Trio } from "../types";
 import { MatchForm } from "./MatchForm";
+
+// react-toastify をモックし、副作用を防ぐ
+vi.mock("react-toastify", () => ({
+  toast: {
+    success: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    dismiss: vi.fn(),
+  },
+}));
 
 // モックデータ
 const PROTOCOLS = [
@@ -24,6 +35,13 @@ describe("MatchForm", () => {
     mode: "firebase",
     ratioSum: mockRatioSum,
   };
+
+  beforeEach(() => {
+    // 登録関数の呼び出し履歴のみをクリア
+    mockOnAddMatch.mockClear();
+    // window.confirm は vi.spyOn でセットアップし、テストの最後に mockRestore() でクリーンアップするため、
+    // ここで vi.restoreAllMocks() や vi.clearAllMocks() を呼ぶのは避けます。
+  });
 
   it("renders correctly with initial values", () => {
     render(<MatchForm {...defaultProps} />);
@@ -98,5 +116,132 @@ describe("MatchForm", () => {
 
     const args = mockOnAddMatch.mock.lastCall?.[0];
     expect(args?.matchDate).toBe(new Date("2024-12-25").getTime());
+  });
+
+  // NEW: 重複確認フローのテスト ===
+
+  it("should submit immediately when no duplication exists", () => {
+    // チーム内: APATHY, DARKNESS, GRAVITY (OK) / チーム間: HATE, LIFE, METAL (OK) -> 確認なしでOK
+    render(<MatchForm {...defaultProps} />);
+
+    // window.confirm が呼び出されないことを確認するためにスパイを設定
+    const confirmSpy = vi.spyOn(window, "confirm");
+
+    fireEvent.click(screen.getByText("先攻WIN"));
+
+    // 登録処理が実行されたこと
+    expect(mockOnAddMatch).toHaveBeenCalledTimes(1);
+    // 確認ダイアログは呼び出されなかったこと
+    expect(confirmSpy).not.toHaveBeenCalled();
+  });
+
+  it("should show CONFIRM for INTER-TEAM duplication and proceed on OK", () => {
+    // チーム内: APATHY, DARKNESS, GRAVITY (OK) / チーム間: GRAVITY, LIFE, METAL (GRAVITYが重複)
+
+    // window.confirm をモックし、戻り値を true (OK) に設定
+    const confirmSpy = vi
+      .spyOn(window, "confirm")
+      .mockImplementation(() => true);
+
+    render(<MatchForm {...defaultProps} />);
+
+    const selects = screen.getAllByRole("combobox");
+
+    // 後攻の1つ目 (index 3) を GRAVITY に変更し、チーム間重複を発生させる
+    fireEvent.change(selects[3], { target: { value: "GRAVITY" } });
+
+    fireEvent.click(screen.getByText("先攻WIN"));
+
+    // 確認ダイアログが呼び出されたこと
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    // 登録処理が実行されたこと (OKしたため)
+    expect(mockOnAddMatch).toHaveBeenCalledTimes(1);
+
+    confirmSpy.mockRestore(); // モックを元に戻す
+  });
+
+  it("should show CONFIRM for INTER-TEAM duplication and ABORT on CANCEL", () => {
+    // チーム内: APATHY, DARKNESS, GRAVITY (OK) / チーム間: GRAVITY, LIFE, METAL (GRAVITYが重複)
+
+    // window.confirm をモックし、戻り値を false (CANCEL) に設定
+    const confirmSpy = vi
+      .spyOn(window, "confirm")
+      .mockImplementation(() => false);
+
+    render(<MatchForm {...defaultProps} />);
+
+    const selects = screen.getAllByRole("combobox");
+
+    // 後攻の1つ目 (index 3) を GRAVITY に変更し、チーム間重複を発生させる
+    fireEvent.change(selects[3], { target: { value: "GRAVITY" } });
+
+    fireEvent.click(screen.getByText("先攻WIN"));
+
+    // 確認ダイアログが呼び出されたこと
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    // 登録処理が実行されなかったこと
+    expect(mockOnAddMatch).not.toHaveBeenCalled();
+
+    confirmSpy.mockRestore();
+  });
+
+  it("should prioritize INTRA-TEAM duplication CONFIRM and ABORT on CANCEL", () => {
+    // チーム内: APATHY, APATHY, GRAVITY (重複あり: 最優先) / チーム間: HATE, LIFE, METAL (重複なし)
+
+    // window.confirm をモックし、戻り値を false (CANCEL) に設定
+    const confirmSpy = vi
+      .spyOn(window, "confirm")
+      .mockImplementation(() => false);
+
+    render(<MatchForm {...defaultProps} />);
+
+    const selects = screen.getAllByRole("combobox");
+
+    // 先攻の2つ目 (index 1) を APATHY に変更し、チーム内重複を発生させる
+    fireEvent.change(selects[1], { target: { value: "APATHY" } });
+
+    fireEvent.click(screen.getByText("先攻WIN"));
+
+    // 確認ダイアログが呼び出されたこと
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    // 登録処理が実行されなかったこと
+    expect(mockOnAddMatch).not.toHaveBeenCalled();
+
+    // 確認メッセージがチーム内重複に関するものであることを検証 (完全なメッセージの比較は省略)
+    expect(confirmSpy.mock.calls[0][0]).toContain(
+      "チーム内のプロトコルに重複があります",
+    );
+
+    confirmSpy.mockRestore();
+  });
+
+  it("should prioritize INTRA-TEAM duplication CONFIRM over INTER-TEAM duplication", () => {
+    // チーム内: APATHY, APATHY, GRAVITY (重複あり: 最優先) / チーム間: APATHY, LIFE, METAL (APATHYが重複)
+
+    // window.confirm をモックし、戻り値を true (OK) に設定
+    const confirmSpy = vi
+      .spyOn(window, "confirm")
+      .mockImplementation(() => true);
+
+    render(<MatchForm {...defaultProps} />);
+
+    const selects = screen.getAllByRole("combobox");
+
+    // 先攻の2つ目 (index 1) を APATHY に変更 (チーム内重複)
+    fireEvent.change(selects[1], { target: { value: "APATHY" } });
+    // 後攻の1つ目 (index 3) を APATHY に変更 (チーム間重複)
+    fireEvent.change(selects[3], { target: { value: "APATHY" } });
+
+    fireEvent.click(screen.getByText("先攻WIN"));
+
+    // 登録処理が実行されたこと (OKしたため)
+    expect(mockOnAddMatch).toHaveBeenCalledTimes(1);
+    // 警告は一度しか呼び出されず、それがチーム内重複のメッセージであること
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(confirmSpy.mock.calls[0][0]).toContain(
+      "チーム内のプロトコルに重複があります",
+    ); // チーム内重複のメッセージが出たか
+
+    confirmSpy.mockRestore();
   });
 });
