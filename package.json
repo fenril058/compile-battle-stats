@@ -41,7 +41,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json}": [
-      "npx biome check --write"
+      "biome check --write"
     ],
     "*": [
       "secretlint"
