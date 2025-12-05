@@ -9,8 +9,8 @@
     "lint": "biome check",
     "preview": "vite preview",
     "prepare": "husky",
-    "test": "vitest",
-    "test:watch": "vitest --watch"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
