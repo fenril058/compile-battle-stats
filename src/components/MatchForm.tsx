@@ -121,7 +121,8 @@ export const MatchForm: React.FC<MatchFormProps> = ({
               <h3 className="font-semibold mb-2">先攻</h3>
               {first.map((p, i) => (
                 <select
-                  key={p}
+                  // biome-ignore lint: /correctness/useArrayIndexOfAsKey
+                  key={`first-${i}`}
                   value={p}
                   onChange={handleSelect("FIRST", i)}
                   disabled={!isRegistrationAllowed}
@@ -145,7 +146,8 @@ export const MatchForm: React.FC<MatchFormProps> = ({
               <h3 className="font-semibold mb-2">後攻</h3>
               {second.map((p, i) => (
                 <select
-                  key={p}
+                  // biome-ignore lint: /correctness/useArrayIndexOfAsKey
+                  key={`second-${i}`}
                   value={p}
                   onChange={handleSelect("SECOND", i)}
                   disabled={!isRegistrationAllowed}
