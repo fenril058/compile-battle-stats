@@ -20,7 +20,7 @@ export const isRatioBattle = (
   a: Trio,
   b: Trio,
   ratios: Ratios,
-  maxRatio = 8,
+  maxRatio: number,
 ): boolean =>
   ratioSum(a, ratios) <= maxRatio && ratioSum(b, ratios) <= maxRatio;
 
