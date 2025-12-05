@@ -43,19 +43,29 @@ export const makeStats = (list: Match[]): StatsResult => {
     if (w) m[k].w += 1;
   };
 
+  const isValidTrio = (trio: Trio): boolean => {
+    // 1. 長さが3であること
+    if (trio.length !== 3) return false;
+    // 2. 重複がないこと
+    if (new Set(trio).size !== 3) return false;
+    return true;
+  };
+
   for (const mt of list) {
-    const firstWin = mt.winner === "FIRST";
-    const secondWin = mt.winner === "SECOND";
-    // ★ 修正: Trio (配列) でない場合はスキップする
-    if (
-      !Array.isArray(mt.first) ||
-      mt.first.length !== 3 ||
-      !Array.isArray(mt.second) ||
-      mt.second.length !== 3
-    ) {
-      console.warn("Skipping invalid match data:", mt);
+    const firstValid = isValidTrio(mt.first);
+    const secondValid = isValidTrio(mt.second);
+
+    // どちらかのチーム構成が不正なら、この試合全体を統計から除外する
+    if (!firstValid || !secondValid) {
+      // 開発者向けにログを出力
+      console.warn(`Skipping invalid match ID: ${mt.id}.
+      Reason: Invalid Trio structure (Duplicated/Incorrect length protocols).`);
       continue;
     }
+
+    const firstWin = mt.winner === "FIRST";
+    const secondWin = mt.winner === "SECOND";
+
     const sides = [
       { t: mt.first, w: firstWin, first: true },
       { t: mt.second, w: secondWin, first: false },
