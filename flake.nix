@@ -16,6 +16,7 @@
             packages = with pkgs; [
               typescript-language-server
               biome
+              npm-check-updates
             ];
             shellHook = ''
           '';
