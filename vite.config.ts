@@ -5,6 +5,13 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    exclude: [
+      "node_modules",
+      "dist",
+      "**/dist/**",
+      "**/node_modules/**",
+      ".direnv",
+    ],
     environment: "jsdom", // DOM環境が必要なテストのためにjsdomを使用
     setupFiles: ["./src/setupTests.ts"], // グローバルな設定ファイル
     globals: true, // describe, test, expectなどをグローバルにする
