@@ -227,18 +227,20 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   <div className="flex justify-between items-center text-xs mt-2 text-zinc-400">
     {/* 表示件数選択 */}
     <div className="flex items-center space-x-2">
-      <span>表示件数:</span>
-      <select
-        value={pageSize}
-        onChange={handlePageSizeChange}
-        className="bg-zinc-800 border border-zinc-700 rounded p-1 text-white"
-      >
-        {DISPLAY_OPTIONS.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
+      <label>
+        表示件数:
+        <select
+          value={pageSize}
+          onChange={handlePageSizeChange}
+          className="bg-zinc-800 border border-zinc-700 rounded p-1 text-white"
+        >
+          {DISPLAY_OPTIONS.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+      </label>
     </div>
 
     {/* ページネーションボタン */}

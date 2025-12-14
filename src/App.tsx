@@ -124,57 +124,58 @@ export default function App() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0 font-sans">
       <ToastContainer position="top-center" theme="dark" autoClose={2000} />
-
-      <Header
-        season={seasonKey}
-        seasonCollections={SEASON_KEYS}
-        handleSeasonChange={handleSeasonChange}
-        mode={mode}
-      />
-
-      <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-8">
-        {/* Input Section */}
-        <section>
-          <MatchForm
-            protocols={currentProtocols}
-            onAddMatch={handleAddMatch}
-            isRegistrationAllowed={isRegistrationAllowed}
-            onSyncLocal={handleSyncLocal}
-            mode={mode}
-            ratioSum={ratioSumHelper}
-          />
-          {/* レシオ表は常に表示 */}
-          <RatioTable protocols={currentProtocols} ratios={currentRatios} />
-        </section>
-
-        {/* Visualization Section */}
-        <StatsDashboard
-          stats={stats}
-          matrices={matrices}
-          protocols={currentProtocols}
-          minPair={MIN_GAMES_FOR_PAIR_STATS}
-          minTrio={MIN_GAMES_FOR_TRIO_STATS}
+      <main>
+        <Header
+          season={seasonKey}
+          seasonCollections={SEASON_KEYS}
+          handleSeasonChange={handleSeasonChange}
+          mode={mode}
         />
 
-        {/* Data Management Section */}
-        <section>
-          <MatchList
-            matches={sortedMatches}
-            onRemove={handleRemoveMatch}
-            isRegistrationAllowed={isRegistrationAllowed}
-          />
-          {/* CSV export and import */}
-          <DataToolbar
-            onExport={exportToCsv}
-            onImport={handleImportCsv}
-            isRegistrationAllowed={isRegistrationAllowed}
-          />
-        </section>
+        <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-8">
+          {/* Input Section */}
+          <section>
+            <MatchForm
+              protocols={currentProtocols}
+              onAddMatch={handleAddMatch}
+              isRegistrationAllowed={isRegistrationAllowed}
+              onSyncLocal={handleSyncLocal}
+              mode={mode}
+              ratioSum={ratioSumHelper}
+            />
+            {/* レシオ表は常に表示 */}
+            <RatioTable protocols={currentProtocols} ratios={currentRatios} />
+          </section>
 
-        <Footer />
-        <Analytics />
-        <SpeedInsights />
-      </div>
+          {/* Visualization Section */}
+          <StatsDashboard
+            stats={stats}
+            matrices={matrices}
+            protocols={currentProtocols}
+            minPair={MIN_GAMES_FOR_PAIR_STATS}
+            minTrio={MIN_GAMES_FOR_TRIO_STATS}
+          />
+
+          {/* Data Management Section */}
+          <section>
+            <MatchList
+              matches={sortedMatches}
+              onRemove={handleRemoveMatch}
+              isRegistrationAllowed={isRegistrationAllowed}
+            />
+            {/* CSV export and import */}
+            <DataToolbar
+              onExport={exportToCsv}
+              onImport={handleImportCsv}
+              isRegistrationAllowed={isRegistrationAllowed}
+            />
+          </section>
+
+          <Footer />
+        </div>
+      </main>
+      <Analytics />
+      <SpeedInsights />
     </div>
   );
 }

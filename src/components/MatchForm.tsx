@@ -168,8 +168,8 @@ export const MatchForm: React.FC<MatchFormProps> = ({
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8">
             {/* First Side */}
-            <div className="flex flex-col items-center p-2 border border-zinc-700 rounded-xl">
-              <h3 className="font-semibold mb-2">先攻</h3>
+            <fieldset className="flex flex-col items-center p-2 border border-zinc-700 rounded-xl">
+              <legend className="text-center font-semibold mb-2">先攻</legend>
               {first.map((p, i) => (
                 <select
                   // biome-ignore lint: /correctness/useArrayIndexOfAsKey
@@ -178,6 +178,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   onChange={handleSelect("FIRST", i)}
                   disabled={!isRegistrationAllowed}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1"
+                  aria-label={`先攻の ${i + 1} 番目の選択`}
                 >
                   {/* UIの選択肢はprotocolsから生成される */}
                   {protocols.map((x) => (
@@ -190,11 +191,11 @@ export const MatchForm: React.FC<MatchFormProps> = ({
               <p className="text-xs text-center text-zinc-400 mt-1">
                 レシオ: {ratioSum(first)}
               </p>
-            </div>
+            </fieldset>
 
             {/* Second Side */}
-            <div className="flex flex-col items-center p-2 border border-zinc-700 rounded-xl">
-              <h3 className="font-semibold mb-2">後攻</h3>
+            <fieldset className="flex flex-col items-center p-2 border border-zinc-700 rounded-xl">
+              <legend className="text-center font-semibold mb-2">後攻</legend>
               {second.map((p, i) => (
                 <select
                   // biome-ignore lint: /correctness/useArrayIndexOfAsKey
@@ -203,6 +204,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   onChange={handleSelect("SECOND", i)}
                   disabled={!isRegistrationAllowed}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1"
+                  aria-label={`後攻の ${i + 1} 番目の選択`}
                 >
                   {/* UIの選択肢はprotocolsから生成される */}
                   {protocols.map((x) => (
@@ -215,7 +217,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
               <p className="text-xs text-center text-zinc-400 mt-1">
                 レシオ: {ratioSum(second)}
               </p>
-            </div>
+            </fieldset>
 
             {/* Action Column */}
             <div
@@ -259,8 +261,8 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   type="button"
                   onClick={() => handleSubmit("FIRST")}
                   disabled={!isFormValid || !isRegistrationAllowed}
-                  className="py-2 px-4 rounded-lg bg-green-600
-                  hover:bg-green-700 disabled:bg-zinc-700 text-sm font-bold"
+                  className="py-2 px-4 rounded-lg text-white bg-green-700
+                  hover:bg-green-600 disabled:bg-zinc-700 text-sm font-bold"
                 >
                   先攻WIN
                 </button>
@@ -268,7 +270,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   type="button"
                   onClick={() => handleSubmit("SECOND")}
                   disabled={!isFormValid || !isRegistrationAllowed}
-                  className="py-2 px-4 rounded-lg bg-green-600
+                  className="py-2 px-4 rounded-lg text-white bg-green-700
                   hover:bg-green-700 disabled:bg-zinc-700 text-sm font-bold"
                 >
                   後攻WIN

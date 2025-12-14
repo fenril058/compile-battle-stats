@@ -36,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
             value={season}
             onChange={handleSeasonChange}
             className="bg-zinc-800 border border-zinc-700 rounded text-sm py-1 px-2"
+            aria-label="シーズン選択"
           >
             {seasonCollections.map((s) => (
               <option key={s} value={s}>
