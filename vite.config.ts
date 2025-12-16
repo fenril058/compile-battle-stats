@@ -1,5 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
+import { beasties } from "vite-plugin-beasties";
 // import { defineConfig } from "vite";
 import { defineConfig } from "vitest/config";
 
@@ -16,7 +17,18 @@ export default defineConfig({
     setupFiles: ["./src/setupTests.ts"], // グローバルな設定ファイル
     globals: true, // describe, test, expectなどをグローバルにする
   },
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    beasties({
+      // optional beasties configuration
+      options: {
+        preload: "swap",
+        pruneSource: false, // Disable pruning CSS files
+        inlineThreshold: 4000, // Inline stylesheets smaller than 4kb
+      },
+    }),
+  ],
   build: {
     rollupOptions: {
       output: {
