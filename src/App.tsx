@@ -36,7 +36,6 @@ import {
   SEASONS_CONFIG,
 } from "./config";
 // Hooks & Logic
-import { useAuth } from "./hooks/useAuth";
 import { useCsvExport } from "./hooks/useCsvExport";
 import { useCsvImport } from "./hooks/useCsvImport";
 import { useFirestore } from "./hooks/useFirestore";
@@ -46,14 +45,12 @@ import { isRatioBattle } from "./utils/logic";
 
 // Loading用のシンプルなコンポーネント
 const LoadingSkeleton = () => (
-  <div className="h-64 w-full animate-pulse bg-zinc-900 rounded-xl flex items-center justify-center">
+  <div className="h-600 w-full animate-pulse bg-zinc-900 rounded-xl flex items-center justify-center">
     <span className="text-zinc-500">Loading stats...</span>
   </div>
 );
 
 export default function App() {
-  const { user } = useAuth();
-
   // === シーズン選択 ===
   // Object.keys の戻り値を SeasonKey[] にキャスト
   const SEASON_KEYS = Object.keys(SEASONS_CONFIG) as SeasonKey[];
@@ -106,6 +103,7 @@ export default function App() {
       second: Trio;
       winner: Winner;
       matchDate: number | null;
+      userId: string;
     }) => {
       if (!isRegistrationAllowed) return;
 
@@ -113,11 +111,10 @@ export default function App() {
         ...data,
         // ★ logic関数に現在の設定(ratios, maxRatio)を渡す
         ratio: isRatioBattle(data.first, data.second, currentRatios, maxRatio),
-        userId: user?.uid,
         matchDate: data.matchDate,
       });
     },
-    [addMatchItem, isRegistrationAllowed, currentRatios, maxRatio, user],
+    [addMatchItem, isRegistrationAllowed, currentRatios, maxRatio],
   );
 
   // ★ MatchForm に渡すためのヘルパー (カリー化)
@@ -147,24 +144,28 @@ export default function App() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0 font-sans">
       <ToastContainer position="top-center" theme="dark" autoClose={2000} />
       <main>
-        <Header
-          season={seasonKey}
-          seasonCollections={SEASON_KEYS}
-          handleSeasonChange={handleSeasonChange}
-          mode={mode}
-        />
+        <Suspense fallback={<LoadingSkeleton />}>
+          <Header
+            season={seasonKey}
+            seasonCollections={SEASON_KEYS}
+            handleSeasonChange={handleSeasonChange}
+            mode={mode}
+          />
+        </Suspense>
 
         <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-8">
           {/* Input Section */}
           <section>
-            <MatchForm
-              protocols={currentProtocols}
-              onAddMatch={handleAddMatch}
-              isRegistrationAllowed={isRegistrationAllowed}
-              onSyncLocal={handleSyncLocal}
-              mode={mode}
-              ratioSum={ratioSumHelper}
-            />
+            <Suspense fallback={<LoadingSkeleton />}>
+              <MatchForm
+                protocols={currentProtocols}
+                onAddMatch={handleAddMatch}
+                isRegistrationAllowed={isRegistrationAllowed}
+                onSyncLocal={handleSyncLocal}
+                mode={mode}
+                ratioSum={ratioSumHelper}
+              />
+            </Suspense>
             {/* レシオ表は常に表示 */}
             <RatioTable protocols={currentProtocols} ratios={currentRatios} />
           </section>

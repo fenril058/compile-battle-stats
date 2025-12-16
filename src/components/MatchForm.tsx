@@ -1,6 +1,7 @@
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useAuth } from "../hooks/useAuth";
 import type { Protocol, Trio, Winner } from "../types";
 
 type MatchFormProps = {
@@ -10,6 +11,7 @@ type MatchFormProps = {
     second: Trio;
     winner: Winner;
     matchDate: number | null;
+    userId: string;
   }) => void;
   isRegistrationAllowed: boolean;
   onSyncLocal?: () => void;
@@ -32,6 +34,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
   ratioSum,
   mode,
 }) => {
+  const { user } = useAuth();
   const [first, setFirst] = useState<Trio>(INITIAL_FIRST);
   const [second, setSecond] = useState<Trio>(INITIAL_SECOND);
   // 日付入力用のステート (初期値は今日)
@@ -150,7 +153,13 @@ export const MatchForm: React.FC<MatchFormProps> = ({
     }
 
     // 親コンポーネントへ渡す
-    onAddMatch({ first, second, winner, matchDate: matchDateTimestamp });
+    onAddMatch({
+      first,
+      second,
+      winner,
+      matchDate: matchDateTimestamp,
+      userId: user.uid,
+    });
   };
 
   return (

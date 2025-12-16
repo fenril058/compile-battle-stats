@@ -3,6 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Protocol, Trio } from "../types";
 import { MatchForm } from "./MatchForm";
 
+// useAuth のモック（最重要）
+vi.mock("../hooks/useAuth", () => ({
+  useAuth: () => ({
+    user: { uid: "test-user-uid" },
+    loading: false,
+  }),
+}));
+
 // react-toastify をモックし、副作用を防ぐ
 vi.mock("react-toastify", () => ({
   toast: {
@@ -64,9 +72,12 @@ describe("MatchForm", () => {
     expect(mockOnAddMatch).toHaveBeenCalledTimes(1);
     const args = mockOnAddMatch.mock.calls[0][0];
 
-    expect(args.winner).toBe("FIRST");
-    expect(args.first).toEqual(["APATHY", "DARKNESS", "GRAVITY"]);
-    expect(args.second).toEqual(["HATE", "LIFE", "METAL"]);
+    expect(args).toMatchObject({
+      winner: "FIRST",
+      first: ["APATHY", "DARKNESS", "GRAVITY"],
+      second: ["HATE", "LIFE", "METAL"],
+      userId: "test-user-uid",
+    });
   });
 
   it("disables buttons when registration is not allowed", () => {
