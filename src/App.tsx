@@ -144,7 +144,7 @@ export default function App() {
 
         <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-8">
           {/* Input Section */}
-          <section>
+          <section className="min-h[420px]">
             <MatchForm
               protocols={currentProtocols}
               onAddMatch={handleAddMatch}
