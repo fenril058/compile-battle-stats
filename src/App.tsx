@@ -1,17 +1,32 @@
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import { useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// Components
 import { DataToolbar } from "./components/DataToolbar";
 import { Footer } from "./components/Footer";
-// Components
 import { Header } from "./components/Header";
 import { MatchForm } from "./components/MatchForm";
-import { MatchList } from "./components/MatchList";
-import { RatioTable } from "./components/RatioTable";
-import { StatsDashboard } from "./components/StatsDashboard";
+
+// 重いコンポーネントを遅延読み込みにする
+const StatsDashboard = lazy(() =>
+  import("./components/StatsDashboard").then((module) => ({
+    default: module.StatsDashboard,
+  })),
+);
+const MatchList = lazy(() =>
+  import("./components/MatchList").then((module) => ({
+    default: module.MatchList,
+  })),
+);
+const RatioTable = lazy(() =>
+  import("./components/RatioTable").then((module) => ({
+    default: module.RatioTable,
+  })),
+);
+
 // Config & Types
 import {
   MIN_GAMES_FOR_PAIR_STATS,
@@ -28,6 +43,13 @@ import { useFirestore } from "./hooks/useFirestore";
 import { useMatchStats } from "./hooks/useMatchStats";
 import type { Match, Protocol, SeasonKey, Trio, Winner } from "./types";
 import { isRatioBattle } from "./utils/logic";
+
+// Loading用のシンプルなコンポーネント
+const LoadingSkeleton = () => (
+  <div className="h-64 w-full animate-pulse bg-zinc-900 rounded-xl flex items-center justify-center">
+    <span className="text-zinc-500">Loading stats...</span>
+  </div>
+);
 
 export default function App() {
   const { user } = useAuth();
@@ -148,27 +170,31 @@ export default function App() {
           </section>
 
           {/* Visualization Section */}
-          <StatsDashboard
-            stats={stats}
-            matrices={matrices}
-            protocols={currentProtocols}
-            minPair={MIN_GAMES_FOR_PAIR_STATS}
-            minTrio={MIN_GAMES_FOR_TRIO_STATS}
-          />
+          <Suspense fallback={<LoadingSkeleton />}>
+            <StatsDashboard
+              stats={stats}
+              matrices={matrices}
+              protocols={currentProtocols}
+              minPair={MIN_GAMES_FOR_PAIR_STATS}
+              minTrio={MIN_GAMES_FOR_TRIO_STATS}
+            />
+          </Suspense>
 
           {/* Data Management Section */}
           <section>
-            <MatchList
-              matches={sortedMatches}
-              onRemove={handleRemoveMatch}
-              isRegistrationAllowed={isRegistrationAllowed}
-            />
-            {/* CSV export and import */}
-            <DataToolbar
-              onExport={exportToCsv}
-              onImport={handleImportCsv}
-              isRegistrationAllowed={isRegistrationAllowed}
-            />
+            <Suspense fallback={<LoadingSkeleton />}>
+              <MatchList
+                matches={sortedMatches}
+                onRemove={handleRemoveMatch}
+                isRegistrationAllowed={isRegistrationAllowed}
+              />
+              {/* CSV export and import */}
+              <DataToolbar
+                onExport={exportToCsv}
+                onImport={handleImportCsv}
+                isRegistrationAllowed={isRegistrationAllowed}
+              />
+            </Suspense>
           </section>
 
           <Footer />
