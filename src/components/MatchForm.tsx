@@ -104,6 +104,10 @@ export const MatchForm: React.FC<MatchFormProps> = ({
   };
 
   const handleSubmit = (winner: Winner) => {
+    if (!user) {
+      toast.error("ログインが必要です");
+      return;
+    }
     if (!isRegistrationAllowed) {
       toast.error("このシーズンは登録が許可されていません。");
       return;

@@ -9,21 +9,12 @@ import { DataToolbar } from "./components/DataToolbar";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { MatchForm } from "./components/MatchForm";
+import { RatioTable } from "./components/RatioTable";
+import { StatsDashboard } from "./components/StatsDashboard";
 
-// 重いコンポーネントを遅延読み込みにする
-const StatsDashboard = lazy(() =>
-  import("./components/StatsDashboard").then((module) => ({
-    default: module.StatsDashboard,
-  })),
-);
 const MatchList = lazy(() =>
   import("./components/MatchList").then((module) => ({
     default: module.MatchList,
-  })),
-);
-const RatioTable = lazy(() =>
-  import("./components/RatioTable").then((module) => ({
-    default: module.RatioTable,
   })),
 );
 
@@ -43,13 +34,6 @@ import { useMatchStats } from "./hooks/useMatchStats";
 import type { Match, Protocol, SeasonKey, Trio, Winner } from "./types";
 import { isRatioBattle } from "./utils/logic";
 
-// Loading用のシンプルなコンポーネント
-const LoadingSkeleton = () => (
-  <div className="h-600 w-full animate-pulse bg-zinc-900 rounded-xl flex items-center justify-center">
-    <span className="text-zinc-500">Loading stats...</span>
-  </div>
-);
-
 export default function App() {
   // === シーズン選択 ===
   // Object.keys の戻り値を SeasonKey[] にキャスト
@@ -68,6 +52,13 @@ export default function App() {
   const currentRatios = RATIO_SETS[currentConfig.ratioVer];
   const isRegistrationAllowed = !currentConfig.isReadOnly;
   const maxRatio = currentConfig.maxRatio;
+
+  // MatchList Loading用のシンプルなコンポーネント
+  const MatchListSkeleton = () => (
+    <div className="h-[600px] w-full animate-pulse bg-zinc-900 rounded-xl flex items-center justify-center">
+      <span className="text-zinc-500">Loading stats...</span>
+    </div>
+  );
 
   // --- Data Hook ---
   // Firestoreのコレクション名は config から取得
@@ -144,60 +135,53 @@ export default function App() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0 font-sans">
       <ToastContainer position="top-center" theme="dark" autoClose={2000} />
       <main>
-        <Suspense fallback={<LoadingSkeleton />}>
-          <Header
-            season={seasonKey}
-            seasonCollections={SEASON_KEYS}
-            handleSeasonChange={handleSeasonChange}
-            mode={mode}
-          />
-        </Suspense>
+        <Header
+          season={seasonKey}
+          seasonCollections={SEASON_KEYS}
+          handleSeasonChange={handleSeasonChange}
+          mode={mode}
+        />
 
         <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-8">
           {/* Input Section */}
           <section>
-            <Suspense fallback={<LoadingSkeleton />}>
-              <MatchForm
-                protocols={currentProtocols}
-                onAddMatch={handleAddMatch}
-                isRegistrationAllowed={isRegistrationAllowed}
-                onSyncLocal={handleSyncLocal}
-                mode={mode}
-                ratioSum={ratioSumHelper}
-              />
-            </Suspense>
+            <MatchForm
+              protocols={currentProtocols}
+              onAddMatch={handleAddMatch}
+              isRegistrationAllowed={isRegistrationAllowed}
+              onSyncLocal={handleSyncLocal}
+              mode={mode}
+              ratioSum={ratioSumHelper}
+            />
             {/* レシオ表は常に表示 */}
             <RatioTable protocols={currentProtocols} ratios={currentRatios} />
           </section>
 
           {/* Visualization Section */}
-          <Suspense fallback={<LoadingSkeleton />}>
-            <StatsDashboard
-              stats={stats}
-              matrices={matrices}
-              protocols={currentProtocols}
-              minPair={MIN_GAMES_FOR_PAIR_STATS}
-              minTrio={MIN_GAMES_FOR_TRIO_STATS}
-            />
-          </Suspense>
+          <StatsDashboard
+            stats={stats}
+            matrices={matrices}
+            protocols={currentProtocols}
+            minPair={MIN_GAMES_FOR_PAIR_STATS}
+            minTrio={MIN_GAMES_FOR_TRIO_STATS}
+          />
 
           {/* Data Management Section */}
           <section>
-            <Suspense fallback={<LoadingSkeleton />}>
+            <Suspense fallback={<MatchListSkeleton />}>
               <MatchList
                 matches={sortedMatches}
                 onRemove={handleRemoveMatch}
                 isRegistrationAllowed={isRegistrationAllowed}
               />
-              {/* CSV export and import */}
-              <DataToolbar
-                onExport={exportToCsv}
-                onImport={handleImportCsv}
-                isRegistrationAllowed={isRegistrationAllowed}
-              />
             </Suspense>
+            {/* CSV export and import */}
+            <DataToolbar
+              onExport={exportToCsv}
+              onImport={handleImportCsv}
+              isRegistrationAllowed={isRegistrationAllowed}
+            />
           </section>
-
           <Footer />
         </div>
       </main>
