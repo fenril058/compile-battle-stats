@@ -75,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={handleLogin}
-              className="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1 rounded
+              className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-3 py-1 rounded
               transition-colors"
             >
               Googleでログイン

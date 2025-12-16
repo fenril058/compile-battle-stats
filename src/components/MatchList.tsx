@@ -180,7 +180,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
               })}
               {displayMatches.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="p-4 text-center text-zinc-500">
+                  <td colSpan={8} className="p-4 text-center text-zinc-300">
                     試合が登録されていません。
                   </td>
                 </tr>
@@ -227,7 +227,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   <div className="flex justify-between items-center text-xs mt-2 text-zinc-400">
     {/* 表示件数選択 */}
     <div className="flex items-center space-x-2">
-      <label>
+      <label className="text-zinc-200">
         表示件数:
         <select
           value={pageSize}
@@ -311,7 +311,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
     </div>
 
     {/* 現在のページ/総ページ数 */}
-    <div className="text-sm">
+    <div className="text-zinc-300 text-sm">
       {/* matches.length を totalMatches に置き換える */}
       {totalMatches > 0
         ? `${currentPage} / ${totalPages} ページ`
