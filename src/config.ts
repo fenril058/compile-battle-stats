@@ -73,7 +73,7 @@ export const SEASONS_CONFIG = {
     collectionName: "compile_season2",
     protocolVer: "V1_AUX",
     ratioVer: "V2",
-    isReadOnly: true,
+    isReadOnly: false,
     maxRatio: 8,
   },
   compile_season1_aux: {
@@ -81,7 +81,7 @@ export const SEASONS_CONFIG = {
     collectionName: "compile_season1_aux", // Firestoreのコレクション名
     protocolVer: "V1_AUX", // PROTOCOL_SETS のキー
     ratioVer: "V1", // RATIO_SETS のキー
-    isReadOnly: false,
+    isReadOnly: true,
     maxRatio: 8, // レシオ上限も設定に持たせるとより柔軟
   },
   compile_season1: {
