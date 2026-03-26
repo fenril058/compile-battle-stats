@@ -16,9 +16,32 @@ const PROTOCOLS_MAIN1 = [
 
 const PROTOCOLS_AUX1 = ["HATE", "LOVE", "APATHY"] as const;
 
+const PROTOCOLS_MAIN2 = [
+  "LUCK",
+  "WAR",
+  "COURAGE",
+  "TIME",
+  "CLARITY",
+  "FEAR",
+  "CORRUPTION",
+  "SMOKE",
+  "CHAOS",
+  "MIRROR",
+  "ICE",
+  "PEACE",
+] as const;
+
+const PROTOCOLS_AUX2 = ["DIVERSITY", "UNITY", "ASSIMILATION"] as const;
+
 export const PROTOCOL_SETS = {
   V1: PROTOCOLS_MAIN1,
   V1_AUX: [...PROTOCOLS_MAIN1, ...PROTOCOLS_AUX1] as const,
+  V2: [
+    ...PROTOCOLS_MAIN1,
+    ...PROTOCOLS_AUX1,
+    ...PROTOCOLS_MAIN2,
+    ...PROTOCOLS_AUX2,
+  ] as const,
 } as const;
 
 // 最新のプロトコル（型定義用）
@@ -39,6 +62,21 @@ export const ABBR = {
   SPIRIT: "SPI",
   APATHY: "APA",
   METAL: "MET",
+  LUCK: "LUC",
+  WAR: "WAR",
+  COURAGE: "COU",
+  TIME: "TIM",
+  CLARITY: "CLA",
+  FEAR: "FEA",
+  CORRUPTION: "COR",
+  SMOKE: "SMO",
+  CHAOS: "CHA",
+  MIRROR: "MIR",
+  ICE: "ICE",
+  PEACE: "PEA",
+  DIVERSITY: "DIV",
+  UNITY: "UNI",
+  ASSIMILATION: "ASS",
 };
 
 // --- 2. レシオ定義 ---
@@ -60,14 +98,57 @@ const RATIOS_V1 = {
   METAL: 0,
 } as const;
 
+const RATIOS_V3 = {
+  DARKNESS: 5,
+  FIRE: 5,
+  HATE: 5,
+  PSYCHIC: 6,
+  DEATH: 2,
+  GRAVITY: 3,
+  WATER: 2,
+  LIFE: 3,
+  LOVE: 2,
+  PLAGUE: 1,
+  LIGHT: 0,
+  SPEED: 3,
+  SPIRIT: 1,
+  APATHY: 0,
+  METAL: 0,
+
+  LUCK: 9,
+  WAR: 9,
+  COURAGE: 9,
+  TIME: 9,
+  CLARITY: 9,
+  FEAR: 9,
+  CORRUPTION: 9,
+  SMOKE: 9,
+  CHAOS: 9,
+  MIRROR: 9,
+  ICE: 9,
+  PEACE: 9,
+  DIVERSITY: 9,
+  UNITY: 9,
+  ASSIMILATION: 9,
+} as const;
+
 export const RATIO_SETS = {
   V1: RATIOS_V1,
   V2: { ...RATIOS_V1, SPEED: 2, PLAGUE: 1, WATER: 2, LIFE: 3 },
+  V3: RATIOS_V3,
 } as const;
 
 // --- 3. シーズン定義 ---
 // key はアプリ内で扱うID (URLパラメータやlocalStorageのキーになる)
 export const SEASONS_CONFIG = {
+  compile_season3: {
+    displayName: "Season 3",
+    collectionName: "compile_season3",
+    protocolVer: "V2",
+    ratioVer: "V3",
+    isReadOnly: true,
+    maxRatio: 8,
+  },
   compile_season2: {
     displayName: "Season 2",
     collectionName: "compile_season2",
