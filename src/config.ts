@@ -114,7 +114,9 @@ const RATIOS_V3 = {
   SPIRIT: 1,
   APATHY: 0,
   METAL: 0,
+} as const;
 
+const RATIOS_main2 = {
   LUCK: 9,
   WAR: 9,
   COURAGE: 9,
@@ -130,12 +132,12 @@ const RATIOS_V3 = {
   DIVERSITY: 9,
   UNITY: 9,
   ASSIMILATION: 9,
-} as const;
+};
 
 export const RATIO_SETS = {
   V1: RATIOS_V1,
-  V2: { ...RATIOS_V1, SPEED: 2, PLAGUE: 1, WATER: 2, LIFE: 3 },
-  V3: RATIOS_V3,
+  V2: { ...RATIOS_V1, ...RATIOS_main2, SPEED: 2, PLAGUE: 1, WATER: 2, LIFE: 3 },
+  V3: { ...RATIOS_V3, ...RATIOS_main2 },
 } as const;
 
 // --- 3. シーズン定義 ---
@@ -152,7 +154,7 @@ export const SEASONS_CONFIG = {
   compile_season2: {
     displayName: "Season 2",
     collectionName: "compile_season2",
-    protocolVer: "V1_AUX",
+    protocolVer: "V2",
     ratioVer: "V2",
     isReadOnly: false,
     maxRatio: 8,
