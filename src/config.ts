@@ -148,7 +148,7 @@ export const SEASONS_CONFIG = {
     collectionName: "compile_season3",
     protocolVer: "V2",
     ratioVer: "V3",
-    isReadOnly: true,
+    isReadOnly: false,
     maxRatio: 8,
   },
   compile_season2: {
@@ -156,7 +156,7 @@ export const SEASONS_CONFIG = {
     collectionName: "compile_season2",
     protocolVer: "V2",
     ratioVer: "V2",
-    isReadOnly: false,
+    isReadOnly: true,
     maxRatio: 8,
   },
   compile_season1_aux: {

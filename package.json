@@ -23,7 +23,7 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@secretlint/secretlint-rule-preset-recommend": "^11.4.0",
+    "@secretlint/secretlint-rule-preset-recommend": "^11.4.1",
     "@tailwindcss/vite": "^4.2.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -36,13 +36,13 @@
     "jsdom": "^29.0.1",
     "lint-staged": "^16.4.0",
     "react-toastify": "^11.0.5",
-    "secretlint": "^11.4.0",
+    "secretlint": "^11.4.1",
     "serve": "^14.2.6",
     "tailwindcss": "^4.2.2",
     "typescript": "~6.0.2",
-    "vite": "^8.0.2",
+    "vite": "^8.0.3",
     "vite-plugin-beasties": "^0.4.1",
-    "vitest": "^4.1.1"
+    "vitest": "^4.1.2"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json}": [
