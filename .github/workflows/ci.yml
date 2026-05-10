@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v22
+
+      - name: Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v13
+        with:
+          use-flakehub: false
+
+      - name: Verify devShell
+        run: nix develop .#default --command true
+
+      - name: Lint
+        run: nix develop .#default --command npm run check
+
+      - name: Typecheck
+        run: nix develop .#default --command npm run typecheck
+
+      - name: Test
+        run: nix develop .#default --command npm test
+
+      - name: Build
+        run: nix develop .#default --command npm run build
