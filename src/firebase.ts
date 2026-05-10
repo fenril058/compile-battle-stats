@@ -29,4 +29,4 @@ try {
 // App 側でモード表示などに使えるフラグ
 const isFirebaseEnabled = !!db;
 
-export { app, db, auth, isFirebaseEnabled };
+export { app, auth, db, isFirebaseEnabled };
