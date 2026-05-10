@@ -10,17 +10,26 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        inherit (pkgs) importNpmLock;
+        nodejs = pkgs.nodejs_24;
       in
-        {
-          devShells.default = pkgs.mkShell {
-            packages = with pkgs; [
-              typescript-language-server
-              biome
-              npm-check-updates
-            ];
-            shellHook = ''
-          '';
+      {
+        devShells.default = pkgs.mkShell {
+          packages = with pkgs; [
+            typescript-language-server
+            biome
+            npm-check-updates
+            pkgs.nodejs
+            importNpmLock.hooks.linkNodeModulesHook
+          ];
+
+          npmDeps = importNpmLock.buildNodeModules {
+            npmRoot = ./.;
+            inherit nodejs;
           };
-        }
+
+          postShellHook = "";
+        };
+      }
     );
 }
