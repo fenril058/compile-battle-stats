@@ -19,7 +19,7 @@
             typescript-language-server
             biome
             npm-check-updates
-            pkgs.nodejs
+            nodejs
             importNpmLock.hooks.linkNodeModulesHook
           ];
 
