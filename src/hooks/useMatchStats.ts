@@ -91,8 +91,8 @@ export const useMatchStats = (
         protocols,
       },
       ratio: {
-        data: matchup(ratioMatches, protocols),
-        protocols,
+        data: matchup(ratioMatches, V1_AUX_PROTOCOLS),
+        protocols: V1_AUX_PROTOCOLS,
       },
     }),
     [v1AuxMatches, main2Aux2Matches, mixedMatches, ratioMatches, protocols],

@@ -27,7 +27,7 @@ const MATRIX_TAB_LABELS: Record<MatrixKey, string> = {
   v1aux: "Main1",
   main2aux: "Main2",
   mixed: "混合",
-  ratio: "レシオ",
+  ratio: "レシオ(Main1)",
 };
 
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({
