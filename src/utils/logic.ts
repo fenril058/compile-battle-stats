@@ -133,7 +133,10 @@ export const rows = (
   return data;
 };
 
-export const matchup = (list: Match[]) => {
+export const matchup = (
+  list: Match[],
+  protocols: readonly Protocol[] = ALL_PROTOCOLS as readonly Protocol[],
+) => {
   const r: Record<string, StatEntry> = {};
   const bump = (k: string, w: boolean) => {
     if (!r[k]) r[k] = { g: 0, w: 0 };
@@ -152,27 +155,18 @@ export const matchup = (list: Match[]) => {
       }
     }
   }
-  // Matrix Initialization with Strict Types
-  const m: MatrixData = {};
 
-  // Cast ALL_PROTOCOLS to ensure TS knows we are iterating valid keys
-  (ALL_PROTOCOLS as readonly Protocol[]).forEach((a) => {
+  const m: MatrixData = {};
+  for (const a of protocols) {
     m[a] = {};
-    (ALL_PROTOCOLS as readonly Protocol[]).forEach((b) => {
-      if (!m[a]) {
-        m[a] = {}; // Mapやオブジェクトであれば適切に初期化
-      }
+    for (const b of protocols) {
       m[a][b] = null;
-    });
-  });
+    }
+  }
   for (const [k, v] of Object.entries(r)) {
     const [aStr, bStr] = k.split("__");
-
-    // Cast strings back to Protocol
     const a = aStr as Protocol;
     const b = bStr as Protocol;
-
-    // Check if m[a] exists (it should) and strictly assign
     if (m[a] && v.g >= MIN_GAMES_FOR_MATRIX) {
       m[a][b] = percent(v.w, v.g);
     }
