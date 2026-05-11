@@ -1,9 +1,9 @@
 import type React from "react";
-import type { MatrixData, Protocol, StatsResult } from "../types"; // types定義に合わせて調整してください
+import { useState } from "react";
+import type { MatrixData, Protocol, StatsResult } from "../types";
 import { Matrix } from "./Matrix";
 import { Stat } from "./Stat";
 
-// Propsの定義
 interface StatsDashboardProps {
   stats: {
     normal: StatsResult;
@@ -11,7 +11,7 @@ interface StatsDashboardProps {
     all: StatsResult;
   };
   matrices: {
-    normal: MatrixData; // typesの定義に合わせて修正
+    normal: MatrixData;
     ratio: MatrixData;
     all: MatrixData;
   };
@@ -20,6 +20,14 @@ interface StatsDashboardProps {
   minTrio: number;
 }
 
+const MATRIX_KEYS = ["normal", "ratio", "all"] as const;
+type MatrixKey = (typeof MATRIX_KEYS)[number];
+const MATRIX_TAB_LABELS: Record<MatrixKey, string> = {
+  normal: "通常戦",
+  ratio: "レシオ",
+  all: "全体",
+};
+
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   stats,
   matrices,
@@ -27,10 +35,12 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   minPair,
   minTrio,
 }) => {
+  const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("normal");
+
   return (
     <>
-      {/* Visualization Section: Stats */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Stat section */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
         <Stat
           t="通常戦"
           m={stats.normal}
@@ -54,28 +64,28 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
         />
       </section>
 
-      {/* Visualization Section: Matrices */}
-      <section className="space-y-8">
-        <div className="overflow-x-auto">
-          <Matrix
-            t="通常戦 相性表"
-            m={matrices.normal}
-            bg="bg-zinc-900/50"
-            protocols={protocols}
-          />
+      {/* Matrix section */}
+      <section>
+        <div className="flex flex-wrap gap-1 mb-3">
+          {MATRIX_KEYS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveMatrixKey(key)}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                activeMatrixKey === key
+                  ? "bg-zinc-500 text-white font-medium"
+                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+              }`}
+            >
+              {MATRIX_TAB_LABELS[key]}
+            </button>
+          ))}
         </div>
         <div className="overflow-x-auto">
           <Matrix
-            t="レシオ 相性表"
-            m={matrices.ratio}
-            bg="bg-zinc-900/50"
-            protocols={protocols}
-          />
-        </div>
-        <div className="overflow-x-auto">
-          <Matrix
-            t="全試合 相性表"
-            m={matrices.all}
+            t={`${MATRIX_TAB_LABELS[activeMatrixKey]} 相性表`}
+            m={matrices[activeMatrixKey]}
             bg="bg-zinc-900/50"
             protocols={protocols}
           />
