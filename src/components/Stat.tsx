@@ -10,16 +10,16 @@ const TAB_LABELS: Record<StatKey, string> = {
   single: "単体",
   pair: "2枚組",
   trio: "3枚組",
-  first: "1枠目",
-  second: "2枠目",
+  first: "先攻",
+  second: "後攻",
 };
 
 const SECTION_LABELS: Record<StatKey, string> = {
   single: "プロトコル単体勝率",
   pair: "プロトコル2枚組勝率",
   trio: "プロトコル3枚組勝率",
-  first: "1枠目配置勝率",
-  second: "2枠目配置勝率",
+  first: "先攻時の勝率",
+  second: "後攻時の勝率",
 };
 
 type StatProps = {
