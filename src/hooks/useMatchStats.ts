@@ -1,52 +1,102 @@
 import { useMemo } from "react";
-import type { Match } from "../types";
+import { PROTOCOL_SETS } from "../config";
+import type { Match, MatrixData, Protocol } from "../types";
 import { makeStats, matchup } from "../utils/logic";
 
-export const useMatchStats = (matches: Match[]) => {
-  // === ソートロジック ===
-  // 試合日(matchDate)の降順 > 登録日時(createdAt)の降順
+// Module-level sets for O(1) protocol lookup
+const V1_AUX_SET = new Set<string>(PROTOCOL_SETS.V1_AUX);
+const V1_AUX_PROTOCOLS = PROTOCOL_SETS.V1_AUX as unknown as readonly Protocol[];
+const MAIN2_AUX2_PROTOCOLS = PROTOCOL_SETS.V2.filter(
+  (p) => !V1_AUX_SET.has(p),
+) as unknown as readonly Protocol[];
+const MAIN2_AUX2_SET = new Set<string>(MAIN2_AUX2_PROTOCOLS);
+
+const isV1AuxTrio = (trio: readonly string[]) =>
+  trio.every((p) => V1_AUX_SET.has(p));
+const isMain2Aux2Trio = (trio: readonly string[]) =>
+  trio.every((p) => MAIN2_AUX2_SET.has(p));
+
+export type MatrixView = {
+  data: MatrixData;
+  protocols: readonly Protocol[];
+};
+
+export const useMatchStats = (
+  matches: Match[],
+  protocols: readonly Protocol[],
+) => {
   const sortedMatches = useMemo(() => {
     return [...matches].sort((a, b) => {
-      // 1. matchDateが存在する場合、matchDateでソート (新しい日付が前)
       const matchDateA = a.matchDate ?? 0;
       const matchDateB = b.matchDate ?? 0;
-
-      if (matchDateA !== matchDateB) {
-        return matchDateB - matchDateA;
-      }
-
-      // 2. matchDateが同じか、存在しない場合、createdAtでソート (新しい登録が前)
+      if (matchDateA !== matchDateB) return matchDateB - matchDateA;
       return b.createdAt - a.createdAt;
     });
   }, [matches]);
 
-  // === フィルタリング ===
+  // Stat 用フィルタ（通常戦 / レシオ / 全体）
   const normalMatches = useMemo(
     () => matches.filter((m) => !m.ratio),
     [matches],
   );
+  const ratioMatchesForStats = useMemo(
+    () => matches.filter((m) => m.ratio),
+    [matches],
+  );
 
-  const ratioMatches = useMemo(() => matches.filter((m) => m.ratio), [matches]);
-
-  // === 統計データ (Stat用) ===
   const stats = useMemo(
     () => ({
       all: makeStats(matches),
       normal: makeStats(normalMatches),
-      ratio: makeStats(ratioMatches),
+      ratio: makeStats(ratioMatchesForStats),
     }),
-    [matches, normalMatches, ratioMatches],
+    [matches, normalMatches, ratioMatchesForStats],
   );
 
-  // === 相性表データ (Matrix用) ===
-  const matrices = useMemo(
+  // Matrix 用フィルタ（4種）
+  const v1AuxMatches = useMemo(
+    () => matches.filter((m) => isV1AuxTrio(m.first) && isV1AuxTrio(m.second)),
+    [matches],
+  );
+  const main2Aux2Matches = useMemo(
+    () =>
+      matches.filter(
+        (m) => isMain2Aux2Trio(m.first) && isMain2Aux2Trio(m.second),
+      ),
+    [matches],
+  );
+  const mixedMatches = useMemo(
+    () =>
+      matches.filter(
+        (m) =>
+          !(isV1AuxTrio(m.first) && isV1AuxTrio(m.second)) &&
+          !(isMain2Aux2Trio(m.first) && isMain2Aux2Trio(m.second)),
+      ),
+    [matches],
+  );
+  const ratioMatches = useMemo(() => matches.filter((m) => m.ratio), [matches]);
+
+  const matrixViews = useMemo(
     () => ({
-      all: matchup(matches),
-      normal: matchup(normalMatches),
-      ratio: matchup(ratioMatches),
+      v1aux: {
+        data: matchup(v1AuxMatches, V1_AUX_PROTOCOLS),
+        protocols: V1_AUX_PROTOCOLS,
+      },
+      main2aux: {
+        data: matchup(main2Aux2Matches, MAIN2_AUX2_PROTOCOLS),
+        protocols: MAIN2_AUX2_PROTOCOLS,
+      },
+      mixed: {
+        data: matchup(mixedMatches, protocols),
+        protocols,
+      },
+      ratio: {
+        data: matchup(ratioMatches, protocols),
+        protocols,
+      },
     }),
-    [matches, normalMatches, ratioMatches],
+    [v1AuxMatches, main2Aux2Matches, mixedMatches, ratioMatches, protocols],
   );
 
-  return { stats, matrices, sortedMatches };
+  return { stats, matrixViews, sortedMatches };
 };

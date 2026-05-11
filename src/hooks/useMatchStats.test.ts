@@ -1,7 +1,10 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { Match } from "../types";
+import { PROTOCOL_SETS } from "../config";
+import type { Match, Protocol } from "../types";
 import { useMatchStats } from "./useMatchStats";
+
+const testProtocols = PROTOCOL_SETS.V1_AUX as unknown as readonly Protocol[];
 
 describe("useMatchStats", () => {
   // テスト用データ生成ヘルパー
@@ -30,7 +33,7 @@ describe("useMatchStats", () => {
       createMatch("4", 9000, 100, false), // Dateあり(新しい) (Should be 1st)
     ];
 
-    const { result } = renderHook(() => useMatchStats(matches));
+    const { result } = renderHook(() => useMatchStats(matches, testProtocols));
 
     const sortedIds = result.current.sortedMatches.map((m) => m.id);
     expect(sortedIds).toEqual(["4", "3", "2", "1"]);
@@ -43,7 +46,7 @@ describe("useMatchStats", () => {
       createMatch("3", 100, 100, false), // Normal
     ];
 
-    const { result } = renderHook(() => useMatchStats(matches));
+    const { result } = renderHook(() => useMatchStats(matches, testProtocols));
 
     // 全体
     expect(result.current.stats.all.single.APATHY.g).toBe(3);

@@ -1,6 +1,7 @@
 import type React from "react";
 import { useState } from "react";
-import type { MatrixData, Protocol, StatsResult } from "../types";
+import type { MatrixView } from "../hooks/useMatchStats";
+import type { StatsResult } from "../types";
 import { Matrix } from "./Matrix";
 import { Stat } from "./Stat";
 
@@ -10,32 +11,33 @@ interface StatsDashboardProps {
     ratio: StatsResult;
     all: StatsResult;
   };
-  matrices: {
-    normal: MatrixData;
-    ratio: MatrixData;
-    all: MatrixData;
+  matrixViews: {
+    v1aux: MatrixView;
+    main2aux: MatrixView;
+    mixed: MatrixView;
+    ratio: MatrixView;
   };
-  protocols: readonly Protocol[];
   minPair: number;
   minTrio: number;
 }
 
-const MATRIX_KEYS = ["normal", "ratio", "all"] as const;
+const MATRIX_KEYS = ["v1aux", "main2aux", "mixed", "ratio"] as const;
 type MatrixKey = (typeof MATRIX_KEYS)[number];
 const MATRIX_TAB_LABELS: Record<MatrixKey, string> = {
-  normal: "通常戦",
+  v1aux: "Main1",
+  main2aux: "Main2",
+  mixed: "混合",
   ratio: "レシオ",
-  all: "全体",
 };
 
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   stats,
-  matrices,
-  protocols,
+  matrixViews,
   minPair,
   minTrio,
 }) => {
-  const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("normal");
+  const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("v1aux");
+  const activeView = matrixViews[activeMatrixKey];
 
   return (
     <>
@@ -85,9 +87,9 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
         <div className="overflow-x-auto">
           <Matrix
             t={`${MATRIX_TAB_LABELS[activeMatrixKey]} 相性表`}
-            m={matrices[activeMatrixKey]}
+            m={activeView.data}
             bg="bg-zinc-900/50"
-            protocols={protocols}
+            protocols={activeView.protocols}
           />
         </div>
       </section>
