@@ -1,73 +1,59 @@
-# React + TypeScript + Vite
+# compile-battle-stats
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+コンパイルバトルの対戦結果を記録・集計するWebアプリです。
 
-Currently, two official plugins are available:
+## 概要
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+プロトコルを3つ選んで戦う「コンパイルバトル」の対戦データを管理し、勝率・相性などの統計を可視化します。Firebaseが設定されていない場合はローカルストレージのみで動作するため、Firebase不要でローカル開発が可能です。
 
-## React Compiler
+## 機能
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- 対戦結果の記録（先攻・後攻それぞれのプロトコル3種と勝者）
+- レシオバトル（両者のレシオ合計が上限以下の対戦）の自動判定
+- シーズンごとの統計表示
+  - プロトコル単体 / 2種組み合わせ / 3種組み合わせの勝率
+  - 先攻・後攻別の勝率
+  - プロトコル間のマッチアップ行列
+- Firebase（Firestore）によるリモート共有 / ローカルストレージによるオフライン動作
 
-## Expanding the ESLint configuration
+## セットアップ
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Firebase を使う場合は `.env.example` を `.env` にコピーして Firebase の認証情報を入力してください。`.env` がない、または空の場合はローカルストレージモードで動作します。
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
+# .env を編集して Firebase の認証情報を記入
 ```
+
+## 開発
+
+```bash
+npm run dev       # 開発サーバー起動
+npm run build     # 型チェック + ビルド
+npm run check:fix # Biome によるフォーマット・Lint の自動修正
+npm run test      # テスト実行
+```
+
+## シーズン
+
+| シーズン | プロトコルセット | 書き込み |
+|---------|--------------|--------|
+| Season 3 | V2 (メイン24種) | 可 |
+| Season 2 | V2 (メイン24種) | 不可 |
+| Season 1 (Aux) | V1_AUX (メイン12種 + 補助3種) | 不可 |
+| Season 1 | V1 (メイン12種) | 不可 |
+
+新しいシーズンを追加するには `src/config.ts` の `SEASONS_CONFIG` にエントリを追加してください。
+
+## 技術スタック
+
+- **フロントエンド**: React + TypeScript
+- **ビルド**: Vite 8
+- **スタイリング**: Tailwind CSS v4
+- **データベース**: Firebase Firestore（オプション）/ localStorage（フォールバック）
+- **テスト**: Vitest
+- **Linter / Formatter**: Biome
