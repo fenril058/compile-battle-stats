@@ -1,16 +1,68 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
 # Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configurationoptions-for-the-dependab-ot.yml-file
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
       interval: "daily"
+      time: "08:00"
+      timezone: "Asia/Tokyo"
     open-pull-requests-limit: 10
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-toastify"
+          - "@types/react*"
+          - "@testing-library/react"
+      build-tools:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "typescript"
+      type-definitions:
+        patterns:
+          - "@types/*"
+        exclude-patterns:
+          - "@types/react*"
+      vercel:
+        patterns:
+          - "@vercel/*"
+      testing:
+        patterns:
+          - "vitest"
+          - "jsdom"
+          - "@testing-library/jest-dom"
+      linting-tools:
+        patterns:
+          - "husky"
+          - "lint-staged"
+          - "secretlint"
+          - "@secretlint/*"
+          - "globals"
+    cooldown:
+      default-days: 7
+      semver-major-days: 7
+      semver-minor-days: 7
+      semver-patch-days: 7
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "08:00"
+      timezone: "Asia/Tokyo"
+
   - package-ecosystem: "nix"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "sunday"
+      time: "08:00"
+      timezone: "Asia/Tokyo"
