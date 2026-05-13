@@ -33,6 +33,9 @@ jobs:
       - name: Verify devShell
         run: nix develop .#default --command true
 
+      - name: Audit
+        run: nix develop .#default --command npm audit --audit-level=high
+
       - name: Lint
         run: nix develop .#default --command npm run check
 
