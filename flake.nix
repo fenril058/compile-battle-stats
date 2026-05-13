@@ -16,6 +16,9 @@
       {
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
+            pinact
+            zizmor
+            ghalint
             typescript-language-server
             biome
             npm-check-updates
