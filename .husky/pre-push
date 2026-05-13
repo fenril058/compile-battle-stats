@@ -1,1 +1,3 @@
 npm run build
+zizmor --persona=pedantic .
+ghalint run
