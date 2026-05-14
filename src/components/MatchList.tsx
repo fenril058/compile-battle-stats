@@ -41,6 +41,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
   ({ matches, onRemove, isRegistrationAllowed }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
     // 総ページ数を計算
     const totalPages = Math.ceil(matches.length / pageSize);
@@ -161,19 +162,41 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
                     </td>
                     <td className="p-2">{m.ratio ? "◯" : ""}</td>
                     <td className="p-2">{formatDate(m.matchDate)}</td>
-                    <td className="p-2 min-w-[60px]">
-                      <button
-                        type="button"
-                        onClick={() => onRemove(m.id)}
-                        disabled={!isRegistrationAllowed}
-                        className={`text-xs px-2 py-1 rounded ${
-                          isRegistrationAllowed
-                            ? "text-red-400 hover:bg-red-900/30 hover:text-red-300"
-                            : "text-zinc-600 cursor-not-allowed"
-                        }`}
-                      >
-                        ️削除
-                      </button>
+                    <td className="p-2 min-w-[80px]">
+                      {pendingDeleteId === m.id ? (
+                        <span className="inline-flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onRemove(m.id);
+                              setPendingDeleteId(null);
+                            }}
+                            className="text-xs px-2 py-1 rounded bg-red-700 hover:bg-red-600 text-white"
+                          >
+                            確認
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPendingDeleteId(null)}
+                            className="text-xs px-2 py-1 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200"
+                          >
+                            戻る
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setPendingDeleteId(m.id)}
+                          disabled={!isRegistrationAllowed}
+                          className={`text-xs px-2 py-1 rounded ${
+                            isRegistrationAllowed
+                              ? "text-red-400 hover:bg-red-900/30 hover:text-red-300"
+                              : "text-zinc-600 cursor-not-allowed"
+                          }`}
+                        >
+                          ️削除
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
