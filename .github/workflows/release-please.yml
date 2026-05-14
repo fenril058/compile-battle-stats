@@ -16,6 +16,7 @@ jobs:
   release-please:
     name: Release Please
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write # release-please がタグ・リリースを作成するために必要
       pull-requests: write # release-please がリリース PR を作成・更新するために必要
