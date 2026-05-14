@@ -184,8 +184,6 @@ export function useFirestore<T extends WithId>(collectionName: string) {
 
   const remove = useCallback(
     async (idToRemove: string) => {
-      if (!confirm("本当にこの試合を削除しますか？")) return;
-
       // 1. Local StorageとStateを即座に更新
       let removedItem: T | undefined;
       setItems((prev) => {
