@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.1.0...compile-battle-stats-v1.2.0) (2026-05-17)
+
+
+### Features
+
+* add protocol filter tabs to ranking section ([86894fe](https://github.com/fenril058/compile-battle-stats/commit/86894fe20d306b11a90096758246b9e262d31cd8))
+* ランキングセクションにプロトコルフィルタータブを追加 ([c87bc2c](https://github.com/fenril058/compile-battle-stats/commit/c87bc2cc3433c1e318742eb782db808d9e0cfdf7))
+
 ## [1.1.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.0.2...compile-battle-stats-v1.1.0) (2026-05-15)
 
 
