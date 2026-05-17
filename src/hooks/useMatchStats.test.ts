@@ -49,10 +49,10 @@ describe("useMatchStats", () => {
     const { result } = renderHook(() => useMatchStats(matches, testProtocols));
 
     // 全体
-    expect(result.current.stats.all.single.APATHY.g).toBe(3);
+    expect(result.current.statViews.all.all.single.APATHY.g).toBe(3);
     // Normalのみ
-    expect(result.current.stats.normal.single.APATHY.g).toBe(2);
+    expect(result.current.statViews.all.normal.single.APATHY.g).toBe(2);
     // Ratioのみ
-    expect(result.current.stats.ratio.single.APATHY.g).toBe(1);
+    expect(result.current.statViews.all.ratio.single.APATHY.g).toBe(1);
   });
 });
