@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { PROTOCOL_SETS } from "../config";
-import type { Match, MatrixData, Protocol } from "../types";
+import type { Match, MatrixData, Protocol, StatsResult } from "../types";
 import { makeStats, matchup } from "../utils/logic";
 
 // Module-level sets for O(1) protocol lookup
@@ -21,6 +21,12 @@ export type MatrixView = {
   protocols: readonly Protocol[];
 };
 
+export type StatsView = {
+  normal: StatsResult;
+  ratio: StatsResult;
+  all: StatsResult;
+};
+
 export const useMatchStats = (
   matches: Match[],
   protocols: readonly Protocol[],
@@ -34,7 +40,7 @@ export const useMatchStats = (
     });
   }, [matches]);
 
-  // Stat 用フィルタ（通常戦 / レシオ / 全体）
+  // 通常戦 / レシオ フィルタ
   const normalMatches = useMemo(
     () => matches.filter((m) => !m.ratio),
     [matches],
@@ -44,16 +50,7 @@ export const useMatchStats = (
     [matches],
   );
 
-  const stats = useMemo(
-    () => ({
-      all: makeStats(matches),
-      normal: makeStats(normalMatches),
-      ratio: makeStats(ratioMatchesForStats),
-    }),
-    [matches, normalMatches, ratioMatchesForStats],
-  );
-
-  // Matrix 用フィルタ（4種）
+  // プロトコルセット別フィルタ（Stat / Matrix 共用）
   const v1AuxMatches = useMemo(
     () => matches.filter((m) => isV1AuxTrio(m.first) && isV1AuxTrio(m.second)),
     [matches],
@@ -75,6 +72,39 @@ export const useMatchStats = (
     [matches],
   );
   const ratioMatches = useMemo(() => matches.filter((m) => m.ratio), [matches]);
+
+  const statViews = useMemo(
+    () => ({
+      all: {
+        normal: makeStats(normalMatches),
+        ratio: makeStats(ratioMatchesForStats),
+        all: makeStats(matches),
+      },
+      v1aux: {
+        normal: makeStats(v1AuxMatches.filter((m) => !m.ratio)),
+        ratio: makeStats(v1AuxMatches.filter((m) => m.ratio)),
+        all: makeStats(v1AuxMatches),
+      },
+      main2aux: {
+        normal: makeStats(main2Aux2Matches.filter((m) => !m.ratio)),
+        ratio: makeStats(main2Aux2Matches.filter((m) => m.ratio)),
+        all: makeStats(main2Aux2Matches),
+      },
+      mixed: {
+        normal: makeStats(mixedMatches.filter((m) => !m.ratio)),
+        ratio: makeStats(mixedMatches.filter((m) => m.ratio)),
+        all: makeStats(mixedMatches),
+      },
+    }),
+    [
+      matches,
+      normalMatches,
+      ratioMatchesForStats,
+      v1AuxMatches,
+      main2Aux2Matches,
+      mixedMatches,
+    ],
+  );
 
   const matrixViews = useMemo(
     () => ({
@@ -98,5 +128,5 @@ export const useMatchStats = (
     [v1AuxMatches, main2Aux2Matches, mixedMatches, ratioMatches, protocols],
   );
 
-  return { stats, matrixViews, sortedMatches };
+  return { statViews, matrixViews, sortedMatches };
 };

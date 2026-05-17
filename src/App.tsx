@@ -72,7 +72,7 @@ export default function App() {
   } = useFirestore<Match>(currentConfig.collectionName);
 
   // --- Derived Stats (Expensive Calcs) ---
-  const { stats, matrixViews, sortedMatches } = useMatchStats(
+  const { statViews, matrixViews, sortedMatches } = useMatchStats(
     matches,
     currentProtocols,
   );
@@ -162,7 +162,7 @@ export default function App() {
 
           {/* Visualization Section */}
           <StatsDashboard
-            stats={stats}
+            statViews={statViews}
             matrixViews={matrixViews}
             minPair={MIN_GAMES_FOR_PAIR_STATS}
             minTrio={MIN_GAMES_FOR_TRIO_STATS}

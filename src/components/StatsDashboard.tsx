@@ -1,15 +1,15 @@
 import type React from "react";
 import { useState } from "react";
-import type { MatrixView } from "../hooks/useMatchStats";
-import type { StatsResult } from "../types";
+import type { MatrixView, StatsView } from "../hooks/useMatchStats";
 import { Matrix } from "./Matrix";
 import { Stat } from "./Stat";
 
 interface StatsDashboardProps {
-  stats: {
-    normal: StatsResult;
-    ratio: StatsResult;
-    all: StatsResult;
+  statViews: {
+    all: StatsView;
+    v1aux: StatsView;
+    main2aux: StatsView;
+    mixed: StatsView;
   };
   matrixViews: {
     v1aux: MatrixView;
@@ -21,6 +21,15 @@ interface StatsDashboardProps {
   minTrio: number;
 }
 
+const STAT_VIEW_KEYS = ["all", "v1aux", "main2aux", "mixed"] as const;
+type StatViewKey = (typeof STAT_VIEW_KEYS)[number];
+const STAT_VIEW_LABELS: Record<StatViewKey, string> = {
+  all: "全体",
+  v1aux: "Main1",
+  main2aux: "Main2",
+  mixed: "混合",
+};
+
 const MATRIX_KEYS = ["v1aux", "main2aux", "mixed", "ratio"] as const;
 type MatrixKey = (typeof MATRIX_KEYS)[number];
 const MATRIX_TAB_LABELS: Record<MatrixKey, string> = {
@@ -31,39 +40,60 @@ const MATRIX_TAB_LABELS: Record<MatrixKey, string> = {
 };
 
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({
-  stats,
+  statViews,
   matrixViews,
   minPair,
   minTrio,
 }) => {
+  const [activeStatViewKey, setActiveStatViewKey] =
+    useState<StatViewKey>("all");
   const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("v1aux");
+  const activeStats = statViews[activeStatViewKey];
   const activeView = matrixViews[activeMatrixKey];
 
   return (
     <>
       {/* Stat section */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-        <Stat
-          t="通常戦"
-          m={stats.normal}
-          color="bg-orange-950/20"
-          minPair={minPair}
-          minTrio={minTrio}
-        />
-        <Stat
-          t="レシオ"
-          m={stats.ratio}
-          color="bg-blue-950/20"
-          minPair={minPair}
-          minTrio={minTrio}
-        />
-        <Stat
-          t="全体"
-          m={stats.all}
-          color="bg-green-950/20"
-          minPair={minPair}
-          minTrio={minTrio}
-        />
+      <section>
+        <div className="flex flex-wrap gap-1 mb-3">
+          {STAT_VIEW_KEYS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveStatViewKey(key)}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                activeStatViewKey === key
+                  ? "bg-zinc-500 text-white font-medium"
+                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+              }`}
+            >
+              {STAT_VIEW_LABELS[key]}
+            </button>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+          <Stat
+            t="通常戦"
+            m={activeStats.normal}
+            color="bg-orange-950/20"
+            minPair={minPair}
+            minTrio={minTrio}
+          />
+          <Stat
+            t="レシオ"
+            m={activeStats.ratio}
+            color="bg-blue-950/20"
+            minPair={minPair}
+            minTrio={minTrio}
+          />
+          <Stat
+            t="全体"
+            m={activeStats.all}
+            color="bg-green-950/20"
+            minPair={minPair}
+            minTrio={minTrio}
+          />
+        </div>
       </section>
 
       {/* Matrix section */}
