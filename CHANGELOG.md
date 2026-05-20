@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.2.0...compile-battle-stats-v1.3.0) (2026-05-20)
+
+
+### Features
+
+* enable Firebase Analytics ([4702407](https://github.com/fenril058/compile-battle-stats/commit/4702407f4251a74ebc1e33fe61c7b6bae921095d))
+
 ## [1.2.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.1.0...compile-battle-stats-v1.2.0) (2026-05-17)
 
 
