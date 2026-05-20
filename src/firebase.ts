@@ -1,16 +1,20 @@
 // src/firebase.ts
+
+import { type Analytics, getAnalytics } from "firebase/analytics";
 import { type FirebaseApp, initializeApp } from "firebase/app";
 import { type Auth, getAuth } from "firebase/auth";
 import { type Firestore, getFirestore } from "firebase/firestore";
 import { FIREBASE_CONFIG } from "./config/env";
 
 let app: FirebaseApp | null = null;
+let analytics: Analytics | null = null;
 let db: Firestore | null = null;
 let auth: Auth | null = null;
 
 try {
   if (FIREBASE_CONFIG) {
     app = initializeApp(FIREBASE_CONFIG);
+    analytics = getAnalytics(app);
     db = getFirestore(app);
     auth = getAuth(app);
   } else {
@@ -21,6 +25,7 @@ try {
 } catch (err) {
   // 例外発生時も null を返却
   app = null;
+  analytics = null;
   db = null;
   auth = null;
   console.error("[firebase] initialization failed:", err);
@@ -29,4 +34,4 @@ try {
 // App 側でモード表示などに使えるフラグ
 const isFirebaseEnabled = !!db;
 
-export { app, auth, db, isFirebaseEnabled };
+export { analytics, app, auth, db, isFirebaseEnabled };
