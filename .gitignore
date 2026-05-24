@@ -19,6 +19,10 @@ dist-ssr
 # Claude Code local settings
 .claude/settings.local.json
 
+# Claude Code skills (reproduced from skills-lock.json)
+.agents/skills/
+.claude/skills/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
