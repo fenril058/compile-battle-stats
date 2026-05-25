@@ -9,7 +9,8 @@ export const RatioTable: React.FC<{
   const groups = useMemo(() => {
     const map = new Map<number, Protocol[]>();
     for (const p of protocols) {
-      const score = ratios[p] ?? 0;
+      const score = ratios[p];
+      if (score === undefined) continue;
       const list = map.get(score) ?? [];
       list.push(p);
       map.set(score, list);
