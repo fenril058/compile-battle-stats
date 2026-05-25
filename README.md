@@ -56,7 +56,7 @@ npm run test      # テスト実行
 | フィールド | 説明 |
 |-----------|-----|
 | `protocolVer` | 使用するプロトコルセット（`PROTOCOL_SETS` のキー） |
-| `ratioVer` | レシオ値セット（`RATIO_SETS` のキー） |
+| `ratioVer` | レシオ値セット（`RATIO_SETS` のキー：`"S1"` / `"S2"` / `"S3"` …） |
 | `ratioProtocols` | レシオ対戦に参加できるプロトコルの一覧（`PROTOCOL_SETS` の値） |
 | `maxRatio` | レシオ上限値 |
 | `isReadOnly` | 書き込み禁止フラグ |
