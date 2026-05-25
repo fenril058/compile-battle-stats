@@ -1,5 +1,5 @@
 // --- 1. プロトコル定義 ---
-const PROTOCOLS_MAIN1 = [
+const PROTOCOLS_V1_MAIN = [
   "DARKNESS",
   "FIRE",
   "PSYCHIC",
@@ -14,9 +14,9 @@ const PROTOCOLS_MAIN1 = [
   "METAL",
 ] as const;
 
-const PROTOCOLS_AUX1 = ["HATE", "LOVE", "APATHY"] as const;
+const PROTOCOLS_V1_AUX = ["HATE", "LOVE", "APATHY"] as const;
 
-const PROTOCOLS_MAIN2 = [
+const PROTOCOLS_V2_MAIN = [
   "LUCK",
   "WAR",
   "COURAGE",
@@ -31,16 +31,16 @@ const PROTOCOLS_MAIN2 = [
   "PEACE",
 ] as const;
 
-const PROTOCOLS_AUX2 = ["DIVERSITY", "UNITY", "ASSIMILATION"] as const;
+const PROTOCOLS_V2_AUX = ["DIVERSITY", "UNITY", "ASSIMILATION"] as const;
 
 export const PROTOCOL_SETS = {
-  V1: PROTOCOLS_MAIN1,
-  V1_AUX: [...PROTOCOLS_MAIN1, ...PROTOCOLS_AUX1] as const,
+  V1: PROTOCOLS_V1_MAIN,
+  V1_AUX: [...PROTOCOLS_V1_MAIN, ...PROTOCOLS_V1_AUX] as const,
   V2: [
-    ...PROTOCOLS_MAIN1,
-    ...PROTOCOLS_AUX1,
-    ...PROTOCOLS_MAIN2,
-    ...PROTOCOLS_AUX2,
+    ...PROTOCOLS_V1_MAIN,
+    ...PROTOCOLS_V1_AUX,
+    ...PROTOCOLS_V2_MAIN,
+    ...PROTOCOLS_V2_AUX,
   ] as const,
 } as const;
 
@@ -80,7 +80,7 @@ export const ABBR = {
 };
 
 // --- 2. レシオ定義 ---
-const RATIOS_V1 = {
+const RATIOS_S1 = {
   DARKNESS: 5,
   FIRE: 5,
   HATE: 5,
@@ -98,7 +98,7 @@ const RATIOS_V1 = {
   METAL: 0,
 } as const;
 
-const RATIOS_V3 = {
+const RATIOS_S3 = {
   DARKNESS: 5,
   FIRE: 5,
   HATE: 5,
@@ -116,7 +116,8 @@ const RATIOS_V3 = {
   METAL: 0,
 } as const;
 
-const RATIOS_main2 = {
+// Season 2 時点での V2 プロトコル暫定値（レシオ対象外のため 9 点で固定）
+const RATIOS_S2_V2 = {
   LUCK: 9,
   WAR: 9,
   COURAGE: 9,
@@ -132,12 +133,21 @@ const RATIOS_main2 = {
   DIVERSITY: 9,
   UNITY: 9,
   ASSIMILATION: 9,
-};
+} as const;
+
+const RATIOS_S2 = {
+  ...RATIOS_S1,
+  ...RATIOS_S2_V2,
+  SPEED: 2,
+  PLAGUE: 1,
+  WATER: 2,
+  LIFE: 3,
+} as const;
 
 export const RATIO_SETS = {
-  V1: RATIOS_V1,
-  V2: { ...RATIOS_V1, ...RATIOS_main2, SPEED: 2, PLAGUE: 1, WATER: 2, LIFE: 3 },
-  V3: RATIOS_V3,
+  S1: RATIOS_S1,
+  S2: RATIOS_S2,
+  S3: RATIOS_S3,
 } as const;
 
 // --- 3. シーズン定義 ---
@@ -147,7 +157,7 @@ export const SEASONS_CONFIG = {
     displayName: "Season 3",
     collectionName: "compile_season3",
     protocolVer: "V2",
-    ratioVer: "V3",
+    ratioVer: "S3",
     isReadOnly: false,
     maxRatio: 8,
     ratioProtocols: PROTOCOL_SETS.V1_AUX,
@@ -156,7 +166,7 @@ export const SEASONS_CONFIG = {
     displayName: "Season 2",
     collectionName: "compile_season2",
     protocolVer: "V2",
-    ratioVer: "V2",
+    ratioVer: "S2",
     isReadOnly: true,
     maxRatio: 8,
     ratioProtocols: PROTOCOL_SETS.V1_AUX,
@@ -165,7 +175,7 @@ export const SEASONS_CONFIG = {
     displayName: "Season 1 (Aux)",
     collectionName: "compile_season1_aux",
     protocolVer: "V1_AUX",
-    ratioVer: "V1",
+    ratioVer: "S1",
     isReadOnly: true,
     maxRatio: 8,
     ratioProtocols: PROTOCOL_SETS.V1_AUX,
@@ -174,7 +184,7 @@ export const SEASONS_CONFIG = {
     displayName: "Season 1",
     collectionName: "compile_season1",
     protocolVer: "V1",
-    ratioVer: "V1",
+    ratioVer: "S1",
     isReadOnly: true,
     maxRatio: 8,
     ratioProtocols: PROTOCOL_SETS.V1,

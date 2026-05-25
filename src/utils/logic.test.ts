@@ -9,7 +9,7 @@ import {
   ratioSum,
 } from "./logic";
 
-const MOCK_RATIOS = RATIO_SETS.V1;
+const MOCK_RATIOS = RATIO_SETS.S1;
 
 describe("utils/logic", () => {
   describe("ratioSum & isRatioBattle", () => {
