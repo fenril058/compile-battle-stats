@@ -82,6 +82,7 @@ export default function App() {
     currentProtocols,
     currentRatios,
     maxRatio,
+    currentConfig.ratioProtocols,
   );
 
   // --- Callbacks ---
@@ -103,12 +104,23 @@ export default function App() {
 
       void addMatchItem({
         ...data,
-        // ★ logic関数に現在の設定(ratios, maxRatio)を渡す
-        ratio: isRatioBattle(data.first, data.second, currentRatios, maxRatio),
+        ratio: isRatioBattle(
+          data.first,
+          data.second,
+          currentRatios,
+          maxRatio,
+          currentConfig.ratioProtocols,
+        ),
         matchDate: data.matchDate,
       });
     },
-    [addMatchItem, isRegistrationAllowed, currentRatios, maxRatio],
+    [
+      addMatchItem,
+      isRegistrationAllowed,
+      currentRatios,
+      maxRatio,
+      currentConfig.ratioProtocols,
+    ],
   );
 
   // ★ MatchForm に渡すためのヘルパー (カリー化)

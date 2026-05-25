@@ -15,14 +15,18 @@ import type {
 export const ratioSum = (t: Trio, ratios: Ratios): number =>
   t.reduce((a, p) => a + (ratios[p] ?? 0), 0);
 
-// ratios と maxRatio(閾値) を受け取る
+// ratios と maxRatio(閾値) と ratioProtocols(レシオ対象プロトコル) を受け取る
 export const isRatioBattle = (
   a: Trio,
   b: Trio,
   ratios: Ratios,
   maxRatio: number,
-): boolean =>
-  ratioSum(a, ratios) <= maxRatio && ratioSum(b, ratios) <= maxRatio;
+  ratioProtocols: ReadonlyArray<string>,
+): boolean => {
+  const allEligible = (t: Trio) => t.every((p) => ratioProtocols.includes(p));
+  if (!allEligible(a) || !allEligible(b)) return false;
+  return ratioSum(a, ratios) <= maxRatio && ratioSum(b, ratios) <= maxRatio;
+};
 
 export const percent = (w: number, g: number): number =>
   g ? Math.round((w / g) * 1000) / 10 : 0;
@@ -180,6 +184,7 @@ export const parseMatchCsvRow = (
   validProtocols: readonly Protocol[],
   ratios: Ratios,
   maxRatio: number,
+  ratioProtocols: ReadonlyArray<string>,
 ): Omit<Match, "id" | "createdAt"> | null => {
   // 試合データとして最低限必要な7列 (F3  S3  Winner) があるか確認
   if (row.length < 7) return null;
@@ -199,7 +204,13 @@ export const parseMatchCsvRow = (
   const secondTrio = [S1, S2, S3] as Trio;
 
   // 注入された ratios を使用して計算
-  const ratio = isRatioBattle(firstTrio, secondTrio, ratios, maxRatio);
+  const ratio = isRatioBattle(
+    firstTrio,
+    secondTrio,
+    ratios,
+    maxRatio,
+    ratioProtocols,
+  );
 
   // 対戦日 (matchDate) のパース処理
   let matchDate: number | null = null;

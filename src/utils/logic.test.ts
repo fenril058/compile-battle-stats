@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RATIO_SETS } from "../config";
+import { PROTOCOL_SETS, RATIO_SETS } from "../config";
 import type { Match, Trio } from "../types";
 import {
   isRatioBattle,
@@ -14,6 +14,7 @@ const MOCK_RATIOS = RATIO_SETS.V1;
 describe("utils/logic", () => {
   describe("ratioSum & isRatioBattle", () => {
     const ratios = MOCK_RATIOS;
+    const allV1 = PROTOCOL_SETS.V1;
 
     it("calculates ratio sum correctly", () => {
       const trio: Trio = ["SPIRIT", "WATER", "HATE"];
@@ -27,13 +28,24 @@ describe("utils/logic", () => {
     });
 
     it("correctly identifies ratio battles based on maxRatio", () => {
-      const teamA: Trio = ["FIRE", "WATER", "METAL"]; // sum: 15
+      const teamA: Trio = ["FIRE", "WATER", "METAL"]; // sum: 8
       const teamB: Trio = ["LIFE", "SPIRIT", "SPEED"]; // sum: 4
 
       // 両方閾値以下ならTrue
-      expect(isRatioBattle(teamA, teamB, ratios, 8)).toBe(true);
+      expect(isRatioBattle(teamA, teamB, ratios, 8, allV1)).toBe(true);
       // どちらかが超えていればFalse
-      expect(isRatioBattle(teamA, teamB, ratios, 5)).toBe(false);
+      expect(isRatioBattle(teamA, teamB, ratios, 5, allV1)).toBe(false);
+    });
+
+    it("returns false when a trio contains a non-eligible protocol", () => {
+      const v1AuxOnly = PROTOCOL_SETS.V1_AUX;
+      // biome-ignore lint/suspicious/noExplicitAny: テスト用に意図的にV2プロトコルを使用
+      const teamWithV2: Trio = ["LUCK" as any, "FIRE", "WATER"];
+      const teamB: Trio = ["LIFE", "SPIRIT", "SPEED"];
+
+      expect(isRatioBattle(teamWithV2, teamB, ratios, 8, v1AuxOnly)).toBe(
+        false,
+      );
     });
   });
 
@@ -113,6 +125,7 @@ describe("utils/logic", () => {
       "METAL",
     ] as const;
     const ratios = MOCK_RATIOS;
+    const ratioProtocols = PROTOCOL_SETS.V1;
 
     it("parses a valid row correctly", () => {
       const row = [
@@ -125,7 +138,13 @@ describe("utils/logic", () => {
         "FIRST",
         "2025/01/01",
       ];
-      const result = parseMatchCsvRow(row, validProtocols, ratios, 10);
+      const result = parseMatchCsvRow(
+        row,
+        validProtocols,
+        ratios,
+        10,
+        ratioProtocols,
+      );
 
       expect(result).not.toBeNull();
       expect(result?.first).toEqual(["WATER", "SPEED", "PSYCHIC"]);
@@ -145,7 +164,13 @@ describe("utils/logic", () => {
         "FIRST",
         "",
       ];
-      const result = parseMatchCsvRow(row, validProtocols, ratios, 10);
+      const result = parseMatchCsvRow(
+        row,
+        validProtocols,
+        ratios,
+        10,
+        ratioProtocols,
+      );
       expect(result).toBeNull();
     });
 
@@ -162,7 +187,13 @@ describe("utils/logic", () => {
         "SECOND",
         "",
       ];
-      const result = parseMatchCsvRow(row, validProtocols, ratios, 10);
+      const result = parseMatchCsvRow(
+        row,
+        validProtocols,
+        ratios,
+        10,
+        ratioProtocols,
+      );
       expect(result?.matchDate).toBeNull();
     });
   });

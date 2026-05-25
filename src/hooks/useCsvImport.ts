@@ -23,6 +23,7 @@ export const useCsvImport = (
   currentProtocols: readonly Protocol[],
   ratios: Ratios,
   maxRatio: number,
+  ratioProtocols: ReadonlyArray<string>,
 ) => {
   const handleImportCsv = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +62,7 @@ export const useCsvImport = (
             currentProtocols,
             ratios,
             maxRatio,
+            ratioProtocols,
           );
 
           if (payload) {
@@ -91,7 +93,7 @@ export const useCsvImport = (
       // ファイル入力の値をリセットし、同じファイルを再度選択できるようにする（ブラウザの仕様対応）
       event.target.value = "";
     },
-    [addMatchItemBatch, currentProtocols, ratios, maxRatio],
+    [addMatchItemBatch, currentProtocols, ratios, maxRatio, ratioProtocols],
   );
 
   return { handleImportCsv };
