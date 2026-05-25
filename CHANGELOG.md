@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.3.0...compile-battle-stats-v1.4.0) (2026-05-25)
+
+
+### Features
+
+* apply modern web improvements via modern-web-guidance skill ([79b442f](https://github.com/fenril058/compile-battle-stats/commit/79b442f8579ba321b8fccf9b1eb26c4a431e573c))
+
+
+### Bug Fixes
+
+* hide protocols without ratio values from RatioTable ([b821f5e](https://github.com/fenril058/compile-battle-stats/commit/b821f5e48e8fd5547433f5a9e095f660e3e36796))
+
 ## [1.3.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.2.0...compile-battle-stats-v1.3.0) (2026-05-20)
 
 
