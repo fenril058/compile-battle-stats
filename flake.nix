@@ -31,7 +31,10 @@
             inherit nodejs;
           };
 
-          postShellHook = "";
+          postShellHook = ''
+            export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+            export PLAYWRIGHT_BROWSERS_PATH="$HOME/.cache/ms-playwright"
+          '';
         };
       }
     );
