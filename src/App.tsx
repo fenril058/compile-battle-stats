@@ -169,7 +169,7 @@ export default function App() {
           />
 
           {/* Data Management Section */}
-          <section>
+          <section className="below-fold">
             <Suspense fallback={<MatchListSkeleton />}>
               <MatchList
                 matches={sortedMatches}

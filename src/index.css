@@ -1,1 +1,57 @@
 @import "tailwindcss";
+
+/* === Below-fold deferred rendering ===
+   Apply only to sections confirmed to be off-screen on initial load.
+   contain-intrinsic-size prevents layout-shift scrollbar jumping while off-screen.
+*/
+.below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 600px;
+}
+
+/* === View Transitions for tab panels === */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(stat-panel),
+  ::view-transition-new(stat-panel),
+  ::view-transition-old(matrix-panel),
+  ::view-transition-new(matrix-panel) {
+    animation-duration: 150ms;
+    animation-timing-function: ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}
+
+/* === Table vertical scroll shadow indicator ===
+   Uses container scroll-state queries (Chrome/Edge 133+).
+   Falls back gracefully (shadow invisible) in Firefox/Safari.
+*/
+.table-scroll-container {
+  container-type: scroll-state;
+}
+
+.scroll-shadow-bottom {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  margin-top: -28px;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+  background: linear-gradient(to top, rgb(9 9 11 / 0.85), transparent);
+  z-index: 5;
+}
+
+@container scroll-state(scrollable: bottom) {
+  .scroll-shadow-bottom {
+    opacity: 1;
+  }
+}

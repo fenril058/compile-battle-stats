@@ -110,7 +110,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
           totalMatches={matches.length}
         />
 
-        <div className="relative max-h-[600px] overflow-y-auto overflow-x-auto">
+        <div className="table-scroll-container relative max-h-[600px] overflow-y-auto overflow-x-auto">
           <table className="text-xs w-full border-collapse">
             <thead className="sticky top-0 z-10 bg-zinc-800 text-zinc-300">
               <tr>
@@ -210,6 +210,8 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
               )}
             </tbody>
           </table>
+          {/* Scroll affordance: fades in when there is more content below */}
+          <div className="scroll-shadow-bottom" aria-hidden="true" />
         </div>
         {/* ページネーションコントロール (下部) */}
         <PaginationControls

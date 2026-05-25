@@ -1,5 +1,6 @@
 import type React from "react";
 import { useState } from "react";
+import { flushSync } from "react-dom";
 import type { MatrixView, StatsView } from "../hooks/useMatchStats";
 import { Matrix } from "./Matrix";
 import { Stat } from "./Stat";
@@ -51,6 +52,26 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   const activeStats = statViews[activeStatViewKey];
   const activeView = matrixViews[activeMatrixKey];
 
+  const handleStatTabChange = (key: StatViewKey) => {
+    if (!document.startViewTransition) {
+      setActiveStatViewKey(key);
+      return;
+    }
+    document.startViewTransition(() => {
+      flushSync(() => setActiveStatViewKey(key));
+    });
+  };
+
+  const handleMatrixTabChange = (key: MatrixKey) => {
+    if (!document.startViewTransition) {
+      setActiveMatrixKey(key);
+      return;
+    }
+    document.startViewTransition(() => {
+      flushSync(() => setActiveMatrixKey(key));
+    });
+  };
+
   return (
     <>
       {/* Stat section */}
@@ -60,7 +81,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             <button
               key={key}
               type="button"
-              onClick={() => setActiveStatViewKey(key)}
+              onClick={() => handleStatTabChange(key)}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 activeStatViewKey === key
                   ? "bg-zinc-500 text-white font-medium"
@@ -71,7 +92,10 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+        <div
+          style={{ viewTransitionName: "stat-panel" }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start"
+        >
           <Stat
             t="通常戦"
             m={activeStats.normal}
@@ -103,7 +127,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             <button
               key={key}
               type="button"
-              onClick={() => setActiveMatrixKey(key)}
+              onClick={() => handleMatrixTabChange(key)}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 activeMatrixKey === key
                   ? "bg-zinc-500 text-white font-medium"
@@ -114,7 +138,10 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             </button>
           ))}
         </div>
-        <div className="overflow-x-auto">
+        <div
+          style={{ viewTransitionName: "matrix-panel" }}
+          className="overflow-x-auto"
+        >
           <Matrix
             t={`${MATRIX_TAB_LABELS[activeMatrixKey]} 相性表`}
             m={activeView.data}
