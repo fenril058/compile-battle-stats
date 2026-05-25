@@ -40,10 +40,12 @@ The active `StorageMode` (`"remote" | "local"`) is exposed to the UI via the `mo
 ### Season / protocol versioning
 
 All game rules are defined in `src/config.ts`:
-- `SEASONS_CONFIG` — maps a `SeasonKey` to display name, Firestore collection name, protocol version, ratio version, read-only flag, and `maxRatio`.
+- `SEASONS_CONFIG` — maps a `SeasonKey` to display name, Firestore collection name, protocol version, ratio version, read-only flag, `maxRatio`, and `ratioProtocols`.
 - `PROTOCOL_SETS` — protocol lists for each version (`V1`, `V1_AUX`, `V2`).
 - `RATIO_SETS` — ratio values per protocol per version.
 - `ALL_PROTOCOLS` is currently `V1_AUX` and drives the `Protocol` union type.
+
+`ratioProtocols` explicitly lists the protocols eligible for ratio battles in each season. `isRatioBattle` checks this list first before comparing the ratio sum against `maxRatio`. This decouples eligibility from ratio values, so future seasons can assign real ratio values to V2 protocols without changing logic.
 
 When adding a new season, add an entry to `SEASONS_CONFIG`. The rest of the app derives everything from that entry.
 
@@ -65,7 +67,7 @@ type Match = {
   first: Trio;      // [Protocol, Protocol, Protocol]
   second: Trio;
   winner: "FIRST" | "SECOND";
-  ratio: boolean;   // true when both trios' ratio sum ≤ maxRatio
+  ratio: boolean;   // true when all protocols are ratioProtocols-eligible AND both trios' sum ≤ maxRatio
   createdAt: number;
   userId?: string;
   matchDate?: number | null;

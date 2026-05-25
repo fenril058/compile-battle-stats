@@ -137,7 +137,7 @@ const RATIOS_main2 = {
 export const RATIO_SETS = {
   V1: RATIOS_V1,
   V2: { ...RATIOS_V1, ...RATIOS_main2, SPEED: 2, PLAGUE: 1, WATER: 2, LIFE: 3 },
-  V3: { ...RATIOS_V3, ...RATIOS_main2 },
+  V3: RATIOS_V3,
 } as const;
 
 // --- 3. シーズン定義 ---
