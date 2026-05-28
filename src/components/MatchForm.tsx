@@ -1,11 +1,13 @@
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import type { ProtocolGroup } from "../config";
 import { useAuth } from "../hooks/useAuth";
 import type { Protocol, Trio, Winner } from "../types";
+import { ProtocolSelect } from "./ProtocolSelect";
 
 type MatchFormProps = {
-  protocols: readonly Protocol[];
+  protocolGroups: readonly ProtocolGroup[];
   onAddMatch: (data: {
     first: Trio;
     second: Trio;
@@ -27,7 +29,7 @@ const INITIAL_FIRST: Trio = ["DARKNESS", "FIRE", "HATE"] as unknown as Trio;
 const INITIAL_SECOND: Trio = ["PSYCHIC", "GRAVITY", "WATER"] as unknown as Trio;
 
 export const MatchForm: React.FC<MatchFormProps> = ({
-  protocols,
+  protocolGroups,
   onAddMatch,
   isRegistrationAllowed,
   onSyncLocal,
@@ -67,29 +69,22 @@ export const MatchForm: React.FC<MatchFormProps> = ({
 
   // === useEffect: プロトコル変更時のリセット処理 ===
   useEffect(() => {
-    // シーズンが変更されたときに状態をリセットする
-    // 新しいプロトコルリストが有効であることを確認
-    if (protocols.length >= 3) {
-      // 新しいプロトコルリストの最初の3つをfirstに設定
-      setFirst(protocols.slice(0, 3) as Trio);
-
-      // secondは、リストが6つ以上あれば次の3つ、なければ最初の3つを設定
+    const flat = protocolGroups.flatMap((g) => [
+      ...g.protocols,
+    ]) as readonly Protocol[];
+    if (flat.length >= 3) {
+      setFirst(flat.slice(0, 3) as Trio);
       const secondStart =
-        protocols.length >= 6 ? protocols.slice(3, 6) : protocols.slice(0, 3);
-
+        flat.length >= 6 ? flat.slice(3, 6) : flat.slice(0, 3);
       setSecond(secondStart as Trio);
     } else {
-      // プロトコルが不足している場合、無効なプロトコル名が入らないよう空のTrioを設定（安全策）
       setFirst(["", "", ""] as unknown as Trio);
       setSecond(["", "", ""] as unknown as Trio);
     }
-    // シーズン変更時には警告フラグもリセット
-  }, [protocols]); // protocols が変わるたびに実行される
+  }, [protocolGroups]);
 
-  const handleSelect =
-    (side: "FIRST" | "SECOND", index: number) =>
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const v = e.target.value as Protocol;
+  const handleProtocolChange =
+    (side: "FIRST" | "SECOND", index: number) => (v: Protocol) => {
       const setter = side === "FIRST" ? setFirst : setSecond;
       setter((prev) => {
         const next = [...prev] as Trio;
@@ -184,22 +179,15 @@ export const MatchForm: React.FC<MatchFormProps> = ({
             <fieldset className="flex flex-col items-center p-2 border border-zinc-700 rounded-xl">
               <legend className="text-center font-semibold mb-2">先攻</legend>
               {first.map((p, i) => (
-                <select
-                  // biome-ignore lint: /correctness/useArrayIndexOfAsKey
+                <ProtocolSelect
+                  // biome-ignore lint/suspicious/noArrayIndexKey: position is fixed (always 3 slots)
                   key={`first-${i}`}
                   value={p}
-                  onChange={handleSelect("FIRST", i)}
+                  onChange={handleProtocolChange("FIRST", i)}
+                  protocolGroups={protocolGroups}
                   disabled={!isRegistrationAllowed}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1"
-                  aria-label={`先攻の ${i + 1} 番目の選択`}
-                >
-                  {/* UIの選択肢はprotocolsから生成される */}
-                  {protocols.map((x) => (
-                    <option key={x} value={x}>
-                      {x}
-                    </option>
-                  ))}
-                </select>
+                  ariaLabel={`先攻の ${i + 1} 番目の選択`}
+                />
               ))}
               <p className="text-xs text-center text-zinc-400 mt-1">
                 レシオ: {ratioSum(first)}
@@ -210,22 +198,15 @@ export const MatchForm: React.FC<MatchFormProps> = ({
             <fieldset className="flex flex-col items-center p-2 border border-zinc-700 rounded-xl">
               <legend className="text-center font-semibold mb-2">後攻</legend>
               {second.map((p, i) => (
-                <select
-                  // biome-ignore lint: /correctness/useArrayIndexOfAsKey
+                <ProtocolSelect
+                  // biome-ignore lint/suspicious/noArrayIndexKey: position is fixed (always 3 slots)
                   key={`second-${i}`}
                   value={p}
-                  onChange={handleSelect("SECOND", i)}
+                  onChange={handleProtocolChange("SECOND", i)}
+                  protocolGroups={protocolGroups}
                   disabled={!isRegistrationAllowed}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1"
-                  aria-label={`後攻の ${i + 1} 番目の選択`}
-                >
-                  {/* UIの選択肢はprotocolsから生成される */}
-                  {protocols.map((x) => (
-                    <option key={x} value={x}>
-                      {x}
-                    </option>
-                  ))}
-                </select>
+                  ariaLabel={`後攻の ${i + 1} 番目の選択`}
+                />
               ))}
               <p className="text-xs text-center text-zinc-400 mt-1">
                 レシオ: {ratioSum(second)}

@@ -1,7 +1,41 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Protocol, Trio } from "../types";
+import type { ProtocolGroup } from "../config";
+import type { Trio } from "../types";
 import { MatchForm } from "./MatchForm";
+
+vi.mock("react-select", () => ({
+  default: ({
+    options,
+    value,
+    onChange,
+    isDisabled,
+    "aria-label": ariaLabel,
+  }: {
+    options: { label: string; options: { value: string; label: string }[] }[];
+    value: { value: string; label: string } | null;
+    onChange: (v: { value: string; label: string }) => void;
+    isDisabled?: boolean;
+    "aria-label"?: string;
+  }) => (
+    <select
+      value={value?.value ?? ""}
+      onChange={(e) =>
+        onChange({ value: e.target.value, label: e.target.value })
+      }
+      disabled={isDisabled}
+      aria-label={ariaLabel}
+    >
+      {options.flatMap((group) =>
+        group.options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        )),
+      )}
+    </select>
+  ),
+}));
 
 // useAuth のモック（最重要）
 vi.mock("../hooks/useAuth", () => ({
@@ -23,21 +57,17 @@ vi.mock("react-toastify", () => ({
 }));
 
 // モックデータ
-const PROTOCOLS = [
-  "APATHY",
-  "DARKNESS",
-  "GRAVITY",
-  "HATE",
-  "LIFE",
-  "METAL",
-] as const;
+const MOCK_PROTOCOL_GROUPS: readonly ProtocolGroup[] = [
+  { label: "Group A", protocols: ["APATHY", "DARKNESS", "GRAVITY"] },
+  { label: "Group B", protocols: ["HATE", "LIFE", "METAL"] },
+];
 
 describe("MatchForm", () => {
   const mockOnAddMatch = vi.fn();
   const mockRatioSum = (t: Trio) => t.length * 10; // ダミー計算
 
   const defaultProps = {
-    protocols: PROTOCOLS,
+    protocolGroups: MOCK_PROTOCOL_GROUPS,
     onAddMatch: mockOnAddMatch,
     isRegistrationAllowed: true,
     mode: "firebase",
@@ -98,16 +128,13 @@ describe("MatchForm", () => {
     fireEvent.change(selects[0], { target: { value: "DARKNESS" } });
     expect(selects[0]).toHaveValue("DARKNESS");
 
-    // シーズン変更をシミュレート（protocols propを変更）
-    const newProtocols = [
-      "N1",
-      "N2",
-      "N3",
-      "N4",
-      "N5",
-      "N6",
-    ] as unknown as Protocol[];
-    rerender(<MatchForm {...defaultProps} protocols={newProtocols} />);
+    // シーズン変更をシミュレート（protocolGroups propを変更）
+    const newProtocolGroups = [
+      { label: "New Group", protocols: ["N1", "N2", "N3", "N4", "N5", "N6"] },
+    ] as unknown as ProtocolGroup[];
+    rerender(
+      <MatchForm {...defaultProps} protocolGroups={newProtocolGroups} />,
+    );
 
     // 選択肢がリセットされ、新しいプロトコルの初期値（N1）になっているか
     const updatedSelects = screen.getAllByRole("combobox");

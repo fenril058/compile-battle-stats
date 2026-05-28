@@ -44,6 +44,28 @@ export const PROTOCOL_SETS = {
   ] as const,
 } as const;
 
+export type ProtocolGroup = {
+  readonly label: string;
+  readonly protocols: readonly string[];
+};
+
+export const PROTOCOL_GROUPS: Record<
+  keyof typeof PROTOCOL_SETS,
+  readonly ProtocolGroup[]
+> = {
+  V1: [{ label: "Main 1", protocols: PROTOCOLS_V1_MAIN }],
+  V1_AUX: [
+    { label: "Main 1", protocols: PROTOCOLS_V1_MAIN },
+    { label: "Aux 1", protocols: PROTOCOLS_V1_AUX },
+  ],
+  V2: [
+    { label: "Main 1", protocols: PROTOCOLS_V1_MAIN },
+    { label: "Aux 1", protocols: PROTOCOLS_V1_AUX },
+    { label: "Main 2", protocols: PROTOCOLS_V2_MAIN },
+    { label: "Aux 2", protocols: PROTOCOLS_V2_AUX },
+  ],
+};
+
 // 最新のプロトコル（型定義用）
 export const ALL_PROTOCOLS = PROTOCOL_SETS.V1_AUX;
 export const ABBR = {
