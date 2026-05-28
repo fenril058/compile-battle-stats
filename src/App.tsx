@@ -22,6 +22,7 @@ const MatchList = lazy(() =>
 import {
   MIN_GAMES_FOR_PAIR_STATS,
   MIN_GAMES_FOR_TRIO_STATS,
+  PROTOCOL_GROUPS,
   PROTOCOL_SETS,
   RATIO_SETS,
   SEASONS_CONFIG,
@@ -49,6 +50,7 @@ export default function App() {
   const currentProtocols = PROTOCOL_SETS[
     currentConfig.protocolVer
   ] as readonly Protocol[];
+  const currentProtocolGroups = PROTOCOL_GROUPS[currentConfig.protocolVer];
   const currentRatios = RATIO_SETS[currentConfig.ratioVer];
   const isRegistrationAllowed = !currentConfig.isReadOnly;
   const maxRatio = currentConfig.maxRatio;
@@ -161,7 +163,7 @@ export default function App() {
           {/* Input Section */}
           <section className="min-h[420px]">
             <MatchForm
-              protocols={currentProtocols}
+              protocolGroups={currentProtocolGroups}
               onAddMatch={handleAddMatch}
               isRegistrationAllowed={isRegistrationAllowed}
               onSyncLocal={handleSyncLocal}

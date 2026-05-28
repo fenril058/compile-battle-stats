@@ -1,11 +1,12 @@
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import type { ProtocolGroup } from "../config";
 import { useAuth } from "../hooks/useAuth";
 import type { Protocol, Trio, Winner } from "../types";
 
 type MatchFormProps = {
-  protocols: readonly Protocol[];
+  protocolGroups: readonly ProtocolGroup[];
   onAddMatch: (data: {
     first: Trio;
     second: Trio;
@@ -27,7 +28,7 @@ const INITIAL_FIRST: Trio = ["DARKNESS", "FIRE", "HATE"] as unknown as Trio;
 const INITIAL_SECOND: Trio = ["PSYCHIC", "GRAVITY", "WATER"] as unknown as Trio;
 
 export const MatchForm: React.FC<MatchFormProps> = ({
-  protocols,
+  protocolGroups,
   onAddMatch,
   isRegistrationAllowed,
   onSyncLocal,
@@ -67,24 +68,19 @@ export const MatchForm: React.FC<MatchFormProps> = ({
 
   // === useEffect: プロトコル変更時のリセット処理 ===
   useEffect(() => {
-    // シーズンが変更されたときに状態をリセットする
-    // 新しいプロトコルリストが有効であることを確認
-    if (protocols.length >= 3) {
-      // 新しいプロトコルリストの最初の3つをfirstに設定
-      setFirst(protocols.slice(0, 3) as Trio);
-
-      // secondは、リストが6つ以上あれば次の3つ、なければ最初の3つを設定
+    const flat = protocolGroups.flatMap((g) => [
+      ...g.protocols,
+    ]) as readonly Protocol[];
+    if (flat.length >= 3) {
+      setFirst(flat.slice(0, 3) as Trio);
       const secondStart =
-        protocols.length >= 6 ? protocols.slice(3, 6) : protocols.slice(0, 3);
-
+        flat.length >= 6 ? flat.slice(3, 6) : flat.slice(0, 3);
       setSecond(secondStart as Trio);
     } else {
-      // プロトコルが不足している場合、無効なプロトコル名が入らないよう空のTrioを設定（安全策）
       setFirst(["", "", ""] as unknown as Trio);
       setSecond(["", "", ""] as unknown as Trio);
     }
-    // シーズン変更時には警告フラグもリセット
-  }, [protocols]); // protocols が変わるたびに実行される
+  }, [protocolGroups]);
 
   const handleSelect =
     (side: "FIRST" | "SECOND", index: number) =>
@@ -193,11 +189,14 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1"
                   aria-label={`先攻の ${i + 1} 番目の選択`}
                 >
-                  {/* UIの選択肢はprotocolsから生成される */}
-                  {protocols.map((x) => (
-                    <option key={x} value={x}>
-                      {x}
-                    </option>
+                  {protocolGroups.map((group) => (
+                    <optgroup key={group.label} label={group.label}>
+                      {group.protocols.map((x) => (
+                        <option key={x} value={x}>
+                          {x}
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               ))}
@@ -219,11 +218,14 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1"
                   aria-label={`後攻の ${i + 1} 番目の選択`}
                 >
-                  {/* UIの選択肢はprotocolsから生成される */}
-                  {protocols.map((x) => (
-                    <option key={x} value={x}>
-                      {x}
-                    </option>
+                  {protocolGroups.map((group) => (
+                    <optgroup key={group.label} label={group.label}>
+                      {group.protocols.map((x) => (
+                        <option key={x} value={x}>
+                          {x}
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               ))}
