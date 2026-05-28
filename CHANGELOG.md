@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.5.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.4.0...compile-battle-stats-v1.5.0) (2026-05-28)
+
+
+### Features
+
+* **ui:** Protocol選択セレクトボックスにoptgroupでMain/Aux区切りを追加 ([b72f3d4](https://github.com/fenril058/compile-battle-stats/commit/b72f3d48f37a739a907abc0826bb97dbcaf02708)), closes [#32](https://github.com/fenril058/compile-battle-stats/issues/32)
+* **ui:** Protocol選択をグループ付き検索可能コンボボックスに変更 (closes [#32](https://github.com/fenril058/compile-battle-stats/issues/32)) ([305addd](https://github.com/fenril058/compile-battle-stats/commit/305adddc38df5a8de53fb8048974576c4a373709))
+* **ui:** react-selectで検索可能なProtocolコンボボックスを実装 ([e9146bd](https://github.com/fenril058/compile-battle-stats/commit/e9146bde74ab88a3e6e6acb932c5bec64fa5c45b))
+
+
+### Bug Fixes
+
+* **assets:** Update favicon link in index.html ([9016a9e](https://github.com/fenril058/compile-battle-stats/commit/9016a9e14d4b95611ee39e1166e3c972fddd4ccf)), closes [#33](https://github.com/fenril058/compile-battle-stats/issues/33)
+
 ## [1.4.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.3.0...compile-battle-stats-v1.4.0) (2026-05-25)
 
 
