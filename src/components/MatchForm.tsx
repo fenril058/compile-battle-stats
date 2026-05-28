@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import type { ProtocolGroup } from "../config";
 import { useAuth } from "../hooks/useAuth";
 import type { Protocol, Trio, Winner } from "../types";
+import { ProtocolSelect } from "./ProtocolSelect";
 
 type MatchFormProps = {
   protocolGroups: readonly ProtocolGroup[];
@@ -82,10 +83,8 @@ export const MatchForm: React.FC<MatchFormProps> = ({
     }
   }, [protocolGroups]);
 
-  const handleSelect =
-    (side: "FIRST" | "SECOND", index: number) =>
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const v = e.target.value as Protocol;
+  const handleProtocolChange =
+    (side: "FIRST" | "SECOND", index: number) => (v: Protocol) => {
       const setter = side === "FIRST" ? setFirst : setSecond;
       setter((prev) => {
         const next = [...prev] as Trio;
@@ -180,25 +179,15 @@ export const MatchForm: React.FC<MatchFormProps> = ({
             <fieldset className="flex flex-col items-center p-2 border border-zinc-700 rounded-xl">
               <legend className="text-center font-semibold mb-2">先攻</legend>
               {first.map((p, i) => (
-                <select
-                  // biome-ignore lint: /correctness/useArrayIndexOfAsKey
+                <ProtocolSelect
+                  // biome-ignore lint/suspicious/noArrayIndexKey: position is fixed (always 3 slots)
                   key={`first-${i}`}
                   value={p}
-                  onChange={handleSelect("FIRST", i)}
+                  onChange={handleProtocolChange("FIRST", i)}
+                  protocolGroups={protocolGroups}
                   disabled={!isRegistrationAllowed}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1"
-                  aria-label={`先攻の ${i + 1} 番目の選択`}
-                >
-                  {protocolGroups.map((group) => (
-                    <optgroup key={group.label} label={group.label}>
-                      {group.protocols.map((x) => (
-                        <option key={x} value={x}>
-                          {x}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
+                  ariaLabel={`先攻の ${i + 1} 番目の選択`}
+                />
               ))}
               <p className="text-xs text-center text-zinc-400 mt-1">
                 レシオ: {ratioSum(first)}
@@ -209,25 +198,15 @@ export const MatchForm: React.FC<MatchFormProps> = ({
             <fieldset className="flex flex-col items-center p-2 border border-zinc-700 rounded-xl">
               <legend className="text-center font-semibold mb-2">後攻</legend>
               {second.map((p, i) => (
-                <select
-                  // biome-ignore lint: /correctness/useArrayIndexOfAsKey
+                <ProtocolSelect
+                  // biome-ignore lint/suspicious/noArrayIndexKey: position is fixed (always 3 slots)
                   key={`second-${i}`}
                   value={p}
-                  onChange={handleSelect("SECOND", i)}
+                  onChange={handleProtocolChange("SECOND", i)}
+                  protocolGroups={protocolGroups}
                   disabled={!isRegistrationAllowed}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded p-2 text-sm mb-1"
-                  aria-label={`後攻の ${i + 1} 番目の選択`}
-                >
-                  {protocolGroups.map((group) => (
-                    <optgroup key={group.label} label={group.label}>
-                      {group.protocols.map((x) => (
-                        <option key={x} value={x}>
-                          {x}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
+                  ariaLabel={`後攻の ${i + 1} 番目の選択`}
+                />
               ))}
               <p className="text-xs text-center text-zinc-400 mt-1">
                 レシオ: {ratioSum(second)}

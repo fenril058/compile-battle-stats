@@ -4,6 +4,39 @@ import type { ProtocolGroup } from "../config";
 import type { Trio } from "../types";
 import { MatchForm } from "./MatchForm";
 
+vi.mock("react-select", () => ({
+  default: ({
+    options,
+    value,
+    onChange,
+    isDisabled,
+    "aria-label": ariaLabel,
+  }: {
+    options: { label: string; options: { value: string; label: string }[] }[];
+    value: { value: string; label: string } | null;
+    onChange: (v: { value: string; label: string }) => void;
+    isDisabled?: boolean;
+    "aria-label"?: string;
+  }) => (
+    <select
+      value={value?.value ?? ""}
+      onChange={(e) =>
+        onChange({ value: e.target.value, label: e.target.value })
+      }
+      disabled={isDisabled}
+      aria-label={ariaLabel}
+    >
+      {options.flatMap((group) =>
+        group.options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        )),
+      )}
+    </select>
+  ),
+}));
+
 // useAuth のモック（最重要）
 vi.mock("../hooks/useAuth", () => ({
   useAuth: () => ({
