@@ -23,8 +23,10 @@ This repo uses a Nix-provided dev shell, so `vitest`, `biome`, `tsc`, `vite`, an
 `just` are already on `PATH`. Run them directly — **do not prefix with `npx`** (it
 is unnecessary and may fetch an unintended version).
 
-Playwright is **not** installed in this project, so it is not on `PATH`. If you
-need it, run it via `npx playwright ...`.
+Playwright (`@playwright/test`) is installed as a devDependency. Browsers are
+shared in the user cache (not downloaded per-project). Run e2e tests via
+`npx playwright test` (or `playwright test` if on PATH). Install browsers once
+with `npx playwright install` if not already cached.
 
 ## Pre-commit / pre-push hooks (Husky)
 
