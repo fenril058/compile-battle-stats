@@ -16,8 +16,15 @@ npm run test:watch   # Run tests in watch mode
 
 Run a single test file:
 ```bash
-npx vitest run src/utils/logic.test.ts
+vitest run src/utils/logic.test.ts
 ```
+
+This repo uses a Nix-provided dev shell, so `vitest`, `biome`, `tsc`, `vite`, and
+`just` are already on `PATH`. Run them directly — **do not prefix with `npx`** (it
+is unnecessary and may fetch an unintended version).
+
+Playwright is **not** installed in this project, so it is not on `PATH`. If you
+need it, run it via `npx playwright ...`.
 
 ## Pre-commit / pre-push hooks (Husky)
 

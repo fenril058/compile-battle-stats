@@ -1,7 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { beasties } from "vite-plugin-beasties";
-// import { defineConfig } from "vite";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -16,6 +15,17 @@ export default defineConfig({
     environment: "jsdom", // DOM環境が必要なテストのためにjsdomを使用
     setupFiles: ["./src/setupTests.ts"], // グローバルな設定ファイル
     globals: true, // describe, test, expectなどをグローバルにする
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.test.{ts,tsx}",
+        "src/**/*.d.ts",
+        "src/setupTests.ts",
+        "src/main.tsx", // アプリのブートストラップ（テスト対象外）
+      ],
+    },
   },
   plugins: [
     react(),

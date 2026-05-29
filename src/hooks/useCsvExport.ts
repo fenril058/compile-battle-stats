@@ -1,13 +1,52 @@
 import { useCallback } from "react";
 import { toast } from "react-toastify";
-import type { Match, SeasonKey } from "../types";
+import { SEASONS_CONFIG } from "../config";
+import type { Match, Ratios, SeasonKey } from "../types";
 
-export const useCsvExport = (matches: Match[], selectedSeason: SeasonKey) => {
+/**
+ * エクスポートする CSV の先頭に挿入する、シーズンのレシオ表コメントを生成する。
+ * すべての行が '#' で始まるため、インポート時にはコメントとしてスキップされる
+ * （useCsvImport 側の '#' スキップと対応）。
+ */
+export const buildRatioTableComment = (
+  selectedSeason: SeasonKey,
+  ratios: Ratios,
+  maxRatio: number,
+  ratioProtocols: ReadonlyArray<string>,
+): string[] => {
+  const config = SEASONS_CONFIG[selectedSeason];
+  const ratioEntries = Object.entries(ratios).map(([p, r]) => `${p}=${r}`);
+
+  return [
+    `# Compile Battle Stats — ${config.displayName} (${selectedSeason})`,
+    `# Exported: ${new Date().toISOString()}`,
+    `# Max Ratio: ${maxRatio}`,
+    "# Ratio Table:",
+    `#   ${ratioEntries.join(", ")}`,
+    `# Ratio-eligible protocols: ${ratioProtocols.join(", ")}`,
+  ];
+};
+
+export const useCsvExport = (
+  matches: Match[],
+  selectedSeason: SeasonKey,
+  ratios: Ratios,
+  maxRatio: number,
+  ratioProtocols: ReadonlyArray<string>,
+) => {
   const exportToCsv = useCallback(() => {
     if (matches.length === 0) {
       toast.info("エクスポートするデータがありません");
       return;
     }
+
+    // エクスポート時点のレシオ表をコメントとして埋め込む
+    const ratioComment = buildRatioTableComment(
+      selectedSeason,
+      ratios,
+      maxRatio,
+      ratioProtocols,
+    );
 
     const headers = [
       "# 先攻プロトコル1",
@@ -44,9 +83,11 @@ export const useCsvExport = (matches: Match[], selectedSeason: SeasonKey) => {
         .join(",");
     });
 
-    const csvContent = [headers.join(","), ...csvRows].join("\n");
+    const csvContent = [...ratioComment, headers.join(","), ...csvRows].join(
+      "\n",
+    );
     // UTF-8 BOM付きで保存 (Excelでの文字化け防止)
-    const blob = new Blob(["\ufeff", csvContent], {
+    const blob = new Blob(["﻿", csvContent], {
       type: "text/csv;charset=utf-8;",
     });
 
@@ -62,7 +103,7 @@ export const useCsvExport = (matches: Match[], selectedSeason: SeasonKey) => {
     document.body.removeChild(a);
 
     toast.success("CSVファイルをエクスポートしました");
-  }, [matches, selectedSeason]);
+  }, [matches, selectedSeason, ratios, maxRatio, ratioProtocols]);
 
   return { exportToCsv };
 };
