@@ -1,7 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { beasties } from "vite-plugin-beasties";
-// import { defineConfig } from "vite";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -20,7 +19,12 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/*.test.{ts,tsx}", "src/setupTests.ts"],
+      exclude: [
+        "src/**/*.test.{ts,tsx}",
+        "src/**/*.d.ts",
+        "src/setupTests.ts",
+        "src/main.tsx", // アプリのブートストラップ（テスト対象外）
+      ],
     },
   },
   plugins: [
