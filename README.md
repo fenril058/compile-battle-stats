@@ -51,7 +51,7 @@ npm run test      # テスト実行
 | Season 1 (Aux) | V1_AUX（15種） | V1_AUX（15種） | 不可 |
 | Season 1 | V1（12種） | V1（12種） | 不可 |
 
-新しいシーズンを追加するには `src/config.ts` の `SEASONS_CONFIG` にエントリを追加してください。主要なフィールドは以下の通りです。
+新しいシーズンを追加するには `src/config/index.ts` の `SEASONS_CONFIG` にエントリを追加してください。主要なフィールドは以下の通りです。
 
 | フィールド | 説明 |
 |-----------|-----|

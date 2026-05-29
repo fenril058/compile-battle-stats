@@ -48,7 +48,7 @@ The active `StorageMode` (`"remote" | "local"`) is exposed to the UI via the `mo
 
 ### Season / protocol versioning
 
-All game rules are defined in `src/config.ts`:
+All game rules are defined in `src/config/index.ts`:
 - `SEASONS_CONFIG` — maps a `SeasonKey` to display name, Firestore collection name, protocol version, ratio version, read-only flag, `maxRatio`, and `ratioProtocols`.
 - `PROTOCOL_SETS` — protocol lists for each version (`V1`, `V1_AUX`, `V2`).
 - `RATIO_SETS` — ratio values per protocol per version.

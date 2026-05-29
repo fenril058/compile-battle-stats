@@ -1,3 +1,6 @@
+// ゲームルール定義: protocols / ratios / seasons / 統計閾値
+// （ランタイム設定〔Firebase 環境変数〕は ./env を参照）
+
 // --- 1. プロトコル定義 ---
 const PROTOCOLS_V1_MAIN = [
   "DARKNESS",
