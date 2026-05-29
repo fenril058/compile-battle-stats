@@ -6,7 +6,9 @@ import {
   makeStats,
   matchup,
   parseMatchCsvRow,
+  percent,
   ratioSum,
+  rows,
 } from "./logic";
 
 const MOCK_RATIOS = RATIO_SETS.S1;
@@ -195,6 +197,81 @@ describe("utils/logic", () => {
         ratioProtocols,
       );
       expect(result?.matchDate).toBeNull();
+    });
+
+    it("returns null when the row has fewer than 7 columns", () => {
+      const row = ["WATER", "SPEED", "PSYCHIC", "DARKNESS", "LIFE", "METAL"];
+      expect(
+        parseMatchCsvRow(row, validProtocols, ratios, 10, ratioProtocols),
+      ).toBeNull();
+    });
+
+    it("returns null for an invalid winner value", () => {
+      const row = [
+        "WATER",
+        "SPEED",
+        "PSYCHIC",
+        "DARKNESS",
+        "LIFE",
+        "METAL",
+        "DRAW", // FIRST/SECOND 以外
+        "",
+      ];
+      expect(
+        parseMatchCsvRow(row, validProtocols, ratios, 10, ratioProtocols),
+      ).toBeNull();
+    });
+  });
+
+  describe("percent", () => {
+    it("returns 0 when there are no games (avoids divide-by-zero)", () => {
+      expect(percent(0, 0)).toBe(0);
+      expect(percent(5, 0)).toBe(0);
+    });
+
+    it("rounds to one decimal place", () => {
+      expect(percent(1, 2)).toBe(50);
+      expect(percent(1, 3)).toBe(33.3);
+      expect(percent(2, 3)).toBe(66.7);
+    });
+  });
+
+  describe("rows", () => {
+    it("computes losses/percent and sorts by win rate desc (no filter for single)", () => {
+      const stats = {
+        FIRE: { g: 10, w: 5 }, // p = 50
+        WATER: { g: 4, w: 3 }, // p = 75
+        METAL: { g: 2, w: 0 }, // p = 0
+      };
+
+      const result = rows(stats, "single", 5, 3);
+
+      expect(result.map((r) => r.n)).toEqual(["WATER", "FIRE", "METAL"]);
+      expect(result[0]).toEqual({ n: "WATER", g: 4, w: 3, l: 1, p: 75 });
+    });
+
+    it("filters out pairs below minPair", () => {
+      const stats = {
+        "A · B": { g: 6, w: 3 }, // 残る (>= 5)
+        "C · D": { g: 4, w: 2 }, // 除外 (< 5)
+      };
+
+      const result = rows(stats, "pair", 5, 3);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].n).toBe("A · B");
+    });
+
+    it("filters out trios below minTrio", () => {
+      const stats = {
+        "A · B · C": { g: 3, w: 1 }, // 残る (>= 3)
+        "D · E · F": { g: 2, w: 2 }, // 除外 (< 3)
+      };
+
+      const result = rows(stats, "trio", 5, 3);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].n).toBe("A · B · C");
     });
   });
 });

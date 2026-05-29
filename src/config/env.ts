@@ -27,8 +27,10 @@ const rawConfig = {
 
 /**
  * 設定値が有効（空文字ではない文字列）かどうかをチェックします。
+ * 値の1つでも未設定/空文字なら false（→ FIREBASE_CONFIG は null になり
+ * LocalStorage モードへフォールバックする）。
  */
-function isConfigValid(cfg: Record<string, unknown>): boolean {
+export function isConfigValid(cfg: Record<string, unknown>): boolean {
   // 必須の Firebase Config のいずれかが空であれば、無効と判断する
   return Object.values(cfg).every((v) => typeof v === "string" && v.length > 0);
 }
