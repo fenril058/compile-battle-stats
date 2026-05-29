@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.5.0...compile-battle-stats-v1.6.0) (2026-05-29)
+
+
+### Features
+
+* CSVエクスポートにレシオ表をコメントとして埋め込む ([ca65a05](https://github.com/fenril058/compile-battle-stats/commit/ca65a0554406040f592ccde2b630abecfb347623))
+* CSVエクスポートにレシオ表をコメントとして埋め込む ([2b0dcac](https://github.com/fenril058/compile-battle-stats/commit/2b0dcacef4b7b097a4bded846830414898add288))
+
 ## [1.5.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.4.0...compile-battle-stats-v1.5.0) (2026-05-28)
 
 
