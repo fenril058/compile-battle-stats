@@ -78,7 +78,13 @@ export default function App() {
     matches,
     currentProtocols,
   );
-  const { exportToCsv } = useCsvExport(matches, seasonKey);
+  const { exportToCsv } = useCsvExport(
+    matches,
+    seasonKey,
+    currentRatios,
+    maxRatio,
+    currentConfig.ratioProtocols,
+  );
   const { handleImportCsv } = useCsvImport(
     addMatchItemBatch,
     currentProtocols,
