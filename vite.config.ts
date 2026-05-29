@@ -16,6 +16,12 @@ export default defineConfig({
     environment: "jsdom", // DOM環境が必要なテストのためにjsdomを使用
     setupFiles: ["./src/setupTests.ts"], // グローバルな設定ファイル
     globals: true, // describe, test, expectなどをグローバルにする
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/**/*.test.{ts,tsx}", "src/setupTests.ts"],
+    },
   },
   plugins: [
     react(),
