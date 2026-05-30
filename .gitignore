@@ -15,6 +15,11 @@ coverage
 .env
 .env.local
 
+# Playwright
+test-results
+playwright-report
+playwright/.cache
+
 .direnv
 
 # Claude Code local settings

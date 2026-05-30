@@ -25,8 +25,13 @@ is unnecessary and may fetch an unintended version).
 
 Playwright (`@playwright/test`) is installed as a devDependency. Browsers are
 shared in the user cache (not downloaded per-project). Run e2e tests via
-`npx playwright test` (or `playwright test` if on PATH). Install browsers once
-with `npx playwright install` if not already cached.
+`npm run e2e` (`npm run e2e:ui` for the UI mode). Install browsers once with
+`npx playwright install` if not already cached.
+
+E2E specs live in `e2e/` and are driven by `playwright.config.ts`, which starts
+the dev server with `--mode e2e`. That loads `.env.e2e` (empty Firebase vars),
+forcing **LocalStorage mode** so tests never touch real Firestore. The Vitest
+config excludes `e2e/**`, so unit tests never pick up Playwright specs.
 
 ## Pre-commit / pre-push hooks (Husky)
 

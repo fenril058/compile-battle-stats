@@ -11,6 +11,7 @@ export default defineConfig({
       "**/dist/**",
       "**/node_modules/**",
       ".direnv",
+      "e2e/**", // Playwright の E2E は vitest 対象外
     ],
     environment: "jsdom", // DOM環境が必要なテストのためにjsdomを使用
     setupFiles: ["./src/setupTests.ts"], // グローバルな設定ファイル
