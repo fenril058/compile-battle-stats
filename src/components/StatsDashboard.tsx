@@ -62,6 +62,21 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     });
   };
 
+  const handleStatTabKeyDown = (e: React.KeyboardEvent) => {
+    const currentIndex = STAT_VIEW_KEYS.indexOf(activeStatViewKey);
+
+    if (e.key === "ArrowLeft" && currentIndex > 0) {
+      e.preventDefault();
+      handleStatTabChange(STAT_VIEW_KEYS[currentIndex - 1]);
+    } else if (
+      e.key === "ArrowRight" &&
+      currentIndex < STAT_VIEW_KEYS.length - 1
+    ) {
+      e.preventDefault();
+      handleStatTabChange(STAT_VIEW_KEYS[currentIndex + 1]);
+    }
+  };
+
   const handleMatrixTabChange = (key: MatrixKey) => {
     if (!document.startViewTransition) {
       setActiveMatrixKey(key);
@@ -72,16 +87,34 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     });
   };
 
+  const handleMatrixTabKeyDown = (e: React.KeyboardEvent) => {
+    const currentIndex = MATRIX_KEYS.indexOf(activeMatrixKey);
+
+    if (e.key === "ArrowLeft" && currentIndex > 0) {
+      e.preventDefault();
+      handleMatrixTabChange(MATRIX_KEYS[currentIndex - 1]);
+    } else if (
+      e.key === "ArrowRight" &&
+      currentIndex < MATRIX_KEYS.length - 1
+    ) {
+      e.preventDefault();
+      handleMatrixTabChange(MATRIX_KEYS[currentIndex + 1]);
+    }
+  };
+
   return (
     <>
       {/* Stat section */}
       <section>
-        <div className="flex flex-wrap gap-1 mb-3">
+        <div className="flex flex-wrap gap-1 mb-3" role="tablist">
           {STAT_VIEW_KEYS.map((key) => (
             <button
               key={key}
               type="button"
               onClick={() => handleStatTabChange(key)}
+              onKeyDown={handleStatTabKeyDown}
+              role="tab"
+              aria-selected={activeStatViewKey === key}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 activeStatViewKey === key
                   ? "bg-zinc-500 text-white font-medium"
@@ -122,12 +155,15 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
 
       {/* Matrix section */}
       <section>
-        <div className="flex flex-wrap gap-1 mb-3">
+        <div className="flex flex-wrap gap-1 mb-3" role="tablist">
           {MATRIX_KEYS.map((key) => (
             <button
               key={key}
               type="button"
               onClick={() => handleMatrixTabChange(key)}
+              onKeyDown={handleMatrixTabKeyDown}
+              role="tab"
+              aria-selected={activeMatrixKey === key}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 activeMatrixKey === key
                   ? "bg-zinc-500 text-white font-medium"

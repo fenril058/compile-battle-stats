@@ -34,15 +34,30 @@ export const Stat: React.FC<StatProps> = React.memo(
   ({ t, m, color, minPair, minTrio }) => {
     const [activeKey, setActiveKey] = useState<StatKey>("single");
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      const currentIndex = KEYS.indexOf(activeKey);
+
+      if (e.key === "ArrowLeft" && currentIndex > 0) {
+        e.preventDefault();
+        setActiveKey(KEYS[currentIndex - 1]);
+      } else if (e.key === "ArrowRight" && currentIndex < KEYS.length - 1) {
+        e.preventDefault();
+        setActiveKey(KEYS[currentIndex + 1]);
+      }
+    };
+
     return (
       <div className={`p-3 rounded-2xl shadow-md ${color}`}>
         <h2 className="font-semibold mb-2 text-center">{t}</h2>
-        <div className="flex flex-wrap gap-1 mb-3">
+        <div className="flex flex-wrap gap-1 mb-3" role="tablist">
           {KEYS.map((key) => (
             <button
               key={key}
               type="button"
               onClick={() => setActiveKey(key)}
+              onKeyDown={handleKeyDown}
+              role="tab"
+              aria-selected={activeKey === key}
               className={`px-2 py-0.5 text-xs rounded transition-colors ${
                 activeKey === key
                   ? "bg-zinc-500 text-white font-medium"
@@ -99,14 +114,27 @@ const StatSection: React.FC<StatSectionProps> = ({
         <p className="text-xs text-zinc-500 text-center py-4">データなし</p>
       ) : (
         <table className="text-xs w-full border border-zinc-800">
+          <caption className="sr-only">{displayLabel}</caption>
           <thead className="bg-zinc-800 text-zinc-300">
             <tr>
-              <th className="p-1">#</th>
-              <th className="p-1">PRO</th>
-              <th className="p-1">G</th>
-              <th className="p-1">W</th>
-              <th className="p-1">L</th>
-              <th className="p-1">%</th>
+              <th className="p-1" scope="col">
+                #
+              </th>
+              <th className="p-1" scope="col">
+                PRO
+              </th>
+              <th className="p-1" scope="col">
+                G
+              </th>
+              <th className="p-1" scope="col">
+                W
+              </th>
+              <th className="p-1" scope="col">
+                L
+              </th>
+              <th className="p-1" scope="col">
+                %
+              </th>
             </tr>
           </thead>
           <tbody>

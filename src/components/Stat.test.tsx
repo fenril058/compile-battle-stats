@@ -31,7 +31,9 @@ describe("Stat", () => {
 
   it("既定で single セクションを勝率降順で表示する", () => {
     renderStat();
-    expect(screen.getByText("プロトコル単体勝率")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "プロトコル単体勝率" }),
+    ).toBeInTheDocument();
 
     const rows = screen.getAllByRole("row");
     // ヘッダー行 + データ2行
@@ -48,7 +50,9 @@ describe("Stat", () => {
     fireEvent.click(screen.getByText("2枚組"));
 
     expect(
-      screen.getByText("プロトコル2枚組勝率（5戦以上）"),
+      screen.getByRole("heading", {
+        name: "プロトコル2枚組勝率（5戦以上）",
+      }),
     ).toBeInTheDocument();
     // 5戦以上の FIRE · WATER だけ残る
     expect(screen.getByText("FIRE · WATER")).toBeInTheDocument();
