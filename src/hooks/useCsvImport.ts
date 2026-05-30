@@ -5,9 +5,40 @@ import type { Match, Protocol, Ratios } from "../types";
 import { parseMatchCsvRow } from "../utils/logic";
 
 // useFirestoreから渡される add 関数用の型定義
-type AddMatchItemBatch = (
-  payload: Omit<Match, "id" | "createdAt">[],
-) => Promise<void>;
+type AddMatchItemBatch = (payload: Omit<Match, "id">[]) => Promise<void>;
+
+// RFC 4180 対応の簡易 CSV パーサー
+// ダブルクオートで囲まれたフィールド内のカンマを許容、クオート除去を行う
+const parseCsvLine = (line: string): string[] => {
+  const fields: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = line[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        // エスケープされたクオート: ""
+        current += '"';
+        i++; // 次の " をスキップ
+      } else {
+        // クオートの開始/終了
+        inQuotes = !inQuotes;
+      }
+    } else if (char === "," && !inQuotes) {
+      // フィールド区切り
+      fields.push(current.trim());
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+
+  fields.push(current.trim());
+  return fields;
+};
 
 /**
  * CSVインポート機能を提供するカスタムフック。
@@ -30,7 +61,10 @@ export const useCsvImport = (
       if (!event.target.files || event.target.files.length === 0) return;
 
       const file = event.target.files[0];
-      if (file.type !== "text/csv") {
+      const mimeTypes = ["text/csv", "application/vnd.ms-excel"];
+      const isCsv = mimeTypes.includes(file.type) || file.name.endsWith(".csv");
+
+      if (!isCsv) {
         toast.error("CSVファイルを選択してください。");
         return;
       }
@@ -41,7 +75,7 @@ export const useCsvImport = (
         const text = e.target?.result as string;
         const lines = text.trim().split("\n");
 
-        const payloadsToImport: Omit<Match, "id" | "createdAt">[] = [];
+        const payloadsToImport: Omit<Match, "id">[] = [];
         let failCount = 0;
 
         // 行頭が '#' の行と空行をスキップ
@@ -53,8 +87,8 @@ export const useCsvImport = (
 
         // CSVを解析し、マッチデータを追加
         for (const line of dataLines) {
-          // カンマ区切りでパース
-          const row = line.split(",").map((s) => s.trim().toUpperCase());
+          // RFC 4180対応パーサーでクオート除去
+          const row = parseCsvLine(line).map((s) => s.toUpperCase());
 
           // logic.ts で定義したパーサーで検証・変換
           const payload = parseMatchCsvRow(
@@ -66,8 +100,17 @@ export const useCsvImport = (
           );
 
           if (payload) {
-            // Batch処理するための配列に追加
-            payloadsToImport.push(payload);
+            // col 9 (createdAt) をパース (存在する場合)
+            let createdAt = Date.now();
+            if (row.length > 9 && row[9]?.trim()) {
+              const parsed = new Date(row[9]).getTime();
+              if (!Number.isNaN(parsed)) {
+                createdAt = parsed;
+              }
+            }
+
+            // Batch処理するための配列に追加 (createdAt も含める)
+            payloadsToImport.push({ ...payload, createdAt });
           } else {
             failCount++;
             console.warn("CSV Row Parse Failed:", line);
