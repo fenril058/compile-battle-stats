@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import type { MatrixView, StatsView } from "../hooks/useMatchStats";
 import { Matrix } from "./Matrix";
@@ -49,6 +49,8 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   const [activeStatViewKey, setActiveStatViewKey] =
     useState<StatViewKey>("all");
   const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("v1aux");
+  const statTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const matrixTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const activeStats = statViews[activeStatViewKey];
   const activeView = matrixViews[activeMatrixKey];
 
@@ -64,16 +66,22 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
 
   const handleStatTabKeyDown = (e: React.KeyboardEvent) => {
     const currentIndex = STAT_VIEW_KEYS.indexOf(activeStatViewKey);
+    let newIndex = -1;
 
     if (e.key === "ArrowLeft" && currentIndex > 0) {
       e.preventDefault();
-      handleStatTabChange(STAT_VIEW_KEYS[currentIndex - 1]);
+      newIndex = currentIndex - 1;
     } else if (
       e.key === "ArrowRight" &&
       currentIndex < STAT_VIEW_KEYS.length - 1
     ) {
       e.preventDefault();
-      handleStatTabChange(STAT_VIEW_KEYS[currentIndex + 1]);
+      newIndex = currentIndex + 1;
+    }
+
+    if (newIndex !== -1) {
+      handleStatTabChange(STAT_VIEW_KEYS[newIndex]);
+      statTabRefs.current[newIndex]?.focus();
     }
   };
 
@@ -89,16 +97,22 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
 
   const handleMatrixTabKeyDown = (e: React.KeyboardEvent) => {
     const currentIndex = MATRIX_KEYS.indexOf(activeMatrixKey);
+    let newIndex = -1;
 
     if (e.key === "ArrowLeft" && currentIndex > 0) {
       e.preventDefault();
-      handleMatrixTabChange(MATRIX_KEYS[currentIndex - 1]);
+      newIndex = currentIndex - 1;
     } else if (
       e.key === "ArrowRight" &&
       currentIndex < MATRIX_KEYS.length - 1
     ) {
       e.preventDefault();
-      handleMatrixTabChange(MATRIX_KEYS[currentIndex + 1]);
+      newIndex = currentIndex + 1;
+    }
+
+    if (newIndex !== -1) {
+      handleMatrixTabChange(MATRIX_KEYS[newIndex]);
+      matrixTabRefs.current[newIndex]?.focus();
     }
   };
 
@@ -107,9 +121,12 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       {/* Stat section */}
       <section>
         <div className="flex flex-wrap gap-1 mb-3" role="tablist">
-          {STAT_VIEW_KEYS.map((key) => (
+          {STAT_VIEW_KEYS.map((key, index) => (
             <button
               key={key}
+              ref={(el) => {
+                statTabRefs.current[index] = el;
+              }}
               type="button"
               onClick={() => handleStatTabChange(key)}
               onKeyDown={handleStatTabKeyDown}
@@ -156,9 +173,12 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       {/* Matrix section */}
       <section>
         <div className="flex flex-wrap gap-1 mb-3" role="tablist">
-          {MATRIX_KEYS.map((key) => (
+          {MATRIX_KEYS.map((key, index) => (
             <button
               key={key}
+              ref={(el) => {
+                matrixTabRefs.current[index] = el;
+              }}
               type="button"
               onClick={() => handleMatrixTabChange(key)}
               onKeyDown={handleMatrixTabKeyDown}

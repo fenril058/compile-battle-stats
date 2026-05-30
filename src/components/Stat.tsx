@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import type { StatsResult } from "../types";
 import { rows } from "../utils/logic";
 
@@ -33,16 +33,23 @@ type StatProps = {
 export const Stat: React.FC<StatProps> = React.memo(
   ({ t, m, color, minPair, minTrio }) => {
     const [activeKey, setActiveKey] = useState<StatKey>("single");
+    const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
       const currentIndex = KEYS.indexOf(activeKey);
+      let newIndex = -1;
 
       if (e.key === "ArrowLeft" && currentIndex > 0) {
         e.preventDefault();
-        setActiveKey(KEYS[currentIndex - 1]);
+        newIndex = currentIndex - 1;
       } else if (e.key === "ArrowRight" && currentIndex < KEYS.length - 1) {
         e.preventDefault();
-        setActiveKey(KEYS[currentIndex + 1]);
+        newIndex = currentIndex + 1;
+      }
+
+      if (newIndex !== -1) {
+        setActiveKey(KEYS[newIndex]);
+        tabRefs.current[newIndex]?.focus();
       }
     };
 
@@ -50,9 +57,12 @@ export const Stat: React.FC<StatProps> = React.memo(
       <div className={`p-3 rounded-2xl shadow-md ${color}`}>
         <h2 className="font-semibold mb-2 text-center">{t}</h2>
         <div className="flex flex-wrap gap-1 mb-3" role="tablist">
-          {KEYS.map((key) => (
+          {KEYS.map((key, index) => (
             <button
               key={key}
+              ref={(el) => {
+                tabRefs.current[index] = el;
+              }}
               type="button"
               onClick={() => setActiveKey(key)}
               onKeyDown={handleKeyDown}
