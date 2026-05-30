@@ -157,7 +157,13 @@ export default function App() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-0 font-sans">
       <ToastContainer position="top-center" theme="dark" autoClose={2000} />
-      <main>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-50 focus:p-2 focus:bg-blue-600 focus:text-white focus:rounded"
+      >
+        メインコンテンツへスキップ
+      </a>
+      <main id="main-content" tabIndex={-1}>
         <Header
           season={seasonKey}
           seasonCollections={SEASON_KEYS}
@@ -167,7 +173,7 @@ export default function App() {
 
         <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-8">
           {/* Input Section */}
-          <section className="min-h[420px]">
+          <section className="min-h-[420px]">
             <MatchForm
               protocolGroups={currentProtocolGroups}
               onAddMatch={handleAddMatch}

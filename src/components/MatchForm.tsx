@@ -265,7 +265,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   onClick={() => handleSubmit("SECOND")}
                   disabled={!isFormValid || !isRegistrationAllowed}
                   className="py-2 px-4 rounded-lg text-white bg-green-700
-                  hover:bg-green-700 disabled:bg-zinc-700 text-sm font-bold"
+                  hover:bg-green-600 disabled:bg-zinc-700 text-sm font-bold"
                 >
                   後攻WIN
                 </button>
