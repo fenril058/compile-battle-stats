@@ -218,20 +218,24 @@ export function useFirestore<T extends WithId>(collectionName: string) {
   );
 
   // 複数の試合データを一括登録するためのバッチ処理
+  // createdAt が含まれている場合はそれを使用、含まれない場合は Date.now() を使用
   const addBatch = useCallback(
-    async (itemsWithoutMeta: Omit<T, "id" | "createdAt">[]) => {
-      if (!db || !colRef || itemsWithoutMeta.length === 0) {
+    async (itemsWithoutId: Omit<T, "id">[]) => {
+      if (!db || !colRef || itemsWithoutId.length === 0) {
         toast.info("登録するデータがありません。");
         return;
       }
 
       const batch = writeBatch(db);
 
-      for (const item of itemsWithoutMeta) {
+      for (const item of itemsWithoutId) {
         const ref = doc(colRef); // Firestore auto-IDを生成
         const itemWithTimestamp = {
           ...item,
-          createdAt: Date.now(),
+          createdAt:
+            "createdAt" in item && typeof item.createdAt === "number"
+              ? item.createdAt
+              : Date.now(),
         };
         // Document IDはFirestoreが自動で生成するため、データに id フィールドは含めない
         batch.set(ref, itemWithTimestamp as DocumentData);
@@ -239,7 +243,7 @@ export function useFirestore<T extends WithId>(collectionName: string) {
 
       try {
         await batch.commit();
-        toast.success(`${itemsWithoutMeta.length}件の試合を一括登録しました。`);
+        toast.success(`${itemsWithoutId.length}件の試合を一括登録しました。`);
         // onSnapshotでリアルタイムにStateが更新されるため、setItemsは不要
       } catch (e) {
         console.error("[useFirestore] remote batch add failed:", e);

@@ -114,7 +114,7 @@ describe("useFirestore (local モード)", () => {
 
     await act(async () => {
       await result.current.addBatch([
-        { name: "a" } as Omit<Row, "id" | "createdAt">,
+        { name: "a", createdAt: Date.now() } as Omit<Row, "id">,
       ]);
     });
 

@@ -21,7 +21,7 @@ const RATIOS = RATIO_SETS.S1;
 const MAX_RATIO = 8;
 const RATIO_PROTOCOLS = PROTOCOL_SETS.V1;
 
-type AddBatch = (payload: Omit<Match, "id" | "createdAt">[]) => Promise<void>;
+type AddBatch = (payload: Omit<Match, "id">[]) => Promise<void>;
 
 /** useCsvImport を初期化し、handleImportCsv と addBatch スパイを返す */
 const setup = () => {
@@ -51,10 +51,33 @@ describe("useCsvImport", () => {
   it("CSV以外のファイルは拒否し、batch を呼ばない", async () => {
     const { addBatch, handleImportCsv } = setup();
 
-    handleImportCsv(makeChangeEvent("a,b,c", "application/json"));
+    // application/json + .json 拡張子は拒否される
+    const file = new File(["a,b,c"], "import.json", {
+      type: "application/json",
+    });
+    handleImportCsv({
+      target: { files: [file], value: "" },
+    } as unknown as React.ChangeEvent<HTMLInputElement>);
 
     expect(toast.error).toHaveBeenCalledTimes(1);
     expect(addBatch).not.toHaveBeenCalled();
+  });
+
+  it("拡張子が .csv なら MIME タイプが不正でも許容される", async () => {
+    const { addBatch, handleImportCsv } = setup();
+
+    // 空の MIME タイプだが、ファイル名が .csv なので許容
+    const file = new File(
+      ["FIRE,WATER,METAL,LIFE,SPIRIT,SPEED,FIRST,"],
+      "import.csv",
+      { type: "" },
+    );
+    handleImportCsv({
+      target: { files: [file], value: "" },
+    } as unknown as React.ChangeEvent<HTMLInputElement>);
+
+    await waitFor(() => expect(addBatch).toHaveBeenCalledTimes(1));
+    expect(addBatch.mock.calls[0][0]).toHaveLength(1);
   });
 
   it("コメント行(#)・空行をスキップし、有効行のみ batch する", async () => {
