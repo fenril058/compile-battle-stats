@@ -37,6 +37,10 @@ config excludes `e2e/**`, so unit tests never pick up Playwright specs.
 
 The pre-commit hook runs `lint-staged` (Biome + secretlint on staged files), `typecheck`, `test:staged`, and `build`. Fix failures before committing; do not bypass with `--no-verify`.
 
+## Git workflow
+
+**Claude must never `git push` to `main`** — direct pushes to `main` are forbidden. Committing locally to `main` is fine; leave pushing `main` to the user, who reviews first. When a change should reach the remote on its own, create a feature branch, push it, and open a PR (branches and PRs are fine). Auto-close an issue with a `Closes #<n>` trailer on a commit that reaches `main`.
+
 ## Environment
 
 Copy `.env.example` to `.env` and fill in the Firebase credentials. When env vars are missing or empty, `src/config/env.ts` sets `FIREBASE_CONFIG` to `null`, and the app falls back to **LocalStorage mode** automatically — no Firebase required for local development.
