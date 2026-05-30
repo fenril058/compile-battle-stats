@@ -1,5 +1,5 @@
 import type React from "react";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import type { MatrixView, StatsView } from "../hooks/useMatchStats";
 import { Matrix } from "./Matrix";
@@ -51,6 +51,10 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("v1aux");
   const statTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const matrixTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const statBaseId = useId();
+  const matrixBaseId = useId();
+  const statPanelId = `${statBaseId}-panel`;
+  const matrixPanelId = `${matrixBaseId}-panel`;
   const activeStats = statViews[activeStatViewKey];
   const activeView = matrixViews[activeMatrixKey];
 
@@ -124,6 +128,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           {STAT_VIEW_KEYS.map((key, index) => (
             <button
               key={key}
+              id={`${statBaseId}-tab-${key}`}
               ref={(el) => {
                 statTabRefs.current[index] = el;
               }}
@@ -132,6 +137,8 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
               onKeyDown={handleStatTabKeyDown}
               role="tab"
               aria-selected={activeStatViewKey === key}
+              aria-controls={statPanelId}
+              tabIndex={activeStatViewKey === key ? 0 : -1}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 activeStatViewKey === key
                   ? "bg-zinc-500 text-white font-medium"
@@ -143,6 +150,11 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           ))}
         </div>
         <div
+          id={statPanelId}
+          role="tabpanel"
+          aria-labelledby={`${statBaseId}-tab-${activeStatViewKey}`}
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: APG のタブパターンでは、フォーカス可能な子を持たない tabpanel を tabIndex=0 でフォーカス可能にする
+          tabIndex={0}
           style={{ viewTransitionName: "stat-panel" }}
           className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start"
         >
@@ -176,6 +188,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           {MATRIX_KEYS.map((key, index) => (
             <button
               key={key}
+              id={`${matrixBaseId}-tab-${key}`}
               ref={(el) => {
                 matrixTabRefs.current[index] = el;
               }}
@@ -184,6 +197,8 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
               onKeyDown={handleMatrixTabKeyDown}
               role="tab"
               aria-selected={activeMatrixKey === key}
+              aria-controls={matrixPanelId}
+              tabIndex={activeMatrixKey === key ? 0 : -1}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 activeMatrixKey === key
                   ? "bg-zinc-500 text-white font-medium"
@@ -195,6 +210,11 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           ))}
         </div>
         <div
+          id={matrixPanelId}
+          role="tabpanel"
+          aria-labelledby={`${matrixBaseId}-tab-${activeMatrixKey}`}
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: APG のタブパターンでは、フォーカス可能な子を持たない tabpanel を tabIndex=0 でフォーカス可能にする
+          tabIndex={0}
           style={{ viewTransitionName: "matrix-panel" }}
           className="overflow-x-auto"
         >
