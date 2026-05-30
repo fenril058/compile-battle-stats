@@ -3,7 +3,7 @@ import type React from "react";
 export const Footer: React.FC = () => {
   return (
     <footer className="text-center text-xs text-zinc-400">
-      2025 りゅー(
+      2026 りゅー(
       <a
         href="https://x.com/suke69"
         target="_blank"
