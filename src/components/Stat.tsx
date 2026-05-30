@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useId, useMemo, useRef, useState } from "react";
 import type { StatsResult } from "../types";
 import { rows } from "../utils/logic";
 
@@ -33,16 +33,46 @@ type StatProps = {
 export const Stat: React.FC<StatProps> = React.memo(
   ({ t, m, color, minPair, minTrio }) => {
     const [activeKey, setActiveKey] = useState<StatKey>("single");
+    const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+    const baseId = useId();
+    const panelId = `${baseId}-panel`;
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      const currentIndex = KEYS.indexOf(activeKey);
+      let newIndex = -1;
+
+      if (e.key === "ArrowLeft" && currentIndex > 0) {
+        e.preventDefault();
+        newIndex = currentIndex - 1;
+      } else if (e.key === "ArrowRight" && currentIndex < KEYS.length - 1) {
+        e.preventDefault();
+        newIndex = currentIndex + 1;
+      }
+
+      if (newIndex !== -1) {
+        setActiveKey(KEYS[newIndex]);
+        tabRefs.current[newIndex]?.focus();
+      }
+    };
 
     return (
       <div className={`p-3 rounded-2xl shadow-md ${color}`}>
         <h2 className="font-semibold mb-2 text-center">{t}</h2>
-        <div className="flex flex-wrap gap-1 mb-3">
-          {KEYS.map((key) => (
+        <div className="flex flex-wrap gap-1 mb-3" role="tablist">
+          {KEYS.map((key, index) => (
             <button
               key={key}
+              id={`${baseId}-tab-${key}`}
+              ref={(el) => {
+                tabRefs.current[index] = el;
+              }}
               type="button"
               onClick={() => setActiveKey(key)}
+              onKeyDown={handleKeyDown}
+              role="tab"
+              aria-selected={activeKey === key}
+              aria-controls={panelId}
+              tabIndex={activeKey === key ? 0 : -1}
               className={`px-2 py-0.5 text-xs rounded transition-colors ${
                 activeKey === key
                   ? "bg-zinc-500 text-white font-medium"
@@ -53,13 +83,21 @@ export const Stat: React.FC<StatProps> = React.memo(
             </button>
           ))}
         </div>
-        <StatSection
-          label={SECTION_LABELS[activeKey]}
-          data={m[activeKey]}
-          type={activeKey}
-          minPair={minPair}
-          minTrio={minTrio}
-        />
+        <div
+          id={panelId}
+          role="tabpanel"
+          aria-labelledby={`${baseId}-tab-${activeKey}`}
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: APG のタブパターンでは、フォーカス可能な子を持たない tabpanel を tabIndex=0 でフォーカス可能にする
+          tabIndex={0}
+        >
+          <StatSection
+            label={SECTION_LABELS[activeKey]}
+            data={m[activeKey]}
+            type={activeKey}
+            minPair={minPair}
+            minTrio={minTrio}
+          />
+        </div>
       </div>
     );
   },
@@ -99,14 +137,27 @@ const StatSection: React.FC<StatSectionProps> = ({
         <p className="text-xs text-zinc-500 text-center py-4">データなし</p>
       ) : (
         <table className="text-xs w-full border border-zinc-800">
+          <caption className="sr-only">{displayLabel}</caption>
           <thead className="bg-zinc-800 text-zinc-300">
             <tr>
-              <th className="p-1">#</th>
-              <th className="p-1">PRO</th>
-              <th className="p-1">G</th>
-              <th className="p-1">W</th>
-              <th className="p-1">L</th>
-              <th className="p-1">%</th>
+              <th className="p-1" scope="col">
+                #
+              </th>
+              <th className="p-1" scope="col">
+                PRO
+              </th>
+              <th className="p-1" scope="col">
+                G
+              </th>
+              <th className="p-1" scope="col">
+                W
+              </th>
+              <th className="p-1" scope="col">
+                L
+              </th>
+              <th className="p-1" scope="col">
+                %
+              </th>
             </tr>
           </thead>
           <tbody>

@@ -112,16 +112,31 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
 
         <div className="table-scroll-container relative max-h-[600px] overflow-y-auto overflow-x-auto">
           <table className="text-xs w-full border-collapse">
+            <caption className="sr-only">登録試合一覧</caption>
             <thead className="sticky top-0 z-10 bg-zinc-800 text-zinc-300">
               <tr>
-                <th className="p-2">#</th>
-                <th className="p-2 min-w-[100px]">登録日</th>
-                <th className="p-2 min-w-[50px]">先攻</th>
-                <th className="p-2 min-w-[50px]">後攻</th>
-                <th className="p-2 min-w-[50px]">勝者</th>
-                <th className="p-2 min-w-[60px]">レシオ</th>
-                <th className="p-2 min-w-[100px]">対戦日</th>
-                <th className="p-2"></th>
+                <th className="p-2" scope="col">
+                  #
+                </th>
+                <th className="p-2 min-w-[100px]" scope="col">
+                  登録日
+                </th>
+                <th className="p-2 min-w-[50px]" scope="col">
+                  先攻
+                </th>
+                <th className="p-2 min-w-[50px]" scope="col">
+                  後攻
+                </th>
+                <th className="p-2 min-w-[50px]" scope="col">
+                  勝者
+                </th>
+                <th className="p-2 min-w-[60px]" scope="col">
+                  レシオ
+                </th>
+                <th className="p-2 min-w-[100px]" scope="col">
+                  対戦日
+                </th>
+                <th className="p-2" scope="col"></th>
               </tr>
             </thead>
             <tbody>

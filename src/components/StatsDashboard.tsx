@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import type { MatrixView, StatsView } from "../hooks/useMatchStats";
 import { Matrix } from "./Matrix";
@@ -49,6 +49,12 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   const [activeStatViewKey, setActiveStatViewKey] =
     useState<StatViewKey>("all");
   const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("v1aux");
+  const statTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const matrixTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const statBaseId = useId();
+  const matrixBaseId = useId();
+  const statPanelId = `${statBaseId}-panel`;
+  const matrixPanelId = `${matrixBaseId}-panel`;
   const activeStats = statViews[activeStatViewKey];
   const activeView = matrixViews[activeMatrixKey];
 
@@ -62,6 +68,27 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     });
   };
 
+  const handleStatTabKeyDown = (e: React.KeyboardEvent) => {
+    const currentIndex = STAT_VIEW_KEYS.indexOf(activeStatViewKey);
+    let newIndex = -1;
+
+    if (e.key === "ArrowLeft" && currentIndex > 0) {
+      e.preventDefault();
+      newIndex = currentIndex - 1;
+    } else if (
+      e.key === "ArrowRight" &&
+      currentIndex < STAT_VIEW_KEYS.length - 1
+    ) {
+      e.preventDefault();
+      newIndex = currentIndex + 1;
+    }
+
+    if (newIndex !== -1) {
+      handleStatTabChange(STAT_VIEW_KEYS[newIndex]);
+      statTabRefs.current[newIndex]?.focus();
+    }
+  };
+
   const handleMatrixTabChange = (key: MatrixKey) => {
     if (!document.startViewTransition) {
       setActiveMatrixKey(key);
@@ -72,16 +99,46 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     });
   };
 
+  const handleMatrixTabKeyDown = (e: React.KeyboardEvent) => {
+    const currentIndex = MATRIX_KEYS.indexOf(activeMatrixKey);
+    let newIndex = -1;
+
+    if (e.key === "ArrowLeft" && currentIndex > 0) {
+      e.preventDefault();
+      newIndex = currentIndex - 1;
+    } else if (
+      e.key === "ArrowRight" &&
+      currentIndex < MATRIX_KEYS.length - 1
+    ) {
+      e.preventDefault();
+      newIndex = currentIndex + 1;
+    }
+
+    if (newIndex !== -1) {
+      handleMatrixTabChange(MATRIX_KEYS[newIndex]);
+      matrixTabRefs.current[newIndex]?.focus();
+    }
+  };
+
   return (
     <>
       {/* Stat section */}
       <section>
-        <div className="flex flex-wrap gap-1 mb-3">
-          {STAT_VIEW_KEYS.map((key) => (
+        <div className="flex flex-wrap gap-1 mb-3" role="tablist">
+          {STAT_VIEW_KEYS.map((key, index) => (
             <button
               key={key}
+              id={`${statBaseId}-tab-${key}`}
+              ref={(el) => {
+                statTabRefs.current[index] = el;
+              }}
               type="button"
               onClick={() => handleStatTabChange(key)}
+              onKeyDown={handleStatTabKeyDown}
+              role="tab"
+              aria-selected={activeStatViewKey === key}
+              aria-controls={statPanelId}
+              tabIndex={activeStatViewKey === key ? 0 : -1}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 activeStatViewKey === key
                   ? "bg-zinc-500 text-white font-medium"
@@ -93,6 +150,11 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           ))}
         </div>
         <div
+          id={statPanelId}
+          role="tabpanel"
+          aria-labelledby={`${statBaseId}-tab-${activeStatViewKey}`}
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: APG のタブパターンでは、フォーカス可能な子を持たない tabpanel を tabIndex=0 でフォーカス可能にする
+          tabIndex={0}
           style={{ viewTransitionName: "stat-panel" }}
           className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start"
         >
@@ -122,12 +184,21 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
 
       {/* Matrix section */}
       <section>
-        <div className="flex flex-wrap gap-1 mb-3">
-          {MATRIX_KEYS.map((key) => (
+        <div className="flex flex-wrap gap-1 mb-3" role="tablist">
+          {MATRIX_KEYS.map((key, index) => (
             <button
               key={key}
+              id={`${matrixBaseId}-tab-${key}`}
+              ref={(el) => {
+                matrixTabRefs.current[index] = el;
+              }}
               type="button"
               onClick={() => handleMatrixTabChange(key)}
+              onKeyDown={handleMatrixTabKeyDown}
+              role="tab"
+              aria-selected={activeMatrixKey === key}
+              aria-controls={matrixPanelId}
+              tabIndex={activeMatrixKey === key ? 0 : -1}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 activeMatrixKey === key
                   ? "bg-zinc-500 text-white font-medium"
@@ -139,6 +210,11 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           ))}
         </div>
         <div
+          id={matrixPanelId}
+          role="tabpanel"
+          aria-labelledby={`${matrixBaseId}-tab-${activeMatrixKey}`}
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: APG のタブパターンでは、フォーカス可能な子を持たない tabpanel を tabIndex=0 でフォーカス可能にする
+          tabIndex={0}
           style={{ viewTransitionName: "matrix-panel" }}
           className="overflow-x-auto"
         >
