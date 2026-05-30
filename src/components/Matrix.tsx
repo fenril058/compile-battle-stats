@@ -25,16 +25,24 @@ export const Matrix: React.FC<MatrixProps> = ({ t, m, bg, protocols }) => {
         {t}（{MIN_GAMES_FOR_MATRIX} 戦以上）
       </h2>
       <div
-        className="relative overflow-x-auto overflow-x-auto max-h-[500px]
+        className="relative overflow-x-auto max-h-[500px]
         border border-zinc-800 rounded-md"
         style={{ minHeight: "400px" }} // おおよその最小高さを確保
       >
         <table className="w-full text-xs min-w-[300px]">
+          <caption className="sr-only">
+            {t}（{MIN_GAMES_FOR_MATRIX} 戦以上）
+          </caption>
           <thead className="sticky top-0 z-20 bg-zinc-800 text-zinc-300">
             <tr>
-              <th className="px-2 py-1 sticky left-0 z-10 bg-zinc-800">PRO</th>
+              <th
+                className="px-2 py-1 sticky left-0 z-10 bg-zinc-800"
+                scope="col"
+              >
+                PRO
+              </th>
               {protocols.map((p) => (
-                <th key={`h-${p}`} className="px-2 py-1">
+                <th key={`h-${p}`} className="px-2 py-1" scope="col">
                   {ABBR[p] ?? p.slice(0, 3)}
                 </th>
               ))}
@@ -43,9 +51,10 @@ export const Matrix: React.FC<MatrixProps> = ({ t, m, bg, protocols }) => {
           <tbody>
             {protocols.map((a) => (
               <tr key={`r-${a}`} className="h-[28px]">
-                {" "}
-                {/* 行の高さを固定 */}
-                <th className="bg-zinc-800 px-2 py-1 sticky left-0 z-10 bg-zinc-800">
+                <th
+                  className="bg-zinc-800 px-2 py-1 sticky left-0 z-10 bg-zinc-800"
+                  scope="row"
+                >
                   {ABBR[a] ?? a.slice(0, 3)}
                 </th>
                 {protocols.map((b) => {

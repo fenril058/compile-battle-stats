@@ -31,7 +31,9 @@ describe("Matrix", () => {
         protocols={protocols}
       />,
     );
-    expect(screen.getByText(/マトリクス（3 戦以上）/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /マトリクス（3 戦以上）/ }),
+    ).toBeInTheDocument();
   });
 
   it("ABBR でヘッダーを描画する", () => {
