@@ -14,11 +14,16 @@ export function sortByCreatedAtDesc<T extends WithId>(items: T[]): T[] {
   return [...items].sort((a, b) => b.createdAt - a.createdAt);
 }
 
+/** localStorage が使える環境か（node/SSR/エミュレータ統合テストでは存在しない）。 */
+const hasLocalStorage = (): boolean => typeof localStorage !== "undefined";
+
 /**
  * localStorage から読み出し、id を正規化して createdAt 降順で返す。
- * 破損・未設定時は空配列（例外は投げない）。LocalAdapter とリモートのキャッシュ読みで共用。
+ * 破損・未設定時、または localStorage が無い環境では空配列（例外は投げない）。
+ * LocalAdapter とリモートのキャッシュ読みで共用。
  */
 export function readLocal<T extends WithId>(key: string): T[] {
+  if (!hasLocalStorage()) return [];
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return [];
@@ -31,7 +36,11 @@ export function readLocal<T extends WithId>(key: string): T[] {
   }
 }
 
-/** createdAt 降順に整列して localStorage へ保存する。 */
+/**
+ * createdAt 降順に整列して localStorage へ保存する。
+ * localStorage が無い環境（node/SSR 等）では no-op（キャッシュは最適化なので無くても動作する）。
+ */
 export function writeLocal<T extends WithId>(key: string, items: T[]): void {
+  if (!hasLocalStorage()) return;
   localStorage.setItem(key, JSON.stringify(sortByCreatedAtDesc(items)));
 }

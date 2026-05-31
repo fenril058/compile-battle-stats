@@ -1,0 +1,12 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+    	// 読み取り（データ閲覧）は、誰でも許可 (if true)
+    	allow read: if true;
+      // 書き込み（追加、編集、削除）は、ログインしているユーザーのみ許可
+      allow write: if request.auth != null;
+    }
+  }
+}

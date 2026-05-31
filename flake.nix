@@ -16,6 +16,8 @@
       {
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
+            jdk
+            firebase-tools
             just
             pinact
             zizmor

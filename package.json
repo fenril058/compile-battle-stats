@@ -15,6 +15,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:staged": "vitest run related --changed",
+    "test:emulator": "firebase emulators:exec --only firestore --project demo-compile 'vitest run --config vitest.emulator.config.ts'",
     "test:watch": "vitest",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui"
@@ -28,6 +29,7 @@
     "react-select": "^5.10.2"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.1",
     "@playwright/test": "^1.60.0",
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.2",
     "@tailwindcss/vite": "^4.3.0",
