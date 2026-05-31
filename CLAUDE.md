@@ -5,7 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev          # Start dev server
+npm run dev          # Start dev server (connects to .env Firebase = PRODUCTION)
+npm run dev:local    # Dev server in LocalStorage mode (no Firebase; safe for UI work)
 npm run build        # Type-check + Vite build
 npm run typecheck    # tsc --noEmit only
 npm run check        # Biome lint/format check

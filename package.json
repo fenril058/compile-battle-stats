@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:local": "vite --mode demo",
     "build": "tsc -b && vite build",
     "check": "biome check",
     "check:fix": "biome check --write",
