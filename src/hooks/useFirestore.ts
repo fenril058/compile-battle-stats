@@ -88,19 +88,6 @@ export function useFirestore<T extends WithId>(collectionName: string) {
     toast.info("ローカルキャッシュを再読込しました。");
   }, [localKey]);
 
-  // ローカル全件をリモートへ移行（remote モードのみ意味を持つ）
-  const pushAllLocalToRemote = useCallback(async () => {
-    if (mode !== "remote" || items.length === 0) return;
-    const payload = items.map(({ id: _id, ...rest }) => rest as Omit<T, "id">);
-    try {
-      await adapter.addBatch(payload);
-      toast.success("ローカルデータをリモートに移行しました。");
-    } catch (e) {
-      console.error("[useFirestore] pushAllLocalToRemote failed:", e);
-      toast.error("リモートへの移行に失敗しました。");
-    }
-  }, [adapter, items, mode]);
-
   // ローカルキャッシュをすべてクリア
   const clearLocal = useCallback(() => {
     if (!confirm("本当にローカルキャッシュをすべて削除しますか？")) return;
@@ -115,7 +102,6 @@ export function useFirestore<T extends WithId>(collectionName: string) {
     add,
     remove,
     addBatch,
-    pushAllLocalToRemote,
     reloadLocal,
     clearLocal,
   };
