@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.7.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.7.0...compile-battle-stats-v1.7.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* シーズン選択ドロップダウンが displayName を表示するように修正 ([7683921](https://github.com/fenril058/compile-battle-stats/commit/7683921340105de397c3ccb5bd5016547708893a))
+* シーズン選択ドロップダウンが displayName を表示するように修正 ([#43](https://github.com/fenril058/compile-battle-stats/issues/43)) ([eca4de1](https://github.com/fenril058/compile-battle-stats/commit/eca4de12cef62a12698d5fb794e58a013dff7920))
+
 ## [1.7.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.6.0...compile-battle-stats-v1.7.0) (2026-05-31)
 
 
