@@ -1,4 +1,4 @@
-import { normalizeId, sortByCreatedAtDesc } from "./helpers";
+import { normalizeId, readLocal, writeLocal } from "./helpers";
 import type { StorageAdapter, WithId } from "./types";
 
 /**
@@ -18,20 +18,11 @@ export class LocalAdapter<T extends WithId> implements StorageAdapter<T> {
   }
 
   private read(): T[] {
-    try {
-      const raw = localStorage.getItem(this.key);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      return sortByCreatedAtDesc((parsed as T[]).map((x) => normalizeId(x)));
-    } catch (e) {
-      console.error("[LocalAdapter] read failed:", e);
-      return [];
-    }
+    return readLocal<T>(this.key);
   }
 
   private write(items: T[]): void {
-    localStorage.setItem(this.key, JSON.stringify(sortByCreatedAtDesc(items)));
+    writeLocal<T>(this.key, items);
   }
 
   /** 現在の全件を購読者へ通知する。 */
