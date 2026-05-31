@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.7.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.6.0...compile-battle-stats-v1.7.0) (2026-05-31)
+
+
+### Features
+
+* local ハーネスをログイン不要で登録可能にする（[#48](https://github.com/fenril058/compile-battle-stats/issues/48) B 案 step3） ([dc200ac](https://github.com/fenril058/compile-battle-stats/commit/dc200acdb3e79e43425987c250a26c3cb6081e77))
+* アクセシビリティ補強（table caption/scope、tablist ARIA、skip link） ([#47](https://github.com/fenril058/compile-battle-stats/issues/47)) ([79e4139](https://github.com/fenril058/compile-battle-stats/commit/79e4139aadb4d8773e9d0cd09c0a15c8b21594bc))
+* アクセシビリティ補強（table caption/scope、tablist ARIA、skip link） ([#47](https://github.com/fenril058/compile-battle-stats/issues/47)) ([c195381](https://github.com/fenril058/compile-battle-stats/commit/c195381780cd7489350b7709327c9db8c60e6127))
+* ストレージ契約 StorageAdapter と LocalAdapter を追加（[#48](https://github.com/fenril058/compile-battle-stats/issues/48) B 案 step1） ([378075f](https://github.com/fenril058/compile-battle-stats/commit/378075fc0168c08f6f686c94a9d97b899a9d4917))
+
+
+### Bug Fixes
+
+* CSV エクスポート・インポート往路対応（クオート除去・MIME改善・登録日時尊重） ([#41](https://github.com/fenril058/compile-battle-stats/issues/41)) ([c26c37f](https://github.com/fenril058/compile-battle-stats/commit/c26c37f7b68d2d97efd16cde99690a0a115fba72))
+* CSV往路対応（クオート除去・MIME改善・登録日時尊重） ([#41](https://github.com/fenril058/compile-battle-stats/issues/41)) ([cdff81c](https://github.com/fenril058/compile-battle-stats/commit/cdff81c89c2a6b737d7c356fccc8c576057b0c9d))
+* Matrix 描画で DOM ネスト違反の console.error を解決 ([#44](https://github.com/fenril058/compile-battle-stats/issues/44)) ([23b92c0](https://github.com/fenril058/compile-battle-stats/commit/23b92c0036d145eb9cdbb7fac6660c187156e1b6))
+* Matrix 描画で DOM ネスト違反を解決 ([#44](https://github.com/fenril058/compile-battle-stats/issues/44)) ([9e4fcc2](https://github.com/fenril058/compile-battle-stats/commit/9e4fcc2943718b8a4bc40dba77f9f406e962f307))
+* typo・年号・hover 色・二重スキームなど細かな修正 ([#46](https://github.com/fenril058/compile-battle-stats/issues/46)) ([d78be36](https://github.com/fenril058/compile-battle-stats/commit/d78be36a60a3066fa426ac6aa36fe458e19890a4))
+* typo・年号・hover色など細かな修正 ([#46](https://github.com/fenril058/compile-battle-stats/issues/46)) ([290602a](https://github.com/fenril058/compile-battle-stats/commit/290602a302db04b30c0e6298a687f2113e8e9dc0))
+* タブを WAI-ARIA タブパターンに準拠（tabpanel 関連付け・roving tabindex） ([644218d](https://github.com/fenril058/compile-battle-stats/commit/644218d37c4fcbdb32757e1afc091d63ae3ff18d))
+* 矢印キーのタブ操作でフォーカスが追従しない問題を修正 ([b6ddc06](https://github.com/fenril058/compile-battle-stats/commit/b6ddc06524f957ccb547a4fd813c24ed6733a5d9)), closes [#47](https://github.com/fenril058/compile-battle-stats/issues/47)
+
 ## [1.6.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.5.0...compile-battle-stats-v1.6.0) (2026-05-29)
 
 
