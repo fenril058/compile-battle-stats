@@ -1,4 +1,5 @@
 import type React from "react";
+import { SEASONS_CONFIG } from "../config";
 import { useAuth } from "../hooks/useAuth";
 import type { SeasonKey, StorageMode } from "../types";
 
@@ -40,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
           >
             {seasonCollections.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {SEASONS_CONFIG[s].displayName}
               </option>
             ))}
           </select>
