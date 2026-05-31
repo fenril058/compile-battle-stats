@@ -109,13 +109,28 @@ describe("useFirestore (local モード)", () => {
     expect(toast.info).toHaveBeenCalled();
   });
 
-  it("addBatch は local モードでは登録せず info を出す（remote 専用）", async () => {
+  it("addBatch は local モードでも localStorage へ登録し成功通知する（#48 B）", async () => {
     const { result } = renderHook(() => useFirestore<Row>(KEY));
 
     await act(async () => {
       await result.current.addBatch([
-        { name: "a", createdAt: Date.now() } as Omit<Row, "id">,
+        { name: "a", createdAt: 100 } as Omit<Row, "id">,
+        { name: "b", createdAt: 200 } as Omit<Row, "id">,
       ]);
+    });
+
+    expect(result.current.items).toHaveLength(2);
+    expect(toast.success).toHaveBeenCalled();
+
+    const stored = JSON.parse(localStorage.getItem(KEY) ?? "[]");
+    expect(stored).toHaveLength(2);
+  });
+
+  it("addBatch は空配列なら info を出して何もしない", async () => {
+    const { result } = renderHook(() => useFirestore<Row>(KEY));
+
+    await act(async () => {
+      await result.current.addBatch([]);
     });
 
     expect(result.current.items).toHaveLength(0);

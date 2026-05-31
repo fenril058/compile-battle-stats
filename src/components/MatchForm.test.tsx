@@ -37,12 +37,16 @@ vi.mock("react-select", () => ({
   ),
 }));
 
-// useAuth のモック（最重要）
-vi.mock("../hooks/useAuth", () => ({
-  useAuth: () => ({
-    user: { uid: "test-user-uid" },
+// useAuth のモック（最重要）。テストごとに状態を差し替えられるよう hoisted 変数で保持する。
+const authMock = vi.hoisted(() => ({
+  state: {
+    user: { uid: "test-user-uid" } as { uid: string } | null,
+    isAuthEnabled: true,
     loading: false,
-  }),
+  },
+}));
+vi.mock("../hooks/useAuth", () => ({
+  useAuth: () => authMock.state,
 }));
 
 // react-toastify をモックし、副作用を防ぐ
@@ -77,6 +81,12 @@ describe("MatchForm", () => {
   beforeEach(() => {
     // 登録関数の呼び出し履歴のみをクリア
     mockOnAddMatch.mockClear();
+    // 認証状態をログイン済み（remote 相当）のデフォルトに戻す
+    authMock.state = {
+      user: { uid: "test-user-uid" },
+      isAuthEnabled: true,
+      loading: false,
+    };
     // window.confirm は vi.spyOn でセットアップし、テストの最後に mockRestore() でクリーンアップするため、
     // ここで vi.restoreAllMocks() や vi.clearAllMocks() を呼ぶのは避けます。
   });
@@ -108,6 +118,19 @@ describe("MatchForm", () => {
       second: ["HATE", "LIFE", "METAL"],
       userId: "test-user-uid",
     });
+  });
+
+  it("local（認証無効）では未ログインでも登録でき、userId は undefined（#48 B）", () => {
+    // local ハーネス相当：認証無効・ユーザー未ログイン
+    authMock.state = { user: null, isAuthEnabled: false, loading: false };
+
+    render(<MatchForm {...defaultProps} mode="local" />);
+    fireEvent.click(screen.getByText("先攻WIN"));
+
+    expect(mockOnAddMatch).toHaveBeenCalledTimes(1);
+    const args = mockOnAddMatch.mock.calls[0][0];
+    expect(args.winner).toBe("FIRST");
+    expect(args.userId).toBeUndefined();
   });
 
   it("disables buttons when registration is not allowed", () => {
