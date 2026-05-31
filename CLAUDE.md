@@ -33,6 +33,13 @@ the dev server with `--mode e2e`. That loads `.env.e2e` (empty Firebase vars),
 forcing **LocalStorage mode** so tests never touch real Firestore. The Vitest
 config excludes `e2e/**`, so unit tests never pick up Playwright specs.
 
+`.env` points at **production** Firebase and leaks into Vitest (`import.meta.env`).
+To keep unit tests off prod, `.env.test` (committed, empty Firebase vars) overrides
+`.env` in `mode=test`, forcing `FIREBASE_CONFIG=null` (LocalStorage mode). As a
+backstop, `firebase.ts` **throws** if a real config is ever present under
+`mode=test`, so a misconfigured test can never connect to prod. Real
+`onSnapshot`/`writeBatch` integration belongs in the Firebase Emulator, not unit tests.
+
 ## Pre-commit / pre-push hooks (Husky)
 
 The pre-commit hook runs `lint-staged` (Biome + secretlint on staged files), `typecheck`, `test:staged`, and `build`. Fix failures before committing; do not bypass with `--no-verify`.
