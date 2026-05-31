@@ -106,7 +106,7 @@ export default function App() {
       second: Trio;
       winner: Winner;
       matchDate: number | null;
-      userId: string;
+      userId?: string;
     }) => {
       if (!isRegistrationAllowed) return;
 

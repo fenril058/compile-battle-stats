@@ -13,7 +13,7 @@ type MatchFormProps = {
     second: Trio;
     winner: Winner;
     matchDate: number | null;
-    userId: string;
+    userId?: string;
   }) => void;
   isRegistrationAllowed: boolean;
   onSyncLocal?: () => void;
@@ -36,7 +36,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
   ratioSum,
   mode,
 }) => {
-  const { user } = useAuth();
+  const { user, isAuthEnabled } = useAuth();
   const [first, setFirst] = useState<Trio>(INITIAL_FIRST);
   const [second, setSecond] = useState<Trio>(INITIAL_SECOND);
   // 日付入力用のステート (初期値は今日)
@@ -99,7 +99,9 @@ export const MatchForm: React.FC<MatchFormProps> = ({
   };
 
   const handleSubmit = (winner: Winner) => {
-    if (!user) {
+    // 認証が有効（remote）なときのみログインを要求する。
+    // local ハーネスは認証無効なので、ログイン不要で登録できる（#48 B）。
+    if (isAuthEnabled && !user) {
       toast.error("ログインが必要です");
       return;
     }
@@ -157,7 +159,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
       second,
       winner,
       matchDate: matchDateTimestamp,
-      userId: user.uid,
+      userId: user?.uid,
     });
   };
 
