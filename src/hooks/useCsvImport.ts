@@ -77,6 +77,7 @@ export const useCsvImport = (
 
         const payloadsToImport: Omit<Match, "id">[] = [];
         let failCount = 0;
+        let firstFailLine = "";
 
         // 行頭が '#' の行と空行をスキップ
         const dataLines = lines.filter((line) => {
@@ -113,11 +114,8 @@ export const useCsvImport = (
             payloadsToImport.push({ ...payload, createdAt });
           } else {
             failCount++;
+            if (failCount === 1) firstFailLine = line;
             console.warn("CSV Row Parse Failed:", line);
-            toast.error(
-              `インポート失敗行（プロトコル名/形式エラー）: ${line.substring(0, 50)}...`,
-              { autoClose: 5000 },
-            );
           }
         }
 
@@ -127,8 +125,9 @@ export const useCsvImport = (
         }
 
         if (failCount > 0) {
-          toast.warn(`インポートに失敗したデータが${failCount}件あります。
-        プロトコル名や形式を確認してください。`);
+          toast.warn(
+            `${failCount}件失敗（先頭例: ${firstFailLine.substring(0, 50)}…）プロトコル名や形式を確認してください。`,
+          );
         }
       };
 
