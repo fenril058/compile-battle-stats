@@ -135,9 +135,10 @@ describe("useCsvImport", () => {
     await waitFor(() => expect(addBatch).toHaveBeenCalledTimes(1));
 
     expect(addBatch.mock.calls[0][0]).toHaveLength(1);
-    // 失敗2行ぶんの error と、まとめの warn が出る
-    expect(toast.error).toHaveBeenCalledTimes(2);
+    // 個別 error は出ず、失敗件数と先頭例をまとめた warn が1件だけ出る
+    expect(toast.error).not.toHaveBeenCalled();
     expect(toast.warn).toHaveBeenCalledTimes(1);
+    expect(toast.warn).toHaveBeenCalledWith(expect.stringContaining("2件失敗"));
   });
 
   it("有効行が1つも無ければ batch を呼ばない", async () => {
