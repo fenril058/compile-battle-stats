@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.8.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.7.1...compile-battle-stats-v1.8.0) (2026-06-01)
+
+
+### Features
+
+* 統計/相性表の表示を改善（[#45](https://github.com/fenril058/compile-battle-stats/issues/45)） ([1559871](https://github.com/fenril058/compile-battle-stats/commit/1559871eae4f8c5cb55bbeb576bff03fb6c1a09a))
+* 統計/相性表の表示を改善（[#45](https://github.com/fenril058/compile-battle-stats/issues/45)） ([1c65930](https://github.com/fenril058/compile-battle-stats/commit/1c65930255ded40b7c8e73a2728892fc5b57225a))
+
+
+### Bug Fixes
+
+* CSV インポート失敗トーストを1件の集計通知に集約する ([#42](https://github.com/fenril058/compile-battle-stats/issues/42)) ([9b95a3f](https://github.com/fenril058/compile-battle-stats/commit/9b95a3ff133b6a62c5dfe2b5828fd6d66ab5b954))
+* CSV インポート失敗トーストを1件の集計通知に集約する ([#42](https://github.com/fenril058/compile-battle-stats/issues/42)) ([fa60949](https://github.com/fenril058/compile-battle-stats/commit/fa60949599bae4edd29d7f5131a3493a49988c6d))
+
 ## [1.7.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.7.0...compile-battle-stats-v1.7.1) (2026-05-31)
 
 
