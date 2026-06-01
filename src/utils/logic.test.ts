@@ -5,6 +5,7 @@ import {
   isRatioBattle,
   makeStats,
   matchup,
+  matchupPairs,
   parseMatchCsvRow,
   percent,
   ratioSum,
@@ -114,6 +115,39 @@ describe("utils/logic", () => {
 
       const matrix = matchup(matches);
       expect(matrix).toBeDefined();
+    });
+  });
+
+  describe("matchupPairs (Matrix alt view)", () => {
+    const make = (winner: "FIRST" | "SECOND"): Match =>
+      ({
+        first: ["FIRE", "WATER", "HATE"],
+        second: ["LIFE", "LIGHT", "DARKNESS"],
+        winner,
+      }) as Match;
+
+    it("excludes pairs below MIN_GAMES_FOR_MATRIX", () => {
+      // 2 戦だけなら、どの有向ペアも g=2 < 3 なので空配列
+      expect(matchupPairs([make("FIRST"), make("FIRST")])).toEqual([]);
+    });
+
+    it("returns directed pairs at/over the threshold, sorted by games then win-rate", () => {
+      const pairs = matchupPairs([make("FIRST"), make("FIRST"), make("FIRST")]);
+
+      // 3x3 のクロス積 × 双方向 = 18 ペア、いずれも g=3
+      expect(pairs).toHaveLength(18);
+      expect(pairs.every((p) => p.g === 3)).toBe(true);
+
+      expect(pairs.find((p) => p.a === "FIRE" && p.b === "LIFE")).toMatchObject(
+        { g: 3, w: 3, l: 0, p: 100 },
+      );
+      expect(pairs.find((p) => p.a === "LIFE" && p.b === "FIRE")).toMatchObject(
+        { g: 3, w: 0, l: 3, p: 0 },
+      );
+
+      // 戦数が同一なので勝率降順: 先頭 100, 末尾 0
+      expect(pairs[0].p).toBe(100);
+      expect(pairs[pairs.length - 1].p).toBe(0);
     });
   });
 

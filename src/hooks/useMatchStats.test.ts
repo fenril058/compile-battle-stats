@@ -55,4 +55,45 @@ describe("useMatchStats", () => {
     // Ratioのみ
     expect(result.current.statViews.all.ratio.single.APATHY.g).toBe(1);
   });
+
+  it("reduces the all-matches matrix to protocols that actually appear", () => {
+    const v2Protocols = PROTOCOL_SETS.V2 as unknown as readonly Protocol[];
+    // 全体相性表は全試合が対象。ここでは FIRE/WATER/HATE × LUCK/WAR/COURAGE の
+    // 6 プロトコルだけが登場し、3 戦で各有向ペアが MIN_GAMES(3) に到達する。
+    const match = (id: string): Match =>
+      ({
+        id,
+        matchDate: 100,
+        createdAt: 100,
+        ratio: false,
+        first: ["FIRE", "WATER", "HATE"],
+        // V2 専用プロトコルは Protocol 型(=V1_AUX)に含まれないため unknown 経由でキャスト
+        second: ["LUCK", "WAR", "COURAGE"],
+        winner: "FIRST",
+        userId: "test",
+      }) as unknown as Match;
+
+    const matches = [match("1"), match("2"), match("3")];
+    const { result } = renderHook(() => useMatchStats(matches, v2Protocols));
+
+    const allView = result.current.matrixViews.all;
+    // 縮約: 出現した 6 プロトコルだけ（V2 の並び順を保持）
+    expect(allView.reducedProtocols).toEqual([
+      "FIRE",
+      "WATER",
+      "HATE",
+      "LUCK",
+      "WAR",
+      "COURAGE",
+    ]);
+    // 別表現: 3x3 のクロス積 × 双方向 = 18 ペア（いずれも g=3）
+    expect(allView.pairs).toHaveLength(18);
+    // 全プロトコル表示用の protocols は V2 全体のまま（30×30）
+    expect(allView.protocols).toHaveLength(v2Protocols.length);
+
+    // ペア一覧は全タブに供給される（純Main1戦が無いので v1aux は空配列）
+    expect(result.current.matrixViews.v1aux.pairs).toEqual([]);
+    expect(result.current.matrixViews.main2aux.pairs).toBeDefined();
+    expect(result.current.matrixViews.ratio.pairs).toBeDefined();
+  });
 });

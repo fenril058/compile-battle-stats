@@ -1,8 +1,10 @@
 import type React from "react";
 import { useId, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { MIN_GAMES_FOR_MATRIX } from "../config";
 import type { MatrixView, StatsView } from "../hooks/useMatchStats";
 import { Matrix } from "./Matrix";
+import { MatrixPairList } from "./MatrixPairList";
 import { Stat } from "./Stat";
 
 interface StatsDashboardProps {
@@ -13,9 +15,9 @@ interface StatsDashboardProps {
     mixed: StatsView;
   };
   matrixViews: {
+    all: MatrixView;
     v1aux: MatrixView;
     main2aux: MatrixView;
-    mixed: MatrixView;
     ratio: MatrixView;
   };
   minPair: number;
@@ -31,12 +33,12 @@ const STAT_VIEW_LABELS: Record<StatViewKey, string> = {
   mixed: "混合",
 };
 
-const MATRIX_KEYS = ["v1aux", "main2aux", "mixed", "ratio"] as const;
+const MATRIX_KEYS = ["all", "v1aux", "main2aux", "ratio"] as const;
 type MatrixKey = (typeof MATRIX_KEYS)[number];
 const MATRIX_TAB_LABELS: Record<MatrixKey, string> = {
+  all: "全体",
   v1aux: "Main1",
   main2aux: "Main2",
-  mixed: "混合",
   ratio: "レシオ(Main1)",
 };
 
@@ -48,7 +50,10 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
 }) => {
   const [activeStatViewKey, setActiveStatViewKey] =
     useState<StatViewKey>("all");
-  const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("v1aux");
+  const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("all");
+  // 全体相性表の表示範囲。既定は全プロトコル（全試合の 30×30 をそのまま）。
+  // 未使用プロトコルの空行を畳みたい場合は「出現のみ」に切り替えられる。
+  const [matrixCompact, setMatrixCompact] = useState(false);
   const statTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const matrixTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const statBaseId = useId();
@@ -57,6 +62,16 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   const matrixPanelId = `${matrixBaseId}-panel`;
   const activeStats = statViews[activeStatViewKey];
   const activeView = matrixViews[activeMatrixKey];
+
+  // 全体相性表のみ縮約（出現プロトコルだけに絞る）を適用できる。
+  const isAllMatrix = activeMatrixKey === "all";
+  const useReducedMatrix =
+    isAllMatrix && matrixCompact && activeView.reducedProtocols !== undefined;
+  const matrixProtocols = useReducedMatrix
+    ? (activeView.reducedProtocols ?? activeView.protocols)
+    : activeView.protocols;
+  // 縮約した結果、表示できるプロトコルが無い（＝MIN_GAMES到達の対戦が無い）状態。
+  const matrixCompactEmpty = useReducedMatrix && matrixProtocols.length === 0;
 
   const handleStatTabChange = (key: StatViewKey) => {
     if (!document.startViewTransition) {
@@ -173,7 +188,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             minTrio={minTrio}
           />
           <Stat
-            t="全体"
+            t="通常+レシオ"
             m={activeStats.all}
             color="bg-green-950/20"
             minPair={minPair}
@@ -218,12 +233,59 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           style={{ viewTransitionName: "matrix-panel" }}
           className="overflow-x-auto"
         >
-          <Matrix
-            t={`${MATRIX_TAB_LABELS[activeMatrixKey]} 相性表`}
-            m={activeView.data}
-            bg="bg-zinc-900/50"
-            protocols={activeView.protocols}
-          />
+          {isAllMatrix && (
+            <fieldset className="flex flex-wrap items-center gap-1 mb-2 border-0 p-0 m-0 min-w-0">
+              <legend className="text-xs text-zinc-500 mr-1 p-0 float-left">
+                表示範囲:
+              </legend>
+              <button
+                type="button"
+                onClick={() => setMatrixCompact(true)}
+                aria-pressed={matrixCompact}
+                className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                  matrixCompact
+                    ? "bg-zinc-500 text-white font-medium"
+                    : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                }`}
+              >
+                出現のみ
+              </button>
+              <button
+                type="button"
+                onClick={() => setMatrixCompact(false)}
+                aria-pressed={!matrixCompact}
+                className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                  !matrixCompact
+                    ? "bg-zinc-500 text-white font-medium"
+                    : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                }`}
+              >
+                全プロトコル
+              </button>
+            </fieldset>
+          )}
+          {matrixCompactEmpty ? (
+            <p className="text-sm text-zinc-500 text-center py-12">
+              {MIN_GAMES_FOR_MATRIX} 戦以上の対戦データがまだありません。
+            </p>
+          ) : (
+            <Matrix
+              t={`${MATRIX_TAB_LABELS[activeMatrixKey]} 相性表`}
+              m={activeView.data}
+              bg="bg-zinc-900/50"
+              protocols={matrixProtocols}
+            />
+          )}
+          {activeView.pairs !== undefined && (
+            <details className="mt-1">
+              <summary className="cursor-pointer select-none text-sm text-zinc-400">
+                出現ペア一覧（実験的）
+              </summary>
+              <div className="mt-2 overflow-x-auto">
+                <MatrixPairList pairs={activeView.pairs} />
+              </div>
+            </details>
+          )}
         </div>
       </section>
     </>

@@ -137,10 +137,9 @@ export const rows = (
   return data;
 };
 
-export const matchup = (
-  list: Match[],
-  protocols: readonly Protocol[] = ALL_PROTOCOLS as readonly Protocol[],
-) => {
+// 有向ペア (a__b) ごとの対戦数/勝利数を集計する内部ヘルパー。
+// matchup（行列表現）と matchupPairs（リスト表現）で共有する。
+const countMatchups = (list: Match[]): Record<string, StatEntry> => {
   const r: Record<string, StatEntry> = {};
   const bump = (k: string, w: boolean) => {
     if (!r[k]) r[k] = { g: 0, w: 0 };
@@ -160,6 +159,15 @@ export const matchup = (
     }
   }
 
+  return r;
+};
+
+export const matchup = (
+  list: Match[],
+  protocols: readonly Protocol[] = ALL_PROTOCOLS as readonly Protocol[],
+) => {
+  const r = countMatchups(list);
+
   const m: MatrixData = {};
   for (const a of protocols) {
     m[a] = {};
@@ -177,6 +185,39 @@ export const matchup = (
   }
 
   return m;
+};
+
+// 相性表（行列）の別表現。MIN_GAMES_FOR_MATRIX 以上戦った有向ペアだけを
+// リスト化して返す。疎な相性表（全試合 30×30 など）で巨大な空セルを描かずに済む。
+// 戦数降順 → 勝率降順でソート。
+export type MatchupPair = {
+  a: Protocol;
+  b: Protocol;
+  g: number;
+  w: number;
+  l: number;
+  p: number;
+};
+
+export const matchupPairs = (list: Match[]): MatchupPair[] => {
+  const r = countMatchups(list);
+
+  const pairs: MatchupPair[] = [];
+  for (const [k, v] of Object.entries(r)) {
+    if (v.g < MIN_GAMES_FOR_MATRIX) continue;
+    const [aStr, bStr] = k.split("__");
+    pairs.push({
+      a: aStr as Protocol,
+      b: bStr as Protocol,
+      g: v.g,
+      w: v.w,
+      l: v.g - v.w,
+      p: percent(v.w, v.g),
+    });
+  }
+
+  pairs.sort((x, y) => (y.g !== x.g ? y.g - x.g : y.p - x.p));
+  return pairs;
 };
 
 export const parseMatchCsvRow = (
