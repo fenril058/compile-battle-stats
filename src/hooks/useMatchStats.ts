@@ -1,7 +1,12 @@
 import { useMemo } from "react";
 import { PROTOCOL_SETS } from "../config";
 import type { Match, MatrixData, Protocol, StatsResult } from "../types";
-import { makeStats, matchup } from "../utils/logic";
+import {
+  type MatchupPair,
+  makeStats,
+  matchup,
+  matchupPairs,
+} from "../utils/logic";
 
 // Module-level sets for O(1) protocol lookup
 const V1_AUX_SET = new Set<string>(PROTOCOL_SETS.V1_AUX);
@@ -19,6 +24,11 @@ const isMain2Aux2Trio = (trio: readonly string[]) =>
 export type MatrixView = {
   data: MatrixData;
   protocols: readonly Protocol[];
+  // 出現したプロトコル（MIN_GAMES到達セルを持つもの）だけに絞った行/列。
+  // 全体相性表（全試合）の縮約表示に使う。未指定なら protocols と同じ扱い。
+  reducedProtocols?: readonly Protocol[];
+  // 相性表の別表現（実験的）。MIN_GAMES到達の有向ペアのみ。
+  pairs?: readonly MatchupPair[];
 };
 
 export type StatsView = {
@@ -73,6 +83,18 @@ export const useMatchStats = (
   );
   const ratioMatches = useMemo(() => matches.filter((m) => m.ratio), [matches]);
 
+  // 全体相性表（全試合・全プロトコルの 30×30）の補助データ。
+  // 別表現用のペア一覧と、出現プロトコルだけに絞った行/列（縮約）を用意する。
+  const allPairs = useMemo(() => matchupPairs(matches), [matches]);
+  const allReducedProtocols = useMemo(() => {
+    const seen = new Set<string>();
+    for (const pr of allPairs) {
+      seen.add(pr.a);
+      seen.add(pr.b);
+    }
+    return protocols.filter((p) => seen.has(p));
+  }, [allPairs, protocols]);
+
   const statViews = useMemo(
     () => ({
       all: {
@@ -108,24 +130,38 @@ export const useMatchStats = (
 
   const matrixViews = useMemo(
     () => ({
+      // 全試合・全プロトコルの相性表（30×30）。縮約と別表現の補助データ付き。
+      all: {
+        data: matchup(matches, protocols),
+        protocols,
+        reducedProtocols: allReducedProtocols,
+        pairs: allPairs,
+      },
       v1aux: {
         data: matchup(v1AuxMatches, V1_AUX_PROTOCOLS),
         protocols: V1_AUX_PROTOCOLS,
+        pairs: matchupPairs(v1AuxMatches),
       },
       main2aux: {
         data: matchup(main2Aux2Matches, MAIN2_AUX2_PROTOCOLS),
         protocols: MAIN2_AUX2_PROTOCOLS,
-      },
-      mixed: {
-        data: matchup(mixedMatches, protocols),
-        protocols,
+        pairs: matchupPairs(main2Aux2Matches),
       },
       ratio: {
         data: matchup(ratioMatches, V1_AUX_PROTOCOLS),
         protocols: V1_AUX_PROTOCOLS,
+        pairs: matchupPairs(ratioMatches),
       },
     }),
-    [v1AuxMatches, main2Aux2Matches, mixedMatches, ratioMatches, protocols],
+    [
+      matches,
+      v1AuxMatches,
+      main2Aux2Matches,
+      ratioMatches,
+      protocols,
+      allReducedProtocols,
+      allPairs,
+    ],
   );
 
   return { statViews, matrixViews, sortedMatches };
