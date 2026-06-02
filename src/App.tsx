@@ -34,15 +34,15 @@ import { useFirestore } from "./hooks/useFirestore";
 import { useMatchStats } from "./hooks/useMatchStats";
 import type { Match, Protocol, Ratios, SeasonKey, Trio, Winner } from "./types";
 import { isRatioBattle } from "./utils/logic";
+import { resolveSeasonKey } from "./utils/seasonKey";
 
 export default function App() {
   // === シーズン選択 ===
   // Object.keys の戻り値を SeasonKey[] にキャスト
   const SEASON_KEYS = Object.keys(SEASONS_CONFIG) as SeasonKey[];
 
-  const [seasonKey, setSeasonKey] = useState<SeasonKey>(
-    () =>
-      (localStorage.getItem("selectedSeason") as SeasonKey) || SEASON_KEYS[0],
+  const [seasonKey, setSeasonKey] = useState<SeasonKey>(() =>
+    resolveSeasonKey(localStorage.getItem("selectedSeason"), SEASON_KEYS),
   );
 
   // ★ 設定オブジェクトから現在の設定を取得
