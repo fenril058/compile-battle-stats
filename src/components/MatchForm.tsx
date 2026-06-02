@@ -254,8 +254,8 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   type="button"
                   onClick={() => handleSubmit("FIRST")}
                   disabled={!isFormValid || !isRegistrationAllowed}
-                  className="py-2 px-4 rounded-lg text-white bg-green-700
-                  hover:bg-green-600 disabled:bg-zinc-700 text-sm font-bold"
+                  className="py-2 px-4 rounded-lg text-white bg-green-800
+                  hover:bg-green-700 disabled:bg-zinc-700 text-sm font-bold"
                 >
                   先攻WIN
                 </button>
@@ -263,8 +263,8 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   type="button"
                   onClick={() => handleSubmit("SECOND")}
                   disabled={!isFormValid || !isRegistrationAllowed}
-                  className="py-2 px-4 rounded-lg text-white bg-green-700
-                  hover:bg-green-600 disabled:bg-zinc-700 text-sm font-bold"
+                  className="py-2 px-4 rounded-lg text-white bg-green-800
+                  hover:bg-green-700 disabled:bg-zinc-700 text-sm font-bold"
                 >
                   後攻WIN
                 </button>
