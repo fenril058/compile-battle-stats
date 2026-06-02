@@ -47,6 +47,12 @@ export const Stat: React.FC<StatProps> = React.memo(
       } else if (e.key === "ArrowRight" && currentIndex < KEYS.length - 1) {
         e.preventDefault();
         newIndex = currentIndex + 1;
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        newIndex = 0;
+      } else if (e.key === "End") {
+        e.preventDefault();
+        newIndex = KEYS.length - 1;
       }
 
       if (newIndex !== -1) {
@@ -58,7 +64,11 @@ export const Stat: React.FC<StatProps> = React.memo(
     return (
       <div className={`p-3 rounded-2xl shadow-md ${color}`}>
         <h2 className="font-semibold mb-2 text-center">{t}</h2>
-        <div className="flex flex-wrap gap-1 mb-3" role="tablist">
+        <div
+          className="flex flex-wrap gap-1 mb-3"
+          role="tablist"
+          aria-label="統計種別"
+        >
           {KEYS.map((key, index) => (
             <button
               key={key}

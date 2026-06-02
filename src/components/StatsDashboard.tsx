@@ -96,6 +96,12 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     ) {
       e.preventDefault();
       newIndex = currentIndex + 1;
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      newIndex = 0;
+    } else if (e.key === "End") {
+      e.preventDefault();
+      newIndex = STAT_VIEW_KEYS.length - 1;
     }
 
     if (newIndex !== -1) {
@@ -127,6 +133,12 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     ) {
       e.preventDefault();
       newIndex = currentIndex + 1;
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      newIndex = 0;
+    } else if (e.key === "End") {
+      e.preventDefault();
+      newIndex = MATRIX_KEYS.length - 1;
     }
 
     if (newIndex !== -1) {
@@ -139,7 +151,11 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
     <>
       {/* Stat section */}
       <section>
-        <div className="flex flex-wrap gap-1 mb-3" role="tablist">
+        <div
+          className="flex flex-wrap gap-1 mb-3"
+          role="tablist"
+          aria-label="統計ビュー"
+        >
           {STAT_VIEW_KEYS.map((key, index) => (
             <button
               key={key}
@@ -199,7 +215,11 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
 
       {/* Matrix section */}
       <section>
-        <div className="flex flex-wrap gap-1 mb-3" role="tablist">
+        <div
+          className="flex flex-wrap gap-1 mb-3"
+          role="tablist"
+          aria-label="相性表ビュー"
+        >
           {MATRIX_KEYS.map((key, index) => (
             <button
               key={key}

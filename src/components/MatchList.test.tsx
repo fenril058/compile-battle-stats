@@ -190,7 +190,7 @@ describe("MatchList", () => {
     it("page=1 のとき « ボタンは disabled", () => {
       render(<MatchList {...defaultProps} matches={makeMatches(30)} />);
 
-      const prevButtons = screen.getAllByRole("button", { name: "«" });
+      const prevButtons = screen.getAllByRole("button", { name: "前のページ" });
       for (const btn of prevButtons) {
         expect(btn).toBeDisabled();
       }
@@ -201,7 +201,7 @@ describe("MatchList", () => {
 
       fireEvent.click(screen.getAllByRole("button", { name: "3" })[0]);
 
-      const nextButtons = screen.getAllByRole("button", { name: "»" });
+      const nextButtons = screen.getAllByRole("button", { name: "次のページ" });
       for (const btn of nextButtons) {
         expect(btn).toBeDisabled();
       }
