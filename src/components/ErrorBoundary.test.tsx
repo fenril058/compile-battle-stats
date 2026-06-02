@@ -27,6 +27,11 @@ describe("ErrorBoundary", () => {
     expect(
       screen.getByRole("button", { name: "再読み込み" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "localStorage をクリアして再読み込み",
+      }),
+    ).toBeInTheDocument();
     spy.mockRestore();
   });
 });

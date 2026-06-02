@@ -1,6 +1,6 @@
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
-import { lazy, Suspense, useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -44,6 +44,12 @@ export default function App() {
   const [seasonKey, setSeasonKey] = useState<SeasonKey>(() =>
     resolveSeasonKey(localStorage.getItem("selectedSeason"), SEASON_KEYS),
   );
+
+  // 解決済みのシーズンキーを localStorage に同期する。
+  // 不正/削除済みのキーがフォールバックされた場合に、永続値を実態へ揃える。
+  useEffect(() => {
+    localStorage.setItem("selectedSeason", seasonKey);
+  }, [seasonKey]);
 
   // ★ 設定オブジェクトから現在の設定を取得
   const currentConfig = SEASONS_CONFIG[seasonKey];
@@ -98,7 +104,7 @@ export default function App() {
   const handleSeasonChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const s = e.target.value as SeasonKey;
     setSeasonKey(s);
-    localStorage.setItem("selectedSeason", s);
+    // 永続化は seasonKey の useEffect が担当する。
   };
 
   const handleAddMatch = useCallback(

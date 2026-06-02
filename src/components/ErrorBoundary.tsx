@@ -26,13 +26,25 @@ export class ErrorBoundary extends Component<Props, State> {
             ページを再読み込みするか、localStorage
             をクリアして再試行してください。
           </p>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-500"
-          >
-            再読み込み
-          </button>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-500"
+            >
+              再読み込み
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.clear();
+                window.location.reload();
+              }}
+              className="px-4 py-2 bg-zinc-700 rounded hover:bg-zinc-600"
+            >
+              localStorage をクリアして再読み込み
+            </button>
+          </div>
         </div>
       );
     }
