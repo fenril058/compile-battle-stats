@@ -23,8 +23,9 @@ type MatchFormProps = {
 };
 
 // Initial state helpers (コンポーネントの初回マウント時のみ使用される)
-const INITIAL_FIRST: Trio = ["DARKNESS", "FIRE", "HATE"] as unknown as Trio;
-const INITIAL_SECOND: Trio = ["PSYCHIC", "GRAVITY", "WATER"] as unknown as Trio;
+// いずれも妥当な Protocol。タプル化のための as Trio（as unknown は不要 → #73）。
+const INITIAL_FIRST: Trio = ["DARKNESS", "FIRE", "HATE"] as Trio;
+const INITIAL_SECOND: Trio = ["PSYCHIC", "GRAVITY", "WATER"] as Trio;
 
 export const MatchForm: React.FC<MatchFormProps> = ({
   protocolGroups,
@@ -76,8 +77,10 @@ export const MatchForm: React.FC<MatchFormProps> = ({
         flat.length >= 6 ? flat.slice(3, 6) : flat.slice(0, 3);
       setSecond(secondStart as Trio);
     } else {
-      setFirst(["", "", ""] as unknown as Trio);
-      setSecond(["", "", ""] as unknown as Trio);
+      // プロトコルが3つ未満という到達しない構成への退避。
+      // 空文字（非 Protocol）を捏造せず、妥当な既定 Trio を維持する（#73）。
+      setFirst(INITIAL_FIRST);
+      setSecond(INITIAL_SECOND);
     }
   }, [protocolGroups]);
 
