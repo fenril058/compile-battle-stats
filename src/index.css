@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* === Focus-visible ring === */
+:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
 /* === Below-fold deferred rendering ===
    Apply only to sections confirmed to be off-screen on initial load.
    contain-intrinsic-size prevents layout-shift scrollbar jumping while off-screen.

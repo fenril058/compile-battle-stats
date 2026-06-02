@@ -11,7 +11,7 @@ type MatrixPairListProps = {
 export const MatrixPairList: React.FC<MatrixPairListProps> = ({ pairs }) => {
   if (pairs.length === 0) {
     return (
-      <p className="text-xs text-zinc-500 text-center py-4">
+      <p className="text-xs text-zinc-400 text-center py-4">
         {MIN_GAMES_FOR_MATRIX} 戦以上の対戦ペアがまだありません
       </p>
     );

@@ -134,7 +134,7 @@ const StatSection: React.FC<StatSectionProps> = ({
     <div>
       <h3 className="text-sm text-zinc-400 mb-1 text-center">{displayLabel}</h3>
       {r.length === 0 ? (
-        <p className="text-xs text-zinc-500 text-center py-4">データなし</p>
+        <p className="text-xs text-zinc-400 text-center py-4">データなし</p>
       ) : (
         <table className="text-xs w-full border border-zinc-800">
           <caption className="sr-only">{displayLabel}</caption>

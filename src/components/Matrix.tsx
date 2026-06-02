@@ -25,6 +25,8 @@ export const Matrix: React.FC<MatrixProps> = ({ t, m, bg, protocols }) => {
         {t}（{MIN_GAMES_FOR_MATRIX} 戦以上）
       </h2>
       <div
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: スクロール可能領域はキーボード操作のため focusable にする必要がある（scrollable-region-focusable）
+        tabIndex={0}
         className="relative overflow-x-auto max-h-[500px]
         border border-zinc-800 rounded-md"
         style={{ minHeight: "400px" }} // おおよその最小高さを確保

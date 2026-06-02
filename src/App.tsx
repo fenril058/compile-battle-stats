@@ -65,7 +65,7 @@ export default function App() {
   // MatchList Loading用のシンプルなコンポーネント
   const MatchListSkeleton = () => (
     <div className="h-[600px] w-full animate-pulse bg-zinc-900 rounded-xl flex items-center justify-center">
-      <span className="text-zinc-500">Loading stats...</span>
+      <span className="text-zinc-400">Loading stats...</span>
     </div>
   );
 

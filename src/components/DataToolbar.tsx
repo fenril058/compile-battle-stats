@@ -60,7 +60,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
           <p className="text-xs text-zinc-400 mt-2">
             形式: F1, F2, F3, S1, S2, S3, Winner, Date, Ratio, CreatedAt
           </p>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-zinc-400 mt-1">
             ※ 本アプリがエクスポートした CSV ファイルを再インポートできます
           </p>
         </div>
