@@ -212,7 +212,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
                               : "text-zinc-600 cursor-not-allowed"
                           }`}
                         >
-                          ️削除
+                          削除
                         </button>
                       )}
                     </td>

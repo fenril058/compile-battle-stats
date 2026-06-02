@@ -1,4 +1,4 @@
-import type { ALL_PROTOCOLS, RATIO_SETS, SEASONS_CONFIG } from "./config";
+import type { ALL_PROTOCOLS, SEASONS_CONFIG } from "./config";
 
 export type StorageMode = "remote" | "local";
 
@@ -25,8 +25,11 @@ export type MatrixData = {
   };
 };
 
-// 特定の定数ではなく、RATIO_SETS の値の型を参照するようにする
-export type Ratios = (typeof RATIO_SETS)[keyof typeof RATIO_SETS];
+// レシオ表は「プロトコル → レシオ値」の部分写像。
+// シーズンによって対象プロトコルが異なる（V1 系は V2 プロトコルを持たない）ため、
+// Protocol を広げた後も全シーズンの RATIO_SETS を受けられるよう Partial で表現する（#73）。
+// 参照側は ratios[p] を必ず `?? 0` / `=== undefined` で扱う。
+export type Ratios = Partial<Record<Protocol, number>>;
 
 // SeasonCollectionName を SEASONS_CONFIG のキーから生成
 export type SeasonKey = keyof typeof SEASONS_CONFIG;

@@ -175,7 +175,7 @@ const countMatchups = (list: Match[]): Record<string, StatEntry> => {
 
 export const matchup = (
   list: Match[],
-  protocols: readonly Protocol[] = ALL_PROTOCOLS as readonly Protocol[],
+  protocols: readonly Protocol[] = ALL_PROTOCOLS,
 ) => {
   const r = countMatchups(list);
 
@@ -244,13 +244,16 @@ export const parseMatchCsvRow = (
   const upperRow = row.map((s) => s.trim().toUpperCase());
   const [F1, F2, F3, S1, S2, S3, W, DateStr] = upperRow;
 
-  const protocols = [F1, F2, F3, S1, S2, S3] as Protocol[];
-  if (protocols.some((p) => !validProtocols.includes(p))) {
+  // 先に文字列のまま検証し、妥当性が確認できてから Protocol/Trio として扱う（#73）。
+  const rawProtocols = [F1, F2, F3, S1, S2, S3];
+  const validSet: ReadonlySet<string> = new Set(validProtocols);
+  if (rawProtocols.some((p) => !validSet.has(p))) {
     return null;
   }
 
-  const winner = W as "FIRST" | "SECOND";
-  if (winner !== "FIRST" && winner !== "SECOND") return null;
+  // W は文字列。値で絞り込めば winner は Winner に絞られる（キャスト不要）。
+  if (W !== "FIRST" && W !== "SECOND") return null;
+  const winner = W;
 
   const firstTrio = [F1, F2, F3] as Trio;
   const secondTrio = [S1, S2, S3] as Trio;

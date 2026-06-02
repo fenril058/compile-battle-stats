@@ -69,8 +69,9 @@ export const PROTOCOL_GROUPS: Record<
   ],
 };
 
-// 最新のプロトコル（型定義用）
-export const ALL_PROTOCOLS = PROTOCOL_SETS.V1_AUX;
+// 全プロトコル（Protocol 型の基底）。実行時に扱う最新シーズン（V2）まで含めることで、
+// V2 プロトコルも Protocol 型で表現でき、`as unknown` キャストを排除できる（#73）。
+export const ALL_PROTOCOLS = PROTOCOL_SETS.V2;
 export const ABBR = {
   DARKNESS: "DAR",
   FIRE: "FIR",

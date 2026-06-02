@@ -32,7 +32,7 @@ import { useCsvExport } from "./hooks/useCsvExport";
 import { useCsvImport } from "./hooks/useCsvImport";
 import { useFirestore } from "./hooks/useFirestore";
 import { useMatchStats } from "./hooks/useMatchStats";
-import type { Match, Protocol, SeasonKey, Trio, Winner } from "./types";
+import type { Match, Protocol, Ratios, SeasonKey, Trio, Winner } from "./types";
 import { isRatioBattle } from "./utils/logic";
 
 export default function App() {
@@ -51,7 +51,8 @@ export default function App() {
     currentConfig.protocolVer
   ] as readonly Protocol[];
   const currentProtocolGroups = PROTOCOL_GROUPS[currentConfig.protocolVer];
-  const currentRatios = RATIO_SETS[currentConfig.ratioVer];
+  // Protocol が V2 まで広がったため、シーズン別 RATIO_SETS を Ratios(Partial) として受ける（#73）。
+  const currentRatios: Ratios = RATIO_SETS[currentConfig.ratioVer];
   const isRegistrationAllowed = !currentConfig.isReadOnly;
   const maxRatio = currentConfig.maxRatio;
 

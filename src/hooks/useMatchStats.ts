@@ -8,12 +8,13 @@ import {
   matchupPairs,
 } from "../utils/logic";
 
-// Module-level sets for O(1) protocol lookup
+// Module-level sets for O(1) protocol lookup.
+// Protocol 型が V2 まで広がったので、PROTOCOL_SETS の値はそのまま Protocol[] として扱える（#73）。
 const V1_AUX_SET = new Set<string>(PROTOCOL_SETS.V1_AUX);
-const V1_AUX_PROTOCOLS = PROTOCOL_SETS.V1_AUX as unknown as readonly Protocol[];
-const MAIN2_AUX2_PROTOCOLS = PROTOCOL_SETS.V2.filter(
+const V1_AUX_PROTOCOLS: readonly Protocol[] = PROTOCOL_SETS.V1_AUX;
+const MAIN2_AUX2_PROTOCOLS: readonly Protocol[] = PROTOCOL_SETS.V2.filter(
   (p) => !V1_AUX_SET.has(p),
-) as unknown as readonly Protocol[];
+);
 const MAIN2_AUX2_SET = new Set<string>(MAIN2_AUX2_PROTOCOLS);
 
 const isV1AuxTrio = (trio: readonly string[]) =>
