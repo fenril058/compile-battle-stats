@@ -1,14 +1,22 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Match, Protocol } from "../types";
+import { ALL_PROTOCOLS } from "../config";
+import type { Match } from "../types";
 import { MatchList } from "./MatchList";
 
-const P1 = "DARKNESS" as Protocol;
-const P2 = "FIRE" as Protocol;
-const P3 = "GRAVITY" as Protocol;
-const P4 = "WATER" as Protocol;
-const P5 = "LIFE" as Protocol;
-const P6 = "METAL" as Protocol;
+// 実在の Protocol 値を使う（文字列リテラルの as キャストを避け、
+// プロトコル名が変わってもテストが追従するようにする）。
+const [P1, P2, P3, P4, P5, P6] = ALL_PROTOCOLS;
+
+// PaginationControls は一覧の上下2箇所に描画されるため、
+// 各ページネーション要素は常に2つ存在する。
+const PANELS = 2;
+
+// 上下2つの PaginationControls に同じボタン/テキストが出ることを確認するヘルパー。
+const expectButtonInBothPanels = (name: string) =>
+  expect(screen.getAllByRole("button", { name })).toHaveLength(PANELS);
+const expectTextInBothPanels = (text: string) =>
+  expect(screen.getAllByText(text)).toHaveLength(PANELS);
 
 function makeMatches(count: number): Match[] {
   return Array.from({ length: count }, (_, i) => ({
@@ -108,21 +116,21 @@ describe("MatchList", () => {
       render(<MatchList {...defaultProps} matches={makeMatches(30)} />);
 
       // 上下2つの PaginationControls があるので各ボタンが2つずつ存在する
-      expect(screen.getAllByRole("button", { name: "1" })).toHaveLength(2);
-      expect(screen.getAllByRole("button", { name: "2" })).toHaveLength(2);
-      expect(screen.getAllByRole("button", { name: "3" })).toHaveLength(2);
+      expectButtonInBothPanels("1");
+      expectButtonInBothPanels("2");
+      expectButtonInBothPanels("3");
     });
 
     it("先頭付近（page=1）は 1-5 を表示し、末尾ページへのジャンプボタンと ... を出す", () => {
       // 100件 → 10ページ
       render(<MatchList {...defaultProps} matches={makeMatches(100)} />);
 
-      expect(screen.getAllByRole("button", { name: "1" })).toHaveLength(2);
-      expect(screen.getAllByRole("button", { name: "5" })).toHaveLength(2);
+      expectButtonInBothPanels("1");
+      expectButtonInBothPanels("5");
       // 10ページ目へのジャンプボタンが上下にある
-      expect(screen.getAllByRole("button", { name: "10" })).toHaveLength(2);
+      expectButtonInBothPanels("10");
       // ... が上下にある
-      expect(screen.getAllByText("...")).toHaveLength(2);
+      expectTextInBothPanels("...");
     });
 
     it("末尾付近（page=10/10）は 6-10 を表示し、先頭ページへのジャンプボタンと ... を出す", () => {
@@ -131,11 +139,11 @@ describe("MatchList", () => {
       // 10ページ目へ移動
       fireEvent.click(screen.getAllByRole("button", { name: "10" })[0]);
 
-      expect(screen.getAllByRole("button", { name: "6" })).toHaveLength(2);
-      expect(screen.getAllByRole("button", { name: "10" })).toHaveLength(2);
+      expectButtonInBothPanels("6");
+      expectButtonInBothPanels("10");
       // 1ページ目へのジャンプボタンが上下にある
-      expect(screen.getAllByRole("button", { name: "1" })).toHaveLength(2);
-      expect(screen.getAllByText("...")).toHaveLength(2);
+      expectButtonInBothPanels("1");
+      expectTextInBothPanels("...");
     });
 
     it("中間（page=5/10）はその前後を含む5ページ分を表示する", () => {
@@ -146,7 +154,7 @@ describe("MatchList", () => {
 
       // range: 3-7
       for (const page of ["3", "4", "5", "6", "7"]) {
-        expect(screen.getAllByRole("button", { name: page })).toHaveLength(2);
+        expectButtonInBothPanels(page);
       }
     });
 
@@ -159,9 +167,9 @@ describe("MatchList", () => {
 
       // 1ページ目へのジャンプが "..." なしで出ているか。
       // pageNumbers[0]=2 なので page 1 ジャンプボタンは表示されるが ... は出ない。
-      expect(screen.getAllByRole("button", { name: "1" })).toHaveLength(2);
+      expectButtonInBothPanels("1");
       // "..." はページ末尾側にのみ存在する（末尾ページ10はまだ範囲外）
-      expect(screen.getAllByText("...")).toHaveLength(2);
+      expectTextInBothPanels("...");
     });
 
     it("pageNumbers[last] === totalPages-1 のとき末尾 ... は表示しない", () => {
@@ -172,9 +180,9 @@ describe("MatchList", () => {
       fireEvent.click(screen.getAllByRole("button", { name: "7" })[0]);
 
       // 10ページへのジャンプはあるが ... は先頭側のみ
-      expect(screen.getAllByRole("button", { name: "10" })).toHaveLength(2);
+      expectButtonInBothPanels("10");
       // ... は先頭側にのみ (末尾側にはない)
-      expect(screen.getAllByText("...")).toHaveLength(2);
+      expectTextInBothPanels("...");
     });
   });
 
@@ -210,7 +218,7 @@ describe("MatchList", () => {
       fireEvent.change(selects[0], { target: { value: "20" } });
 
       // "1 / 2 ページ" と表示される
-      expect(screen.getAllByText("1 / 2 ページ")).toHaveLength(2);
+      expectTextInBothPanels("1 / 2 ページ");
     });
   });
 
@@ -270,7 +278,7 @@ describe("MatchList", () => {
 
     it("データなし時は ページ表示 に 'データなし' を出す", () => {
       render(<MatchList {...defaultProps} matches={[]} />);
-      expect(screen.getAllByText("データなし")).toHaveLength(2);
+      expectTextInBothPanels("データなし");
     });
   });
 });
