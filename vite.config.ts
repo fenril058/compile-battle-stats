@@ -27,6 +27,33 @@ export default defineConfig({
         "src/setupTests.ts",
         "src/main.tsx", // アプリのブートストラップ（テスト対象外）
       ],
+      thresholds: {
+        // 全体の下限（新規 UI の追加で薄まり過ぎないための床）
+        statements: 80,
+        branches: 74,
+        functions: 78,
+        lines: 81,
+        // 高カバレッジ資産は個別に固定し、グローバル床に隠れたサイレント劣化を防ぐ。
+        // 値は実測からわずかに下げた（ノイズ耐性のためのバッファ）。
+        "src/utils/logic.ts": {
+          statements: 98,
+          branches: 94,
+          functions: 100,
+          lines: 99,
+        },
+        "src/storage/**": {
+          statements: 92,
+          branches: 80,
+          functions: 100,
+          lines: 95,
+        },
+        "src/hooks/useMatchStats.ts": {
+          statements: 95,
+          branches: 85,
+          functions: 92,
+          lines: 94,
+        },
+      },
     },
   },
   plugins: [
