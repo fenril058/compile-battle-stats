@@ -1,4 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { Match } from "../types";
 import { formatCalendarDate } from "../utils/date";
 
@@ -45,6 +51,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+    const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
 
     // 総ページ数を計算
     const totalPages = Math.ceil(matches.length / pageSize);
@@ -56,6 +63,17 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
       // ページネーションに合わせてデータをスライス
       return matches.slice(start, end); // Assumes matches are already sorted NEWEST first
     }, [matches, currentPage, pageSize]);
+
+    const handleDeleteClick = useCallback((id: string) => {
+      setPendingDeleteId(id);
+    }, []);
+
+    // 「確認」ボタン表示に切り替わったタイミングでのみフォーカスを移す。
+    // ref callback 内で focus() すると再レンダーのたびに焦点を奪い返してしまう
+    // （remote モードの onSnapshot 更新など）ため、pendingDeleteId 変化時に限定する。
+    useEffect(() => {
+      if (pendingDeleteId) confirmButtonRef.current?.focus();
+    }, [pendingDeleteId]);
 
     // ページ変更ハンドラ
     const handlePageChange = (page: number) => {
@@ -111,6 +129,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
           handlePageChange={handlePageChange}
           handlePageSizeChange={handlePageSizeChange}
           totalMatches={matches.length}
+          label="ページネーション（上部）"
         />
 
         <div className="table-scroll-container relative max-h-[600px] overflow-y-auto overflow-x-auto">
@@ -185,6 +204,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
                         <span className="inline-flex gap-1">
                           <button
                             type="button"
+                            ref={confirmButtonRef}
                             onClick={() => {
                               onRemove(m.id);
                               setPendingDeleteId(null);
@@ -204,7 +224,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
                       ) : (
                         <button
                           type="button"
-                          onClick={() => setPendingDeleteId(m.id)}
+                          onClick={() => handleDeleteClick(m.id)}
                           disabled={!isRegistrationAllowed}
                           className={`text-xs px-2 py-1 rounded ${
                             isRegistrationAllowed
@@ -240,6 +260,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
           handlePageChange={handlePageChange}
           handlePageSizeChange={handlePageSizeChange}
           totalMatches={matches.length}
+          label="ページネーション（下部）"
         />
       </div>
     );
@@ -256,6 +277,8 @@ interface PaginationControlsProps {
   handlePageChange: (page: number) => void;
   handlePageSizeChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   totalMatches: number;
+  // 上下 2 つの同一コントロールを SR 上で区別するためのランドマーク名。
+  label: string;
 }
 
 const PaginationControls: React.FC<PaginationControlsProps> = ({
@@ -266,8 +289,12 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   handlePageChange,
   handlePageSizeChange,
   totalMatches,
+  label,
 }) => (
-  <div className="flex justify-between items-center text-xs mt-2 text-zinc-400">
+  <nav
+    aria-label={label}
+    className="flex justify-between items-center text-xs mt-2 text-zinc-400"
+  >
     {/* 表示件数選択 */}
     <div className="flex items-center space-x-2">
       <label className="text-zinc-200">
@@ -290,6 +317,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
     <div className="flex items-center space-x-1">
       <button
         type="button"
+        aria-label="前のページ"
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="px-2 py-1 rounded disabled:text-zinc-600 hover:bg-zinc-800/50"
@@ -317,6 +345,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           type="button"
           key={page}
           onClick={() => handlePageChange(page)}
+          aria-current={page === currentPage ? "page" : undefined}
           className={`px-2 py-1 rounded ${
             page === currentPage
               ? "bg-blue-600 text-white font-bold"
@@ -345,6 +374,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
 
       <button
         type="button"
+        aria-label="次のページ"
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages || totalPages === 0}
         className="px-2 py-1 rounded disabled:text-zinc-600 hover:bg-zinc-800/50"
@@ -360,5 +390,5 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
         ? `${currentPage} / ${totalPages} ページ`
         : "データなし"}
     </div>
-  </div>
+  </nav>
 );

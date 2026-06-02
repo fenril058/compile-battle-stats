@@ -93,6 +93,33 @@ describe("MatchList", () => {
       expect(screen.getByRole("button", { name: "削除" })).toBeDisabled();
     });
 
+    it("削除をクリックすると 確認 ボタンへフォーカスが移る", () => {
+      render(<MatchList {...defaultProps} matches={makeMatches(1)} />);
+
+      fireEvent.click(screen.getByRole("button", { name: "削除" }));
+
+      expect(screen.getByRole("button", { name: "確認" })).toHaveFocus();
+    });
+
+    it("確認表示中の再レンダーでフォーカスを奪い返さない", () => {
+      const { rerender } = render(
+        <MatchList {...defaultProps} matches={makeMatches(1)} />,
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "削除" }));
+
+      // ユーザーが 戻る へフォーカスを移したと仮定
+      const cancelButton = screen.getByRole("button", { name: "戻る" });
+      cancelButton.focus();
+      expect(cancelButton).toHaveFocus();
+
+      // remote モードの onSnapshot 相当：matches 参照が変わって再レンダー
+      rerender(<MatchList {...defaultProps} matches={makeMatches(1)} />);
+
+      // pendingDeleteId は不変なので 確認 へ焦点を奪い返さない
+      expect(screen.getByRole("button", { name: "戻る" })).toHaveFocus();
+    });
+
     it("複数行のうち1件だけ確認状態になる", () => {
       render(<MatchList {...defaultProps} matches={makeMatches(3)} />);
 
@@ -190,7 +217,7 @@ describe("MatchList", () => {
     it("page=1 のとき « ボタンは disabled", () => {
       render(<MatchList {...defaultProps} matches={makeMatches(30)} />);
 
-      const prevButtons = screen.getAllByRole("button", { name: "«" });
+      const prevButtons = screen.getAllByRole("button", { name: "前のページ" });
       for (const btn of prevButtons) {
         expect(btn).toBeDisabled();
       }
@@ -201,7 +228,7 @@ describe("MatchList", () => {
 
       fireEvent.click(screen.getAllByRole("button", { name: "3" })[0]);
 
-      const nextButtons = screen.getAllByRole("button", { name: "»" });
+      const nextButtons = screen.getAllByRole("button", { name: "次のページ" });
       for (const btn of nextButtons) {
         expect(btn).toBeDisabled();
       }
