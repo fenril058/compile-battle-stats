@@ -235,7 +235,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
         >
           {isAllMatrix && (
             <fieldset className="flex flex-wrap items-center gap-1 mb-2 border-0 p-0 m-0 min-w-0">
-              <legend className="text-xs text-zinc-500 mr-1 p-0 float-left">
+              <legend className="text-xs text-zinc-400 mr-1 p-0 float-left">
                 表示範囲:
               </legend>
               <button
@@ -265,7 +265,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             </fieldset>
           )}
           {matrixCompactEmpty ? (
-            <p className="text-sm text-zinc-500 text-center py-12">
+            <p className="text-sm text-zinc-400 text-center py-12">
               {MIN_GAMES_FOR_MATRIX} 戦以上の対戦データがまだありません。
             </p>
           ) : (
