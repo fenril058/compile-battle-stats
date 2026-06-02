@@ -8,9 +8,7 @@
 * axe-core を e2e に組み込み contrast/focus 違反を修正する ([#81](https://github.com/fenril058/compile-battle-stats/issues/81)) ([ef97eb4](https://github.com/fenril058/compile-battle-stats/commit/ef97eb4daaa65d6bcae43a0d3508cf6e64101d09))
 * スクリーンリーダー/キーボード操作のアクセシビリティを改善する ([#83](https://github.com/fenril058/compile-battle-stats/issues/83)) ([96c078a](https://github.com/fenril058/compile-battle-stats/commit/96c078acf57334bc4116d333fcbbf1cd3f48358d))
 * 不正なシーズンキーでクラッシュする問題と白画面問題を修正する ([#79](https://github.com/fenril058/compile-battle-stats/issues/79)) ([2a79a59](https://github.com/fenril058/compile-battle-stats/commit/2a79a59b0277ea6c66a7bb49f46bed4dffbe8125))
-* 対戦日(matchDate)を UTC 正準の暦日として統一する ([#69](https://github.com/fenril058/compile-battle-stats/issues/69)) ([7740b5c](https://github.com/fenril058/compile-battle-stats/commit/7740b5c49674716330afb095a2d8b2e4bb95e87c))
 * 対戦日(matchDate)を UTC 正準の暦日として統一する ([#69](https://github.com/fenril058/compile-battle-stats/issues/69)) ([d69b1e8](https://github.com/fenril058/compile-battle-stats/commit/d69b1e8269e072af2df667cc3a01192d55baec93))
-* 統計の妥当性判定を makeStats と相性表で統一する ([#67](https://github.com/fenril058/compile-battle-stats/issues/67)) ([dc50172](https://github.com/fenril058/compile-battle-stats/commit/dc50172906c519a878cdeca938b0a41d4272c036))
 * 統計の妥当性判定を makeStats と相性表で統一する ([#67](https://github.com/fenril058/compile-battle-stats/issues/67)) ([09a3251](https://github.com/fenril058/compile-battle-stats/commit/09a3251c43364c43b89853203e96fcb5506cdfd0))
 
 ## [1.8.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.7.1...compile-battle-stats-v1.8.0) (2026-06-01)
@@ -18,13 +16,11 @@
 
 ### Features
 
-* 統計/相性表の表示を改善（[#45](https://github.com/fenril058/compile-battle-stats/issues/45)） ([1559871](https://github.com/fenril058/compile-battle-stats/commit/1559871eae4f8c5cb55bbeb576bff03fb6c1a09a))
 * 統計/相性表の表示を改善（[#45](https://github.com/fenril058/compile-battle-stats/issues/45)） ([1c65930](https://github.com/fenril058/compile-battle-stats/commit/1c65930255ded40b7c8e73a2728892fc5b57225a))
 
 
 ### Bug Fixes
 
-* CSV インポート失敗トーストを1件の集計通知に集約する ([#42](https://github.com/fenril058/compile-battle-stats/issues/42)) ([9b95a3f](https://github.com/fenril058/compile-battle-stats/commit/9b95a3ff133b6a62c5dfe2b5828fd6d66ab5b954))
 * CSV インポート失敗トーストを1件の集計通知に集約する ([#42](https://github.com/fenril058/compile-battle-stats/issues/42)) ([fa60949](https://github.com/fenril058/compile-battle-stats/commit/fa60949599bae4edd29d7f5131a3493a49988c6d))
 
 ## [1.7.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.7.0...compile-battle-stats-v1.7.1) (2026-05-31)
@@ -32,7 +28,6 @@
 
 ### Bug Fixes
 
-* シーズン選択ドロップダウンが displayName を表示するように修正 ([7683921](https://github.com/fenril058/compile-battle-stats/commit/7683921340105de397c3ccb5bd5016547708893a))
 * シーズン選択ドロップダウンが displayName を表示するように修正 ([#43](https://github.com/fenril058/compile-battle-stats/issues/43)) ([eca4de1](https://github.com/fenril058/compile-battle-stats/commit/eca4de12cef62a12698d5fb794e58a013dff7920))
 
 ## [1.7.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.6.0...compile-battle-stats-v1.7.0) (2026-05-31)
@@ -41,7 +36,6 @@
 ### Features
 
 * local ハーネスをログイン不要で登録可能にする（[#48](https://github.com/fenril058/compile-battle-stats/issues/48) B 案 step3） ([dc200ac](https://github.com/fenril058/compile-battle-stats/commit/dc200acdb3e79e43425987c250a26c3cb6081e77))
-* アクセシビリティ補強（table caption/scope、tablist ARIA、skip link） ([#47](https://github.com/fenril058/compile-battle-stats/issues/47)) ([79e4139](https://github.com/fenril058/compile-battle-stats/commit/79e4139aadb4d8773e9d0cd09c0a15c8b21594bc))
 * アクセシビリティ補強（table caption/scope、tablist ARIA、skip link） ([#47](https://github.com/fenril058/compile-battle-stats/issues/47)) ([c195381](https://github.com/fenril058/compile-battle-stats/commit/c195381780cd7489350b7709327c9db8c60e6127))
 * ストレージ契約 StorageAdapter と LocalAdapter を追加（[#48](https://github.com/fenril058/compile-battle-stats/issues/48) B 案 step1） ([378075f](https://github.com/fenril058/compile-battle-stats/commit/378075fc0168c08f6f686c94a9d97b899a9d4917))
 
@@ -49,11 +43,8 @@
 ### Bug Fixes
 
 * CSV エクスポート・インポート往路対応（クオート除去・MIME改善・登録日時尊重） ([#41](https://github.com/fenril058/compile-battle-stats/issues/41)) ([c26c37f](https://github.com/fenril058/compile-battle-stats/commit/c26c37f7b68d2d97efd16cde99690a0a115fba72))
-* CSV往路対応（クオート除去・MIME改善・登録日時尊重） ([#41](https://github.com/fenril058/compile-battle-stats/issues/41)) ([cdff81c](https://github.com/fenril058/compile-battle-stats/commit/cdff81c89c2a6b737d7c356fccc8c576057b0c9d))
 * Matrix 描画で DOM ネスト違反の console.error を解決 ([#44](https://github.com/fenril058/compile-battle-stats/issues/44)) ([23b92c0](https://github.com/fenril058/compile-battle-stats/commit/23b92c0036d145eb9cdbb7fac6660c187156e1b6))
-* Matrix 描画で DOM ネスト違反を解決 ([#44](https://github.com/fenril058/compile-battle-stats/issues/44)) ([9e4fcc2](https://github.com/fenril058/compile-battle-stats/commit/9e4fcc2943718b8a4bc40dba77f9f406e962f307))
 * typo・年号・hover 色・二重スキームなど細かな修正 ([#46](https://github.com/fenril058/compile-battle-stats/issues/46)) ([d78be36](https://github.com/fenril058/compile-battle-stats/commit/d78be36a60a3066fa426ac6aa36fe458e19890a4))
-* typo・年号・hover色など細かな修正 ([#46](https://github.com/fenril058/compile-battle-stats/issues/46)) ([290602a](https://github.com/fenril058/compile-battle-stats/commit/290602a302db04b30c0e6298a687f2113e8e9dc0))
 * タブを WAI-ARIA タブパターンに準拠（tabpanel 関連付け・roving tabindex） ([644218d](https://github.com/fenril058/compile-battle-stats/commit/644218d37c4fcbdb32757e1afc091d63ae3ff18d))
 * 矢印キーのタブ操作でフォーカスが追従しない問題を修正 ([b6ddc06](https://github.com/fenril058/compile-battle-stats/commit/b6ddc06524f957ccb547a4fd813c24ed6733a5d9)), closes [#47](https://github.com/fenril058/compile-battle-stats/issues/47)
 
@@ -62,7 +53,6 @@
 
 ### Features
 
-* CSVエクスポートにレシオ表をコメントとして埋め込む ([ca65a05](https://github.com/fenril058/compile-battle-stats/commit/ca65a0554406040f592ccde2b630abecfb347623))
 * CSVエクスポートにレシオ表をコメントとして埋め込む ([2b0dcac](https://github.com/fenril058/compile-battle-stats/commit/2b0dcacef4b7b097a4bded846830414898add288))
 
 ## [1.5.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.4.0...compile-battle-stats-v1.5.0) (2026-05-28)
@@ -104,7 +94,6 @@
 ### Features
 
 * add protocol filter tabs to ranking section ([86894fe](https://github.com/fenril058/compile-battle-stats/commit/86894fe20d306b11a90096758246b9e262d31cd8))
-* ランキングセクションにプロトコルフィルタータブを追加 ([c87bc2c](https://github.com/fenril058/compile-battle-stats/commit/c87bc2cc3433c1e318742eb782db808d9e0cfdf7))
 
 ## [1.1.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.0.2...compile-battle-stats-v1.1.0) (2026-05-15)
 
@@ -119,11 +108,8 @@
 
 ### Bug Fixes
 
-* ad blockerによる削除ボタン・Googleログイン不具合を修正 ([75009d0](https://github.com/fenril058/compile-battle-stats/commit/75009d0dfd72b891cc3485a98f4cb3db3c56accf))
 * ad blockerによる削除ボタン・Googleログイン不具合を修正 ([12619c4](https://github.com/fenril058/compile-battle-stats/commit/12619c4965217af907e2cb2d4ce8bd04cea25f70))
 * nodejs version ([08bdb49](https://github.com/fenril058/compile-battle-stats/commit/08bdb499894e854526afa27095c00768eea9b405))
-* remove unsupported semver cooldown fields for github-actions and nix ([496b81d](https://github.com/fenril058/compile-battle-stats/commit/496b81d0d3347fc6ad71eebacd125d1d629819f0))
 * remove unsupported semver cooldown fields for github-actions and nix ([f2b0b9e](https://github.com/fenril058/compile-battle-stats/commit/f2b0b9ec542f52a6db8824c33bd476865d88a06c))
-* Stats の先攻/後攻タブ表記を MatchForm と統一 ([5122977](https://github.com/fenril058/compile-battle-stats/commit/512297779311f895a7266c591790b9d8f104d646))
 * Stats の先攻/後攻タブ表記を MatchForm と統一 ([07bae55](https://github.com/fenril058/compile-battle-stats/commit/07bae5588fab2d44a23c428b92863f26772342d8))
 * レシオ相性表のプロトコル表示を V1_AUX に限定 ([4de9f44](https://github.com/fenril058/compile-battle-stats/commit/4de9f446f05a456cb71a2914ab770f9a3476d870))
