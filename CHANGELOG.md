@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.8.0...compile-battle-stats-v1.8.1) (2026-06-02)
+
+
+### Bug Fixes
+
+* axe-core を e2e に組み込み contrast/focus 違反を修正する ([#81](https://github.com/fenril058/compile-battle-stats/issues/81)) ([ef97eb4](https://github.com/fenril058/compile-battle-stats/commit/ef97eb4daaa65d6bcae43a0d3508cf6e64101d09))
+* スクリーンリーダー/キーボード操作のアクセシビリティを改善する ([#83](https://github.com/fenril058/compile-battle-stats/issues/83)) ([96c078a](https://github.com/fenril058/compile-battle-stats/commit/96c078acf57334bc4116d333fcbbf1cd3f48358d))
+* 不正なシーズンキーでクラッシュする問題と白画面問題を修正する ([#79](https://github.com/fenril058/compile-battle-stats/issues/79)) ([2a79a59](https://github.com/fenril058/compile-battle-stats/commit/2a79a59b0277ea6c66a7bb49f46bed4dffbe8125))
+* 対戦日(matchDate)を UTC 正準の暦日として統一する ([#69](https://github.com/fenril058/compile-battle-stats/issues/69)) ([7740b5c](https://github.com/fenril058/compile-battle-stats/commit/7740b5c49674716330afb095a2d8b2e4bb95e87c))
+* 対戦日(matchDate)を UTC 正準の暦日として統一する ([#69](https://github.com/fenril058/compile-battle-stats/issues/69)) ([d69b1e8](https://github.com/fenril058/compile-battle-stats/commit/d69b1e8269e072af2df667cc3a01192d55baec93))
+* 統計の妥当性判定を makeStats と相性表で統一する ([#67](https://github.com/fenril058/compile-battle-stats/issues/67)) ([dc50172](https://github.com/fenril058/compile-battle-stats/commit/dc50172906c519a878cdeca938b0a41d4272c036))
+* 統計の妥当性判定を makeStats と相性表で統一する ([#67](https://github.com/fenril058/compile-battle-stats/issues/67)) ([09a3251](https://github.com/fenril058/compile-battle-stats/commit/09a3251c43364c43b89853203e96fcb5506cdfd0))
+
 ## [1.8.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.7.1...compile-battle-stats-v1.8.0) (2026-06-01)
 
 
