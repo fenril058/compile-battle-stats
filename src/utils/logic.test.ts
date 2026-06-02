@@ -231,8 +231,8 @@ describe("utils/logic", () => {
       expect(result).not.toBeNull();
       expect(result?.first).toEqual(["WATER", "SPEED", "PSYCHIC"]);
       expect(result?.winner).toBe("FIRST");
-      // 日付がタイムスタンプになっているか
-      expect(result?.matchDate).toBe(new Date("2025/01/01").getTime());
+      // 暦日として UTC 真夜中のタイムスタンプになっているか（#69）
+      expect(result?.matchDate).toBe(Date.UTC(2025, 0, 1));
     });
 
     it("returns null for invalid protocol", () => {

@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import type { ProtocolGroup } from "../config";
 import { useAuth } from "../hooks/useAuth";
 import type { Protocol, Trio, Winner } from "../types";
+import { parseCalendarDate, todayInputValue } from "../utils/date";
 import { ProtocolSelect } from "./ProtocolSelect";
 
 type MatchFormProps = {
@@ -21,9 +22,6 @@ type MatchFormProps = {
   ratioSum: (t: Trio) => number;
 };
 
-// ヘルパー: 今日の日付を YYYY-MM-DD 形式で取得 (input type="date"用)
-const getTodayString = () => new Date().toISOString().split("T")[0];
-
 // Initial state helpers (コンポーネントの初回マウント時のみ使用される)
 const INITIAL_FIRST: Trio = ["DARKNESS", "FIRE", "HATE"] as unknown as Trio;
 const INITIAL_SECOND: Trio = ["PSYCHIC", "GRAVITY", "WATER"] as unknown as Trio;
@@ -39,8 +37,8 @@ export const MatchForm: React.FC<MatchFormProps> = ({
   const { user, isAuthEnabled } = useAuth();
   const [first, setFirst] = useState<Trio>(INITIAL_FIRST);
   const [second, setSecond] = useState<Trio>(INITIAL_SECOND);
-  // 日付入力用のステート (初期値は今日)
-  const [dateInput, setDateInput] = useState<string>(getTodayString());
+  // 日付入力用のステート (初期値は今日。ローカル暦日)
+  const [dateInput, setDateInput] = useState<string>(todayInputValue());
 
   // === バリデーションロジックの修正 ===
   const isFormValid = (() => {
@@ -145,13 +143,9 @@ export const MatchForm: React.FC<MatchFormProps> = ({
       }
     }
 
-    // 日付文字列を number (timestamp) に変換
-    // ユーザーが日付を指定した場合、その日の 00:00:00 などを基準にするか、
-    // あるいは単純に Date.parse で変換する
-    let matchDateTimestamp: number | null = null;
-    if (dateInput) {
-      matchDateTimestamp = new Date(dateInput).getTime();
-    }
+    // 日付文字列(YYYY-MM-DD)を暦日として UTC 真夜中の timestamp に変換する（#69）。
+    // 不正・未入力なら null。
+    const matchDateTimestamp = parseCalendarDate(dateInput);
 
     // 親コンポーネントへ渡す
     onAddMatch({

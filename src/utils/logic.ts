@@ -10,6 +10,7 @@ import type {
   StatsResult,
   Trio,
 } from "../types";
+import { parseCalendarDate } from "./date";
 
 // ratios を引数で受け取る
 export const ratioSum = (t: Trio, ratios: Ratios): number =>
@@ -263,19 +264,10 @@ export const parseMatchCsvRow = (
     ratioProtocols,
   );
 
-  // 対戦日 (matchDate) のパース処理
-  let matchDate: number | null = null;
-
-  if (DateStr && DateStr.trim() !== "") {
-    // スラッシュ(/)やハイフン(-)区切りなどを標準Dateコンストラクタで解析
-    // "2025/12/03", "2025-12-03" などに対応
-    const parsed = new Date(DateStr).getTime();
-
-    // 無効な日付(NaN)でなければ採用
-    if (!Number.isNaN(parsed)) {
-      matchDate = parsed;
-    }
-  }
+  // 対戦日 (matchDate) のパース処理。
+  // "2025/12/03" / "2025-12-03" などの暦日を UTC 真夜中として解釈する（#69）。
+  // 空文字・不正な日付は null。
+  const matchDate = parseCalendarDate(DateStr);
 
   return {
     first: firstTrio,
