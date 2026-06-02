@@ -116,6 +116,19 @@ describe("utils/logic", () => {
       const matrix = matchup(matches);
       expect(matrix).toBeDefined();
     });
+
+    it("excludes intra-team-duplicate matches, consistent with makeStats (#67)", () => {
+      // チーム内重複（FIRE が2枚）のある不正な試合だけを与える。
+      // makeStats と同様に統計対象外なので、相性表のセルは埋まらない（null のまま）。
+      const invalid = {
+        first: ["FIRE", "FIRE", "HATE"],
+        second: ["LIFE", "LIGHT", "DARKNESS"],
+        winner: "FIRST",
+      } as Match;
+
+      const matrix = matchup([invalid, invalid, invalid]);
+      expect(matrix.FIRE?.LIFE).toBeNull();
+    });
   });
 
   describe("matchupPairs (Matrix alt view)", () => {
@@ -148,6 +161,39 @@ describe("utils/logic", () => {
       // 戦数が同一なので勝率降順: 先頭 100, 末尾 0
       expect(pairs[0].p).toBe(100);
       expect(pairs[pairs.length - 1].p).toBe(0);
+    });
+
+    it("ignores intra-team-duplicate matches when counting (#67)", () => {
+      // 有効な3戦 + 不正な3戦（先攻に FIRE が2枚）。
+      // 不正な試合は集計されないので、FIRE→LIFE の戦数は有効分の 3 のまま
+      // （もし不正な試合も数えていたら FIRE が2枚ぶん二重計上され 9 になる）。
+      const invalid = {
+        first: ["FIRE", "FIRE", "HATE"],
+        second: ["LIFE", "LIGHT", "DARKNESS"],
+        winner: "FIRST",
+      } as Match;
+
+      const pairs = matchupPairs([
+        make("FIRST"),
+        make("FIRST"),
+        make("FIRST"),
+        invalid,
+        invalid,
+        invalid,
+      ]);
+
+      const fireLife = pairs.find((p) => p.a === "FIRE" && p.b === "LIFE");
+      expect(fireLife?.g).toBe(3);
+    });
+
+    it("returns empty when every match is intra-team-duplicate (#67)", () => {
+      const invalid = {
+        first: ["FIRE", "FIRE", "HATE"],
+        second: ["LIFE", "LIGHT", "DARKNESS"],
+        winner: "FIRST",
+      } as Match;
+
+      expect(matchupPairs([invalid, invalid, invalid])).toEqual([]);
     });
   });
 
