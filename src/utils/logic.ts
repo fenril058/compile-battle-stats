@@ -31,6 +31,20 @@ export const isRatioBattle = (
 export const percent = (w: number, g: number): number =>
   g ? Math.round((w / g) * 1000) / 10 : 0;
 
+/**
+ * 統計集計の対象となる「妥当なトリオ」かを判定する。
+ * 長さが 3 で、チーム内にプロトコルの重複が無いこと。
+ * makeStats（単体/ペア/トリオ/先後）と countMatchups（相性表）の双方で共有し、
+ * 「不正な試合」の定義が両者で食い違わないようにする。
+ */
+export const isValidTrio = (trio: Trio): boolean => {
+  // 1. 長さが3であること
+  if (trio.length !== 3) return false;
+  // 2. 重複がないこと
+  if (new Set(trio).size !== 3) return false;
+  return true;
+};
+
 export const makeStats = (list: Match[]): StatsResult => {
   // 初期化
   const s: StatsResult = {
@@ -45,14 +59,6 @@ export const makeStats = (list: Match[]): StatsResult => {
     if (!m[k]) m[k] = { g: 0, w: 0 };
     m[k].g += 1;
     if (w) m[k].w += 1;
-  };
-
-  const isValidTrio = (trio: Trio): boolean => {
-    // 1. 長さが3であること
-    if (trio.length !== 3) return false;
-    // 2. 重複がないこと
-    if (new Set(trio).size !== 3) return false;
-    return true;
   };
 
   for (const mt of list) {
@@ -148,6 +154,10 @@ const countMatchups = (list: Match[]): Record<string, StatEntry> => {
   };
 
   for (const mt of list) {
+    // makeStats と同じ妥当性判定で不正な試合（チーム内重複など）を除外し、
+    // 相性表と各統計で「不正な試合」の扱いを揃える（#67）。
+    if (!isValidTrio(mt.first) || !isValidTrio(mt.second)) continue;
+
     const firstWin = mt.winner === "FIRST";
     const secondWin = mt.winner === "SECOND";
 
