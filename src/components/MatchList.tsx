@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import type { Match } from "../types";
+import { formatCalendarDate } from "../utils/date";
 
 type MatchListProps = {
   matches: Match[];
@@ -13,8 +14,10 @@ const DISPLAY_OPTIONS = [10, 20, 50, 100];
 // デフォルトの表示件数
 const DEFAULT_PAGE_SIZE = 10;
 
-// 日付フォーマット用のヘルパー関数
-// 引数が undefined/null の場合は "-" を返す
+// 登録日時(createdAt)用のフォーマッタ。createdAt は「登録した瞬間」なので
+// 閲覧者のローカル TZ で表示する（暦日である対戦日 matchDate は
+// formatCalendarDate で UTC 固定表示する → #69）。
+// 引数が undefined/null の場合は "-" を返す。
 const formatDate = (
   timestamp: number | undefined | null,
   includeTime = false,
@@ -176,7 +179,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
                       {m.winner === "FIRST" ? "先攻" : "後攻"}
                     </td>
                     <td className="p-2">{m.ratio ? "◯" : ""}</td>
-                    <td className="p-2">{formatDate(m.matchDate)}</td>
+                    <td className="p-2">{formatCalendarDate(m.matchDate)}</td>
                     <td className="p-2 min-w-[80px]">
                       {pendingDeleteId === m.id ? (
                         <span className="inline-flex gap-1">
