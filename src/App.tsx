@@ -32,11 +32,13 @@ import { useCsvExport } from "./hooks/useCsvExport";
 import { useCsvImport } from "./hooks/useCsvImport";
 import { useFirestore } from "./hooks/useFirestore";
 import { useMatchStats } from "./hooks/useMatchStats";
+import { useT } from "./i18n";
 import type { Match, Protocol, Ratios, SeasonKey, Trio, Winner } from "./types";
 import { isRatioBattle } from "./utils/logic";
 import { resolveSeasonKey } from "./utils/seasonKey";
 
 export default function App() {
+  const { t } = useT();
   // === シーズン選択 ===
   // Object.keys の戻り値を SeasonKey[] にキャスト
   const SEASON_KEYS = Object.keys(SEASONS_CONFIG) as SeasonKey[];
@@ -168,7 +170,7 @@ export default function App() {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-50 focus:p-2 focus:bg-blue-600 focus:text-white focus:rounded"
       >
-        メインコンテンツへスキップ
+        {t("app.skipToMain")}
       </a>
       <main id="main-content" tabIndex={-1}>
         <Header

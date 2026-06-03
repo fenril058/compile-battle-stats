@@ -13,6 +13,10 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:5173",
     trace: "on-first-retry",
+    // i18n 導入後、初期言語は navigator.language から検出される。実 Chromium の
+    // 既定ロケールに依存して英語表示になると既存の日本語マッチが壊れるため、
+    // 既定を日本語に固定する（言語切替自体は専用スペックで検証）。
+    locale: "ja-JP",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {

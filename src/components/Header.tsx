@@ -1,6 +1,7 @@
 import type React from "react";
 import { SEASONS_CONFIG } from "../config";
 import { useAuth } from "../hooks/useAuth";
+import { type Lang, useT } from "../i18n";
 import type { SeasonKey, StorageMode } from "../types";
 
 type HeaderProps = {
@@ -18,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   // 認証ロジックをフックから取得
   const { user, handleLogin, handleLogout, isAuthEnabled } = useAuth();
+  const { t, lang, setLang } = useT();
 
   const modeText = mode === "local" ? "Local Mode" : "Cloud Mode";
   const modeClass =
@@ -37,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
             value={season}
             onChange={handleSeasonChange}
             className="bg-zinc-800 border border-zinc-700 rounded text-sm py-1 px-2"
-            aria-label="シーズン選択"
+            aria-label={t("header.seasonSelect")}
           >
             {seasonCollections.map((s) => (
               <option key={s} value={s}>
@@ -50,6 +52,17 @@ export const Header: React.FC<HeaderProps> = ({
           <span className={`text-xs px-2 py-0.5 rounded ${modeClass}`}>
             {modeText}
           </span>
+
+          {/* 言語切替 */}
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value as Lang)}
+            className="bg-zinc-800 border border-zinc-700 rounded text-sm py-1 px-2"
+            aria-label={t("header.languageSelect")}
+          >
+            <option value="ja">日本語</option>
+            <option value="en">English</option>
+          </select>
         </div>
 
         {/* 右側: 認証ボタン/ステータス */}
@@ -69,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className="text-xs bg-red-800 hover:bg-red-900 px-3 py-1 rounded
                 transition-colors"
               >
-                ログアウト
+                {t("header.logout")}
               </button>
             </div> // ログアウト状態の場合
           ) : (
@@ -79,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-3 py-1 rounded
               transition-colors"
             >
-              Googleでログイン
+              {t("header.loginWithGoogle")}
             </button>
           )}
         </div>
