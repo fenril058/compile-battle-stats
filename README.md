@@ -1,5 +1,7 @@
 # compile-battle-stats
 
+**日本語** | [English](README.en.md)
+
 カードゲーム「コンパイル」の対戦結果を記録・集計するWebアプリです。
 
 ## 概要
