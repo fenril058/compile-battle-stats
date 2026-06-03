@@ -1,7 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { en } from "./en";
 import { detectLang, LanguageProvider, useT } from "./index";
+import { ja } from "./ja";
+
+// 文字列中の {token} を集合として取り出す（補間トークンの整合性検証用）。
+const tokensOf = (s: string): Set<string> =>
+  new Set([...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
 
 // テスト用: 翻訳結果・現在言語を描画し、ボタンで言語を切り替える小コンポーネント。
 const Probe = () => {
@@ -73,5 +79,27 @@ describe("useT", () => {
 
     expect(screen.getByTestId("text")).toHaveTextContent("Log out");
     expect(localStorage.getItem("language")).toBe("en");
+  });
+});
+
+describe("辞書のパリティ", () => {
+  const jaKeys = Object.keys(ja) as (keyof typeof ja)[];
+
+  it("en は ja と同じキー集合を持つ", () => {
+    expect(Object.keys(en).sort()).toEqual([...jaKeys].sort());
+  });
+
+  it("en の値はすべて非空", () => {
+    for (const key of jaKeys) {
+      expect(en[key].trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it("補間トークン {token} が ja/en で一致する", () => {
+    for (const key of jaKeys) {
+      expect(tokensOf(en[key]), `token mismatch at "${key}"`).toEqual(
+        tokensOf(ja[key]),
+      );
+    }
   });
 });

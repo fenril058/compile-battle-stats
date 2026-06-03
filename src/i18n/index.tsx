@@ -19,6 +19,8 @@ import {
 import { en } from "./en";
 import { ja, type TranslationDict, type TranslationKey } from "./ja";
 
+export type { TranslationDict, TranslationKey } from "./ja";
+
 export type Lang = "ja" | "en";
 
 const DICTS: Record<Lang, TranslationDict> = { ja, en };
@@ -98,3 +100,10 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
 /** 翻訳関数と現在言語・切替関数を返すフック。 */
 export const useT = (): I18nContextValue => useContext(LanguageContext);
+
+/**
+ * Context を使えない場所（Provider 外の class コンポーネント等）向けの静的翻訳。
+ * 描画時に `detectLang()` で言語を解決するため、リアクティブな再描画は伴わない。
+ */
+export const tStatic = (key: TranslationKey, params?: TParams): string =>
+  interpolate(DICTS[detectLang()][key], params);

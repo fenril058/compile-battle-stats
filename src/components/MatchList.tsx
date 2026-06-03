@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useT } from "../i18n";
 import type { Match } from "../types";
 import { formatCalendarDate } from "../utils/date";
 
@@ -48,6 +49,7 @@ const formatDate = (
 // ★ Wrap in React.memo to prevent re-render when typing in Form
 export const MatchList: React.FC<MatchListProps> = React.memo(
   ({ matches, onRemove, isRegistrationAllowed }) => {
+    const { t } = useT();
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -117,7 +119,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
     return (
       <div className="bg-zinc-900 p-3 rounded-2xl overflow-x-auto mb-6">
         <h2 className="font-semibold mb-2 text-center">
-          登録試合一覧({matches.length})
+          {t("matchList.title", { count: matches.length })}
         </h2>
 
         {/* ページネーションコントロール (上部) */}
@@ -129,34 +131,34 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
           handlePageChange={handlePageChange}
           handlePageSizeChange={handlePageSizeChange}
           totalMatches={matches.length}
-          label="ページネーション（上部）"
+          label={t("matchList.paginationTop")}
         />
 
         <div className="table-scroll-container relative max-h-[600px] overflow-y-auto overflow-x-auto">
           <table className="text-xs w-full border-collapse">
-            <caption className="sr-only">登録試合一覧</caption>
+            <caption className="sr-only">{t("matchList.caption")}</caption>
             <thead className="sticky top-0 z-10 bg-zinc-800 text-zinc-300">
               <tr>
                 <th className="p-2" scope="col">
                   #
                 </th>
                 <th className="p-2 min-w-[100px]" scope="col">
-                  登録日
+                  {t("matchList.header.registeredAt")}
                 </th>
                 <th className="p-2 min-w-[50px]" scope="col">
-                  先攻
+                  {t("common.first")}
                 </th>
                 <th className="p-2 min-w-[50px]" scope="col">
-                  後攻
+                  {t("common.second")}
                 </th>
                 <th className="p-2 min-w-[50px]" scope="col">
-                  勝者
+                  {t("matchList.header.winner")}
                 </th>
                 <th className="p-2 min-w-[60px]" scope="col">
-                  レシオ
+                  {t("common.ratio")}
                 </th>
                 <th className="p-2 min-w-[100px]" scope="col">
-                  対戦日
+                  {t("matchList.header.matchDate")}
                 </th>
                 <th className="p-2" scope="col"></th>
               </tr>
@@ -195,7 +197,9 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
                       {m.second.join(", ")}
                     </td>
                     <td className="p-2">
-                      {m.winner === "FIRST" ? "先攻" : "後攻"}
+                      {m.winner === "FIRST"
+                        ? t("common.first")
+                        : t("common.second")}
                     </td>
                     <td className="p-2">{m.ratio ? "◯" : ""}</td>
                     <td className="p-2">{formatCalendarDate(m.matchDate)}</td>
@@ -211,14 +215,14 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
                             }}
                             className="text-xs px-2 py-1 rounded bg-red-700 hover:bg-red-600 text-white"
                           >
-                            確認
+                            {t("matchList.confirmDelete")}
                           </button>
                           <button
                             type="button"
                             onClick={() => setPendingDeleteId(null)}
                             className="text-xs px-2 py-1 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200"
                           >
-                            戻る
+                            {t("matchList.cancelDelete")}
                           </button>
                         </span>
                       ) : (
@@ -232,7 +236,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
                               : "text-zinc-600 cursor-not-allowed"
                           }`}
                         >
-                          削除
+                          {t("matchList.delete")}
                         </button>
                       )}
                     </td>
@@ -242,7 +246,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
               {displayMatches.length === 0 && (
                 <tr>
                   <td colSpan={8} className="p-4 text-center text-zinc-300">
-                    試合が登録されていません。
+                    {t("matchList.empty")}
                   </td>
                 </tr>
               )}
@@ -260,7 +264,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
           handlePageChange={handlePageChange}
           handlePageSizeChange={handlePageSizeChange}
           totalMatches={matches.length}
-          label="ページネーション（下部）"
+          label={t("matchList.paginationBottom")}
         />
       </div>
     );
@@ -290,105 +294,111 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   handlePageSizeChange,
   totalMatches,
   label,
-}) => (
-  <nav
-    aria-label={label}
-    className="flex justify-between items-center text-xs mt-2 text-zinc-400"
-  >
-    {/* 表示件数選択 */}
-    <div className="flex items-center space-x-2">
-      <label className="text-zinc-200">
-        表示件数:
-        <select
-          value={pageSize}
-          onChange={handlePageSizeChange}
-          className="bg-zinc-800 border border-zinc-700 rounded p-1 text-white"
-        >
-          {DISPLAY_OPTIONS.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
-      </label>
-    </div>
-
-    {/* ページネーションボタン */}
-    <div className="flex items-center space-x-1">
-      <button
-        type="button"
-        aria-label="前のページ"
-        onClick={() => handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="px-2 py-1 rounded disabled:text-zinc-600 hover:bg-zinc-800/50"
-      >
-        «
-      </button>
-
-      {/* 最初のページへジャンプ */}
-      {pageNumbers[0] > 1 && (
-        <>
-          <button
-            type="button"
-            onClick={() => handlePageChange(1)}
-            className="px-2 py-1 rounded hover:bg-zinc-800/50"
+}) => {
+  const { t } = useT();
+  return (
+    <nav
+      aria-label={label}
+      className="flex justify-between items-center text-xs mt-2 text-zinc-400"
+    >
+      {/* 表示件数選択 */}
+      <div className="flex items-center space-x-2">
+        <label className="text-zinc-200">
+          {t("matchList.pageSize")}
+          <select
+            value={pageSize}
+            onChange={handlePageSizeChange}
+            className="bg-zinc-800 border border-zinc-700 rounded p-1 text-white"
           >
-            1
-          </button>
-          {pageNumbers[0] > 2 && <span className="px-1">...</span>}
-        </>
-      )}
+            {DISPLAY_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
-      {/* ページ番号ボタン */}
-      {pageNumbers.map((page) => (
+      {/* ページネーションボタン */}
+      <div className="flex items-center space-x-1">
         <button
           type="button"
-          key={page}
-          onClick={() => handlePageChange(page)}
-          aria-current={page === currentPage ? "page" : undefined}
-          className={`px-2 py-1 rounded ${
-            page === currentPage
-              ? "bg-blue-600 text-white font-bold"
-              : "hover:bg-zinc-800/50"
-          }`}
+          aria-label={t("matchList.prevPage")}
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-2 py-1 rounded disabled:text-zinc-600 hover:bg-zinc-800/50"
         >
-          {page}
+          «
         </button>
-      ))}
 
-      {/* 最後のページへジャンプ */}
-      {pageNumbers[pageNumbers.length - 1] < totalPages && (
-        <>
-          {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
-            <span className="px-1">...</span>
-          )}
+        {/* 最初のページへジャンプ */}
+        {pageNumbers[0] > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => handlePageChange(1)}
+              className="px-2 py-1 rounded hover:bg-zinc-800/50"
+            >
+              1
+            </button>
+            {pageNumbers[0] > 2 && <span className="px-1">...</span>}
+          </>
+        )}
+
+        {/* ページ番号ボタン */}
+        {pageNumbers.map((page) => (
           <button
             type="button"
-            onClick={() => handlePageChange(totalPages)}
-            className="px-2 py-1 rounded hover:bg-zinc-800/50"
+            key={page}
+            onClick={() => handlePageChange(page)}
+            aria-current={page === currentPage ? "page" : undefined}
+            className={`px-2 py-1 rounded ${
+              page === currentPage
+                ? "bg-blue-600 text-white font-bold"
+                : "hover:bg-zinc-800/50"
+            }`}
           >
-            {totalPages}
+            {page}
           </button>
-        </>
-      )}
+        ))}
 
-      <button
-        type="button"
-        aria-label="次のページ"
-        onClick={() => handlePageChange(currentPage + 1)}
-        disabled={currentPage === totalPages || totalPages === 0}
-        className="px-2 py-1 rounded disabled:text-zinc-600 hover:bg-zinc-800/50"
-      >
-        »
-      </button>
-    </div>
+        {/* 最後のページへジャンプ */}
+        {pageNumbers[pageNumbers.length - 1] < totalPages && (
+          <>
+            {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
+              <span className="px-1">...</span>
+            )}
+            <button
+              type="button"
+              onClick={() => handlePageChange(totalPages)}
+              className="px-2 py-1 rounded hover:bg-zinc-800/50"
+            >
+              {totalPages}
+            </button>
+          </>
+        )}
 
-    {/* 現在のページ/総ページ数 */}
-    <div className="text-zinc-300 text-sm">
-      {/* matches.length を totalMatches に置き換える */}
-      {totalMatches > 0
-        ? `${currentPage} / ${totalPages} ページ`
-        : "データなし"}
-    </div>
-  </nav>
-);
+        <button
+          type="button"
+          aria-label={t("matchList.nextPage")}
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages || totalPages === 0}
+          className="px-2 py-1 rounded disabled:text-zinc-600 hover:bg-zinc-800/50"
+        >
+          »
+        </button>
+      </div>
+
+      {/* 現在のページ/総ページ数 */}
+      <div className="text-zinc-300 text-sm">
+        {/* matches.length を totalMatches に置き換える */}
+        {totalMatches > 0
+          ? t("matchList.pageStatus", {
+              current: currentPage,
+              total: totalPages,
+            })
+          : t("common.noData")}
+      </div>
+    </nav>
+  );
+};

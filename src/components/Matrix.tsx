@@ -1,15 +1,17 @@
 import type React from "react";
 import { ABBR, MIN_GAMES_FOR_MATRIX } from "../config";
+import { useT } from "../i18n";
 import type { MatrixData, Protocol } from "../types";
 
 type MatrixProps = {
-  t: string;
+  title: string;
   m: MatrixData;
   bg: string;
   protocols: readonly Protocol[];
 };
 
-export const Matrix: React.FC<MatrixProps> = ({ t, m, bg, protocols }) => {
+export const Matrix: React.FC<MatrixProps> = ({ title, m, bg, protocols }) => {
+  const { t } = useT();
   // プロトコルがない場合は、最低限の高さだけ持つ空の箱を返す
   if (!protocols || protocols.length === 0) {
     return (
@@ -22,7 +24,7 @@ export const Matrix: React.FC<MatrixProps> = ({ t, m, bg, protocols }) => {
       <h2 className="text-lg font-semibold mb-2 text-center h-7">
         {" "}
         {/* 高さを固定 */}
-        {t}（{MIN_GAMES_FOR_MATRIX} 戦以上）
+        {t("matrix.gamesHeading", { title, games: MIN_GAMES_FOR_MATRIX })}
       </h2>
       <div
         // biome-ignore lint/a11y/noNoninteractiveTabindex: スクロール可能領域はキーボード操作のため focusable にする必要がある（scrollable-region-focusable）
@@ -33,7 +35,7 @@ export const Matrix: React.FC<MatrixProps> = ({ t, m, bg, protocols }) => {
       >
         <table className="w-full text-xs min-w-[300px]">
           <caption className="sr-only">
-            {t}（{MIN_GAMES_FOR_MATRIX} 戦以上）
+            {t("matrix.gamesHeading", { title, games: MIN_GAMES_FOR_MATRIX })}
           </caption>
           <thead className="sticky top-0 z-20 bg-zinc-800 text-zinc-300">
             <tr>

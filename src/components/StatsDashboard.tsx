@@ -3,6 +3,7 @@ import { useId, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { MIN_GAMES_FOR_MATRIX } from "../config";
 import type { MatrixView, StatsView } from "../hooks/useMatchStats";
+import { type TranslationKey, useT } from "../i18n";
 import { Matrix } from "./Matrix";
 import { MatrixPairList } from "./MatrixPairList";
 import { Stat } from "./Stat";
@@ -26,20 +27,20 @@ interface StatsDashboardProps {
 
 const STAT_VIEW_KEYS = ["all", "v1aux", "main2aux", "mixed"] as const;
 type StatViewKey = (typeof STAT_VIEW_KEYS)[number];
-const STAT_VIEW_LABELS: Record<StatViewKey, string> = {
-  all: "全体",
-  v1aux: "Main1",
-  main2aux: "Main2",
-  mixed: "混合",
+const STAT_VIEW_LABELS: Record<StatViewKey, TranslationKey> = {
+  all: "statsDashboard.view.all",
+  v1aux: "statsDashboard.view.main1",
+  main2aux: "statsDashboard.view.main2",
+  mixed: "statsDashboard.view.mixed",
 };
 
 const MATRIX_KEYS = ["all", "v1aux", "main2aux", "ratio"] as const;
 type MatrixKey = (typeof MATRIX_KEYS)[number];
-const MATRIX_TAB_LABELS: Record<MatrixKey, string> = {
-  all: "全体",
-  v1aux: "Main1",
-  main2aux: "Main2",
-  ratio: "レシオ(Main1)",
+const MATRIX_TAB_LABELS: Record<MatrixKey, TranslationKey> = {
+  all: "statsDashboard.view.all",
+  v1aux: "statsDashboard.view.main1",
+  main2aux: "statsDashboard.view.main2",
+  ratio: "statsDashboard.matrix.ratio",
 };
 
 export const StatsDashboard: React.FC<StatsDashboardProps> = ({
@@ -48,6 +49,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   minPair,
   minTrio,
 }) => {
+  const { t } = useT();
   const [activeStatViewKey, setActiveStatViewKey] =
     useState<StatViewKey>("all");
   const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("all");
@@ -154,7 +156,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
         <div
           className="flex flex-wrap gap-1 mb-3"
           role="tablist"
-          aria-label="統計ビュー"
+          aria-label={t("statsDashboard.statView")}
         >
           {STAT_VIEW_KEYS.map((key, index) => (
             <button
@@ -176,7 +178,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
                   : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
               }`}
             >
-              {STAT_VIEW_LABELS[key]}
+              {t(STAT_VIEW_LABELS[key])}
             </button>
           ))}
         </div>
@@ -190,21 +192,21 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start"
         >
           <Stat
-            t="通常戦"
+            title={t("statsDashboard.stat.normal")}
             m={activeStats.normal}
             color="bg-orange-950/20"
             minPair={minPair}
             minTrio={minTrio}
           />
           <Stat
-            t="レシオ"
+            title={t("common.ratio")}
             m={activeStats.ratio}
             color="bg-blue-950/20"
             minPair={minPair}
             minTrio={minTrio}
           />
           <Stat
-            t="通常+レシオ"
+            title={t("statsDashboard.stat.combined")}
             m={activeStats.all}
             color="bg-green-950/20"
             minPair={minPair}
@@ -218,7 +220,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
         <div
           className="flex flex-wrap gap-1 mb-3"
           role="tablist"
-          aria-label="相性表ビュー"
+          aria-label={t("statsDashboard.matrixView")}
         >
           {MATRIX_KEYS.map((key, index) => (
             <button
@@ -240,7 +242,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
                   : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
               }`}
             >
-              {MATRIX_TAB_LABELS[key]}
+              {t(MATRIX_TAB_LABELS[key])}
             </button>
           ))}
         </div>
@@ -256,7 +258,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           {isAllMatrix && (
             <fieldset className="flex flex-wrap items-center gap-1 mb-2 border-0 p-0 m-0 min-w-0">
               <legend className="text-xs text-zinc-400 mr-1 p-0 float-left">
-                表示範囲:
+                {t("statsDashboard.displayRange")}
               </legend>
               <button
                 type="button"
@@ -268,7 +270,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
                     : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
                 }`}
               >
-                出現のみ
+                {t("statsDashboard.appearedOnly")}
               </button>
               <button
                 type="button"
@@ -280,17 +282,19 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
                     : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
                 }`}
               >
-                全プロトコル
+                {t("statsDashboard.allProtocols")}
               </button>
             </fieldset>
           )}
           {matrixCompactEmpty ? (
             <p className="text-sm text-zinc-400 text-center py-12">
-              {MIN_GAMES_FOR_MATRIX} 戦以上の対戦データがまだありません。
+              {t("statsDashboard.matrixEmpty", { games: MIN_GAMES_FOR_MATRIX })}
             </p>
           ) : (
             <Matrix
-              t={`${MATRIX_TAB_LABELS[activeMatrixKey]} 相性表`}
+              title={t("statsDashboard.matrixTitle", {
+                name: t(MATRIX_TAB_LABELS[activeMatrixKey]),
+              })}
               m={activeView.data}
               bg="bg-zinc-900/50"
               protocols={matrixProtocols}
@@ -299,7 +303,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           {activeView.pairs !== undefined && (
             <details className="mt-1">
               <summary className="cursor-pointer select-none text-sm text-zinc-400">
-                出現ペア一覧（実験的）
+                {t("statsDashboard.pairListSummary")}
               </summary>
               <div className="mt-2 overflow-x-auto">
                 <MatrixPairList pairs={activeView.pairs} />

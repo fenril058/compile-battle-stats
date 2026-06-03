@@ -1,6 +1,7 @@
 import type { GroupBase } from "react-select";
 import Select from "react-select";
 import type { ProtocolGroup } from "../config";
+import { useT } from "../i18n";
 import type { Protocol } from "../types";
 
 type Option = { value: string; label: string };
@@ -20,6 +21,7 @@ export function ProtocolSelect({
   disabled = false,
   ariaLabel,
 }: Props) {
+  const { t } = useT();
   const options: GroupBase<Option>[] = protocolGroups.map((group) => ({
     label: group.label,
     options: group.protocols.map((p) => ({ value: p, label: p })),
@@ -37,7 +39,7 @@ export function ProtocolSelect({
         isSearchable
         unstyled
         aria-label={ariaLabel}
-        noOptionsMessage={() => "一致するプロトコルがありません"}
+        noOptionsMessage={() => t("protocolSelect.noOptions")}
         styles={{
           menu: (base) => ({ ...base, zIndex: 50 }),
         }}

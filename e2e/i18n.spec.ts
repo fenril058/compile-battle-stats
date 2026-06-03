@@ -15,6 +15,10 @@ test.describe("i18n", () => {
     const langSelect = page.getByLabel("言語");
     await expect(langSelect).toHaveValue("ja");
     await expect(page.getByText("メインコンテンツへスキップ")).toBeAttached();
+    await expect(
+      page.getByRole("heading", { name: "試合結果の入力" }),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "レシオ表" })).toBeVisible();
 
     // 英語へ切替
     await langSelect.selectOption("en");
@@ -22,6 +26,13 @@ test.describe("i18n", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.getByText("Skip to main content")).toBeAttached();
     await expect(page.getByLabel("Language")).toHaveValue("en");
+    // コンポーネントの可視文字列も英語へ追従する
+    await expect(
+      page.getByRole("heading", { name: "Record a match" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Ratio Table" }),
+    ).toBeVisible();
 
     // 永続化を確認
     const saved = await page.evaluate(() => localStorage.getItem("language"));

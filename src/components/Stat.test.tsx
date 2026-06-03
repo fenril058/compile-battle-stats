@@ -18,7 +18,7 @@ const baseStats: StatsResult = {
 };
 
 const renderStat = (m: StatsResult = baseStats) =>
-  render(<Stat t="赤" m={m} color="bg-red-900" minPair={5} minTrio={3} />);
+  render(<Stat title="赤" m={m} color="bg-red-900" minPair={5} minTrio={3} />);
 
 describe("Stat", () => {
   it("タイトルと全タブを描画する", () => {
