@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ErrorBoundary } from "./ErrorBoundary";
 
 const Bomb = () => {
@@ -7,6 +7,11 @@ const Bomb = () => {
 };
 
 describe("ErrorBoundary", () => {
+  // ErrorBoundary は Provider 外の class なので tStatic(detectLang()) で言語を解決する。
+  // jsdom の navigator.language は en-US のため、日本語表示を検証するには ja を固定する。
+  beforeEach(() => localStorage.setItem("language", "ja"));
+  afterEach(() => localStorage.clear());
+
   it("子コンポーネントが正常な場合はそのまま描画する", () => {
     render(
       <ErrorBoundary>

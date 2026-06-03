@@ -14,7 +14,7 @@ const matrix: MatrixData = {
 describe("Matrix", () => {
   it("protocols が空ならテーブルを描画しない（プレースホルダのみ）", () => {
     const { container } = render(
-      <Matrix t="マトリクス" m={{}} bg="bg-zinc-900" protocols={[]} />,
+      <Matrix title="マトリクス" m={{}} bg="bg-zinc-900" protocols={[]} />,
     );
 
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
@@ -25,7 +25,7 @@ describe("Matrix", () => {
   it("見出しに最小試合数を含めて描画する", () => {
     render(
       <Matrix
-        t="マトリクス"
+        title="マトリクス"
         m={matrix}
         bg="bg-zinc-900"
         protocols={protocols}
@@ -37,14 +37,18 @@ describe("Matrix", () => {
   });
 
   it("ABBR でヘッダーを描画する", () => {
-    render(<Matrix t="m" m={matrix} bg="bg-zinc-900" protocols={protocols} />);
+    render(
+      <Matrix title="m" m={matrix} bg="bg-zinc-900" protocols={protocols} />,
+    );
     // FIRE→FIR, WATER→WAT（列ヘッダ + 行ヘッダで複数登場）
     expect(screen.getAllByText("FIR").length).toBeGreaterThan(0);
     expect(screen.getAllByText("WAT").length).toBeGreaterThan(0);
   });
 
   it("数値セルは整数で、null セルは『–』で描画する", () => {
-    render(<Matrix t="m" m={matrix} bg="bg-zinc-900" protocols={protocols} />);
+    render(
+      <Matrix title="m" m={matrix} bg="bg-zinc-900" protocols={protocols} />,
+    );
     expect(screen.getByText("75")).toBeInTheDocument();
     expect(screen.getByText("25")).toBeInTheDocument();
     // 対角の null セルが 2 つ

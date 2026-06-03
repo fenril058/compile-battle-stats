@@ -1,5 +1,6 @@
 import type React from "react";
 import { useRef } from "react";
+import { useT } from "../i18n";
 
 interface DataToolbarProps {
   onExport: () => void;
@@ -12,6 +13,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
   onImport,
   isRegistrationAllowed,
 }) => {
+  const { t } = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelectClick = () => {
@@ -36,7 +38,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
             htmlFor="csv-import-file"
             className="font-semibold mb-3 text-zinc-300"
           >
-            CSVから試合データをインポート
+            {t("dataToolbar.importLabel")}
           </label>
 
           <div>
@@ -53,7 +55,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
               onClick={handleFileSelectClick}
               className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-sm transition-colors"
             >
-              ファイルを選択
+              {t("dataToolbar.selectFile")}
             </button>
           </div>
 
@@ -61,7 +63,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
             形式: F1, F2, F3, S1, S2, S3, Winner, Date, Ratio, CreatedAt
           </p>
           <p className="text-xs text-zinc-400 mt-1">
-            ※ 本アプリがエクスポートした CSV ファイルを再インポートできます
+            {t("dataToolbar.reimportNote")}
           </p>
         </div>
       )}
