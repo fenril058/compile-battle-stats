@@ -1,4 +1,5 @@
 import React, { useId, useMemo, useRef, useState } from "react";
+import { type TranslationKey, useT } from "../i18n";
 import type { StatsResult } from "../types";
 import { rows } from "../utils/logic";
 
@@ -6,24 +7,24 @@ type StatKey = keyof StatsResult;
 
 const KEYS: readonly StatKey[] = ["single", "pair", "trio", "first", "second"];
 
-const TAB_LABELS: Record<StatKey, string> = {
-  single: "単体",
-  pair: "2枚組",
-  trio: "3枚組",
-  first: "先攻",
-  second: "後攻",
+const TAB_LABELS: Record<StatKey, TranslationKey> = {
+  single: "stat.tab.single",
+  pair: "stat.tab.pair",
+  trio: "stat.tab.trio",
+  first: "common.first",
+  second: "common.second",
 };
 
-const SECTION_LABELS: Record<StatKey, string> = {
-  single: "プロトコル単体勝率",
-  pair: "プロトコル2枚組勝率",
-  trio: "プロトコル3枚組勝率",
-  first: "先攻時の勝率",
-  second: "後攻時の勝率",
+const SECTION_LABELS: Record<StatKey, TranslationKey> = {
+  single: "stat.section.single",
+  pair: "stat.section.pair",
+  trio: "stat.section.trio",
+  first: "stat.section.first",
+  second: "stat.section.second",
 };
 
 type StatProps = {
-  t: string;
+  title: string;
   m: StatsResult;
   color: string;
   minPair: number;
@@ -31,7 +32,8 @@ type StatProps = {
 };
 
 export const Stat: React.FC<StatProps> = React.memo(
-  ({ t, m, color, minPair, minTrio }) => {
+  ({ title, m, color, minPair, minTrio }) => {
+    const { t } = useT();
     const [activeKey, setActiveKey] = useState<StatKey>("single");
     const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
     const baseId = useId();
@@ -63,11 +65,11 @@ export const Stat: React.FC<StatProps> = React.memo(
 
     return (
       <div className={`p-3 rounded-2xl shadow-md ${color}`}>
-        <h2 className="font-semibold mb-2 text-center">{t}</h2>
+        <h2 className="font-semibold mb-2 text-center">{title}</h2>
         <div
           className="flex flex-wrap gap-1 mb-3"
           role="tablist"
-          aria-label="統計種別"
+          aria-label={t("statsDashboard.statTypeAria")}
         >
           {KEYS.map((key, index) => (
             <button
@@ -89,7 +91,7 @@ export const Stat: React.FC<StatProps> = React.memo(
                   : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
               }`}
             >
-              {TAB_LABELS[key]}
+              {t(TAB_LABELS[key])}
             </button>
           ))}
         </div>
@@ -101,7 +103,7 @@ export const Stat: React.FC<StatProps> = React.memo(
           tabIndex={0}
         >
           <StatSection
-            label={SECTION_LABELS[activeKey]}
+            label={t(SECTION_LABELS[activeKey])}
             data={m[activeKey]}
             type={activeKey}
             minPair={minPair}
@@ -128,6 +130,7 @@ const StatSection: React.FC<StatSectionProps> = ({
   minPair,
   minTrio,
 }) => {
+  const { t } = useT();
   const r = useMemo(() => {
     if (!data) return [];
     return rows(data, type, minPair, minTrio);
@@ -135,16 +138,18 @@ const StatSection: React.FC<StatSectionProps> = ({
 
   let displayLabel = label;
   if (type === "pair") {
-    displayLabel = `${label}（${minPair}戦以上）`;
+    displayLabel = t("stat.minGames", { label, games: minPair });
   } else if (type === "trio") {
-    displayLabel = `${label}（${minTrio}戦以上）`;
+    displayLabel = t("stat.minGames", { label, games: minTrio });
   }
 
   return (
     <div>
       <h3 className="text-sm text-zinc-400 mb-1 text-center">{displayLabel}</h3>
       {r.length === 0 ? (
-        <p className="text-xs text-zinc-400 text-center py-4">データなし</p>
+        <p className="text-xs text-zinc-400 text-center py-4">
+          {t("common.noData")}
+        </p>
       ) : (
         <table className="text-xs w-full border border-zinc-800">
           <caption className="sr-only">{displayLabel}</caption>

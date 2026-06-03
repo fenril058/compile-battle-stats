@@ -1,5 +1,6 @@
 import type React from "react";
 import { MIN_GAMES_FOR_MATRIX } from "../config";
+import { useT } from "../i18n";
 import type { MatchupPair } from "../utils/logic";
 
 type MatrixPairListProps = {
@@ -9,10 +10,11 @@ type MatrixPairListProps = {
 // 相性表（行列）の別表現。MIN_GAMES到達の有向ペアだけを縦持ちで並べる。
 // 疎な相性表（全試合 30×30 など）で巨大な空セルを描かずに済む実験的ビュー。
 export const MatrixPairList: React.FC<MatrixPairListProps> = ({ pairs }) => {
+  const { t } = useT();
   if (pairs.length === 0) {
     return (
       <p className="text-xs text-zinc-400 text-center py-4">
-        {MIN_GAMES_FOR_MATRIX} 戦以上の対戦ペアがまだありません
+        {t("matrixPairList.empty", { games: MIN_GAMES_FOR_MATRIX })}
       </p>
     );
   }
@@ -20,7 +22,7 @@ export const MatrixPairList: React.FC<MatrixPairListProps> = ({ pairs }) => {
   return (
     <table className="text-xs w-full border border-zinc-800">
       <caption className="sr-only">
-        出現ペア一覧（{MIN_GAMES_FOR_MATRIX} 戦以上）
+        {t("matrixPairList.caption", { games: MIN_GAMES_FOR_MATRIX })}
       </caption>
       <thead className="bg-zinc-800 text-zinc-300">
         <tr>
@@ -28,10 +30,10 @@ export const MatrixPairList: React.FC<MatrixPairListProps> = ({ pairs }) => {
             #
           </th>
           <th className="p-1" scope="col">
-            攻
+            {t("matrixPairList.attacker")}
           </th>
           <th className="p-1" scope="col">
-            受
+            {t("matrixPairList.defender")}
           </th>
           <th className="p-1" scope="col">
             G

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import type { ProtocolGroup } from "../config";
 import { useAuth } from "../hooks/useAuth";
+import { useT } from "../i18n";
 import type { Protocol, Trio, Winner } from "../types";
 import { parseCalendarDate, todayInputValue } from "../utils/date";
 import { ProtocolSelect } from "./ProtocolSelect";
@@ -36,6 +37,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
   mode,
 }) => {
   const { user, isAuthEnabled } = useAuth();
+  const { t } = useT();
   const [first, setFirst] = useState<Trio>(INITIAL_FIRST);
   const [second, setSecond] = useState<Trio>(INITIAL_SECOND);
   // 日付入力用のステート (初期値は今日。ローカル暦日)
@@ -103,15 +105,15 @@ export const MatchForm: React.FC<MatchFormProps> = ({
     // 認証が有効（remote）なときのみログインを要求する。
     // local ハーネスは認証無効なので、ログイン不要で登録できる（#48 B）。
     if (isAuthEnabled && !user) {
-      toast.error("ログインが必要です");
+      toast.error(t("matchForm.toast.loginRequired"));
       return;
     }
     if (!isRegistrationAllowed) {
-      toast.error("このシーズンは登録が許可されていません。");
+      toast.error(t("matchForm.toast.seasonNotAllowed"));
       return;
     }
     if (!isFormValid) {
-      toast.error("プロトコルが正しく選択されていません。");
+      toast.error(t("matchForm.toast.invalidProtocols"));
       return;
     }
 
@@ -122,26 +124,22 @@ export const MatchForm: React.FC<MatchFormProps> = ({
     // ★ 重複がある場合の二重確認ロジック
     if (hasIntraTeamDuplication) {
       // Scenario 1: チーム内重複 - 統計から除外されるため、強い警告
-      const confirmationMessage =
-        "【重要】チーム内のプロトコルに重複があります。この試合データは統計計算から除外されますが、登録してよろしいですか？\n\n[OK]：登録を続行\n[キャンセル]：入力を修正";
+      const confirmationMessage = t("matchForm.confirm.intraTeam");
       // window.confirm を使用してユーザーに確認を求める
       const userConfirmed = window.confirm(confirmationMessage);
       if (!userConfirmed) {
         // キャンセルされた場合、処理を中断
-        toast.info("試合登録をキャンセルしました。入力を修正してください。");
+        toast.info(t("matchForm.toast.cancelledFixInput"));
         return;
       }
     } else if (hasInterTeamDuplication) {
       // Scenario 2: チーム間重複 - 統計に反映されるが、意図せぬ入力の可能性
-      const confirmationMessage =
-        "警告：先攻と後攻のプロトコルが重複しています（例: A, B, C vs C, D, E）。この試合は統計に反映されますが、意図した入力かご確認ください。\n\n[OK]：登録を続行\n[キャンセル]：入力を修正";
+      const confirmationMessage = t("matchForm.confirm.interTeam");
 
       const userConfirmed = window.confirm(confirmationMessage);
 
       if (!userConfirmed) {
-        toast.info(
-          "試合登録をキャンセルしました。（チーム間重複を修正してください）",
-        );
+        toast.info(t("matchForm.toast.cancelledInterTeam"));
         return;
       }
     }
@@ -165,18 +163,20 @@ export const MatchForm: React.FC<MatchFormProps> = ({
       {!isRegistrationAllowed ? (
         <div className="flex justify-center items-center h-24 border border-red-700 rounded-xl bg-red-950/20">
           <p className="text-xl font-bold text-red-400">
-            登録期間が終了しました
+            {t("matchForm.registrationClosed")}
           </p>
         </div>
       ) : (
         <div className="bg-zinc-900 p-4 rounded-2xl shadow-xl">
           <h2 className="text-xl font-semibold mb-4 text-center">
-            試合結果の入力
+            {t("matchForm.title")}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8">
             {/* First Side */}
             <fieldset className="flex flex-col items-center p-2 border border-zinc-700 rounded-xl">
-              <legend className="text-center font-semibold mb-2">先攻</legend>
+              <legend className="text-center font-semibold mb-2">
+                {t("common.first")}
+              </legend>
               {first.map((p, i) => (
                 <ProtocolSelect
                   // biome-ignore lint/suspicious/noArrayIndexKey: position is fixed (always 3 slots)
@@ -185,17 +185,19 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   onChange={handleProtocolChange("FIRST", i)}
                   protocolGroups={protocolGroups}
                   disabled={!isRegistrationAllowed}
-                  ariaLabel={`先攻の ${i + 1} 番目の選択`}
+                  ariaLabel={t("matchForm.firstSlotAria", { n: i + 1 })}
                 />
               ))}
               <p className="text-xs text-center text-zinc-400 mt-1">
-                レシオ: {ratioSum(first)}
+                {t("matchForm.ratioSum", { sum: ratioSum(first) })}
               </p>
             </fieldset>
 
             {/* Second Side */}
             <fieldset className="flex flex-col items-center p-2 border border-zinc-700 rounded-xl">
-              <legend className="text-center font-semibold mb-2">後攻</legend>
+              <legend className="text-center font-semibold mb-2">
+                {t("common.second")}
+              </legend>
               {second.map((p, i) => (
                 <ProtocolSelect
                   // biome-ignore lint/suspicious/noArrayIndexKey: position is fixed (always 3 slots)
@@ -204,11 +206,11 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   onChange={handleProtocolChange("SECOND", i)}
                   protocolGroups={protocolGroups}
                   disabled={!isRegistrationAllowed}
-                  ariaLabel={`後攻の ${i + 1} 番目の選択`}
+                  ariaLabel={t("matchForm.secondSlotAria", { n: i + 1 })}
                 />
               ))}
               <p className="text-xs text-center text-zinc-400 mt-1">
-                レシオ: {ratioSum(second)}
+                {t("matchForm.ratioSum", { sum: ratioSum(second) })}
               </p>
             </fieldset>
 
@@ -224,7 +226,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                     htmlFor="match-date"
                     className="text-xs text-zinc-400 mb-1"
                   >
-                    対戦日 (任意)
+                    {t("matchForm.matchDate")}
                   </label>
                   <input
                     id="match-date"
@@ -245,7 +247,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                 className="w-1/2 text-sm text-zinc-400 border border-zinc-600 px-2 py-1 rounded
                 hover:bg-zinc-800 mb-1"
               >
-                🔄 入れ替え
+                {t("matchForm.swap")}
               </button>
 
               {/* WIN ボタン */}
@@ -257,7 +259,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   className="py-2 px-4 rounded-lg text-white bg-green-800
                   hover:bg-green-700 disabled:bg-zinc-700 text-sm font-bold"
                 >
-                  先攻WIN
+                  {t("matchForm.firstWin")}
                 </button>
                 <button
                   type="button"
@@ -266,7 +268,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   className="py-2 px-4 rounded-lg text-white bg-green-800
                   hover:bg-green-700 disabled:bg-zinc-700 text-sm font-bold"
                 >
-                  後攻WIN
+                  {t("matchForm.secondWin")}
                 </button>
               </div>
               {mode === "local" && onSyncLocal && (
@@ -275,7 +277,7 @@ export const MatchForm: React.FC<MatchFormProps> = ({
                   onClick={onSyncLocal}
                   className="px-3 py-1 mt-1 rounded text-xs text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  ローカル再読込
+                  {t("matchForm.reloadLocal")}
                 </button>
               )}
             </div>
