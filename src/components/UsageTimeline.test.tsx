@@ -36,4 +36,25 @@ describe("UsageTimeline", () => {
     expect(within(table).getByText("2025-01-06")).toBeInTheDocument();
     expect(within(table).getByText("2025-01-13")).toBeInTheDocument();
   });
+
+  it("ピック率が小さくても Y 軸に細かい目盛りを描画する（0/25 だけにならない）", () => {
+    // 最大 15% → 5 刻みで 0/5/10/15 の目盛りになる（旧実装は 0/25 だけだった）
+    const smallData: UsageTimelineData = {
+      buckets: [
+        { label: "2025-01-06", start: 1 },
+        { label: "2025-01-13", start: 2 },
+      ],
+      series: [
+        { protocol: "FIRE", points: [15, 11] },
+        { protocol: "WATER", points: [8, 6] },
+      ],
+    };
+    render(<UsageTimeline data={smallData} title="使用率推移" />);
+    // Y 目盛りラベル（整数）が 5 刻みで出る
+    expect(screen.getAllByText("5").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("10").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("15").length).toBeGreaterThan(0);
+    // 旧実装の粗い 25 目盛りは出ない
+    expect(screen.queryByText("25")).not.toBeInTheDocument();
+  });
 });
