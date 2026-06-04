@@ -315,6 +315,141 @@ export const quadrantPoints = (
     .sort((a, b) => b.pickRate - a.pickRate || b.p - a.p);
 };
 
+// --- Usage Timeline (週別ピック率の時系列) -----------------------------------
+
+export type UsageBucket = { label: string; start: number };
+export type UsageSeries = { protocol: string; points: number[] }; // 各 bucket のピック率(0..100)
+export type UsageTimeline = { buckets: UsageBucket[]; series: UsageSeries[] };
+
+/**
+ * matchDate 付き有効試合を週単位のバケットに分割し、各プロトコルのピック率時系列を返す。
+ *
+ * バケットの週頭は「月曜 00:00 UTC」に統一する。
+ * 理由: ISO 8601 では週は月曜始まりが標準で、UTC で計算が完結し TZ の影響を受けない。
+ * 日曜始まりより国際的に一般的で、チームゲームの集計単位として自然。
+ *
+ * @param matches - 全試合一覧
+ * @param options - topN: 個別 series にする上位プロトコル数（既定 6）
+ */
+export const usageTimeline = (
+  matches: Match[],
+  options?: { topN?: number },
+): UsageTimeline => {
+  const topN = options?.topN ?? 6;
+
+  // 有効試合かつ matchDate が数値のものだけ対象
+  const valid = matches.filter(
+    (m) =>
+      typeof m.matchDate === "number" &&
+      isValidTrio(m.first) &&
+      isValidTrio(m.second),
+  );
+
+  if (valid.length === 0) return { buckets: [], series: [] };
+
+  /**
+   * UTC ms → その週の月曜 00:00 UTC (ms) に切り下げる。
+   * UTC で dayOfWeek を取得し、月曜=1 を基点に差を引いて真夜中へ。
+   */
+  const toWeekStart = (ms: number): number => {
+    const d = new Date(ms);
+    // getUTCDay(): 0=Sun, 1=Mon, ... 6=Sat
+    // 月曜を 0 とするオフセット: Mon=0, Tue=1, ..., Sun=6
+    const offset = (d.getUTCDay() + 6) % 7;
+    return Date.UTC(
+      d.getUTCFullYear(),
+      d.getUTCMonth(),
+      d.getUTCDate() - offset,
+    );
+  };
+
+  // バケット start → { 各プロトコル出現数, 総スロット数 } のマップ
+  const bucketMap = new Map<
+    number,
+    { slots: Map<string, number>; total: number }
+  >();
+  // プロトコル全期間総出現数
+  const totalCount = new Map<string, number>();
+
+  for (const m of valid) {
+    const weekStart = toWeekStart(m.matchDate as number);
+    if (!bucketMap.has(weekStart)) {
+      bucketMap.set(weekStart, { slots: new Map(), total: 0 });
+    }
+    const bucket = bucketMap.get(weekStart) as {
+      slots: Map<string, number>;
+      total: number;
+    };
+
+    // first + second 両 trio の各プロトコル（makeStats と同じ数え方）
+    for (const p of [...m.first, ...m.second]) {
+      bucket.slots.set(p, (bucket.slots.get(p) ?? 0) + 1);
+      bucket.total += 1;
+      totalCount.set(p, (totalCount.get(p) ?? 0) + 1);
+    }
+  }
+
+  // バケットを start 昇順でソート
+  const sortedStarts = [...bucketMap.keys()].sort((a, b) => a - b);
+
+  const buckets: UsageBucket[] = sortedStarts.map((start) => {
+    const d = new Date(start);
+    const y = d.getUTCFullYear();
+    const mo = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const da = String(d.getUTCDate()).padStart(2, "0");
+    return { label: `${y}-${mo}-${da}`, start };
+  });
+
+  // 全期間の総出現数で上位 topN プロトコルを決定（降順）
+  const sortedByTotal = [...totalCount.entries()].sort((a, b) => b[1] - a[1]);
+  const topProtocols = sortedByTotal.slice(0, topN).map(([p]) => p);
+  const topSet = new Set(topProtocols);
+  const hasOther = sortedByTotal.length > topN;
+
+  // 各系列のポイント配列を構築
+  const seriesMap = new Map<string, number[]>();
+  for (const p of topProtocols) seriesMap.set(p, []);
+  if (hasOther) seriesMap.set("OTHER", []);
+
+  // 事前に各系列の points 配列への参照を取得し、ループ内でアクセスする。
+  // seriesMap.get() が undefined にならないことはここまでのコードで保証済みだが、
+  // 非 null アサーション (!.) を避けるため参照を変数に取り出す。
+  const topSeriesPoints = topProtocols.map((p) => seriesMap.get(p) as number[]);
+  const otherPoints = hasOther ? (seriesMap.get("OTHER") as number[]) : null;
+
+  for (const start of sortedStarts) {
+    const b = bucketMap.get(start) as {
+      slots: Map<string, number>;
+      total: number;
+    };
+    const total = b.total;
+
+    for (let i = 0; i < topProtocols.length; i += 1) {
+      const count = b.slots.get(topProtocols[i] as string) ?? 0;
+      topSeriesPoints[i]?.push(Math.round((count / total) * 1000) / 10);
+    }
+
+    if (otherPoints !== null) {
+      let otherCount = 0;
+      for (const [p, count] of b.slots.entries()) {
+        if (!topSet.has(p)) otherCount += count;
+      }
+      otherPoints.push(Math.round((otherCount / total) * 1000) / 10);
+    }
+  }
+
+  // series: 総使用率降順（上位 topN はすでに降順）、OTHER は最後
+  const series: UsageSeries[] = topProtocols.map((p, i) => ({
+    protocol: p,
+    points: topSeriesPoints[i] ?? [],
+  }));
+  if (otherPoints !== null) {
+    series.push({ protocol: "OTHER", points: otherPoints });
+  }
+
+  return { buckets, series };
+};
+
 export const parseMatchCsvRow = (
   row: string[],
   validProtocols: readonly Protocol[],

@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MatrixView, StatsView } from "../hooks/useMatchStats";
 import type { MatrixData, StatsResult } from "../types";
+import type { UsageTimeline } from "../utils/logic";
 import { StatsDashboard } from "./StatsDashboard";
 
 // Matrix / MatrixPairList / Stat は描画コストが高いのでスタブ化
@@ -36,6 +37,8 @@ const emptyMatrixView: MatrixView = {
   protocols: ["FIRE", "WATER"],
 };
 
+const emptyUsage: UsageTimeline = { buckets: [], series: [] };
+
 const makeProps = (overrides?: Partial<Parameters<typeof StatsDashboard>[0]>) =>
   ({
     statViews: {
@@ -60,6 +63,7 @@ const makeProps = (overrides?: Partial<Parameters<typeof StatsDashboard>[0]>) =>
       converged: true,
     },
     synergy: [],
+    usage: emptyUsage,
     ...overrides,
   }) satisfies Parameters<typeof StatsDashboard>[0];
 

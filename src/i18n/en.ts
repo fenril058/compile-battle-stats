@@ -149,4 +149,13 @@ export const en: TranslationDict = {
   "quadrant.tablePickRate": "Pick Rate (%)",
   "quadrant.tableWinRate": "Win Rate (%)",
   "quadrant.tableGames": "Games",
+
+  // UsageTimeline (weekly pick-rate line chart)
+  "usage.title": "Weekly Pick Rate Trends",
+  "usage.xAxis": "Week",
+  "usage.yAxis": "Pick Rate (%)",
+  "usage.other": "Other",
+  "usage.svgAriaLabel": "{title} line chart",
+  "usage.tableCaption": "{title} data table",
+  "usage.tableBucket": "Week",
 };
