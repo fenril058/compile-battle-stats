@@ -757,3 +757,215 @@ export const matchupResidual = (
 
   return m;
 };
+
+// --- アーキタイプ（共起クラスタリング）-------------------------------------
+
+export type Archetype = {
+  id: number;
+  label: string; // 所属プロトコルを "/" 連結
+  protocols: string[];
+};
+
+// 共起重み（同一 trio で一緒に出た回数）の対称行列とノード一覧を作る内部ヘルパー。
+const buildCooccurrence = (
+  matches: Match[],
+): { w: Map<string, Map<string, number>>; nodes: string[] } => {
+  const w = new Map<string, Map<string, number>>();
+  const nodeSet = new Set<string>();
+  const add = (a: string, b: string) => {
+    if (!w.has(a)) w.set(a, new Map());
+    const row = w.get(a) as Map<string, number>;
+    row.set(b, (row.get(b) ?? 0) + 1);
+  };
+  for (const mt of matches) {
+    if (!isValidTrio(mt.first) || !isValidTrio(mt.second)) continue;
+    for (const trio of [mt.first, mt.second]) {
+      for (const p of trio) nodeSet.add(p);
+      for (let i = 0; i < 3; i += 1) {
+        for (let j = i + 1; j < 3; j += 1) {
+          add(trio[i], trio[j]);
+          add(trio[j], trio[i]);
+        }
+      }
+    }
+  }
+  return { w, nodes: [...nodeSet].sort() };
+};
+
+/**
+ * プロトコルの共起グラフ。weight(a, b) は a と b が同一 trio で一緒に握られた回数。
+ */
+export const protocolCooccurrence = (
+  matches: Match[],
+): { nodes: string[]; weight: (a: string, b: string) => number } => {
+  const { w, nodes } = buildCooccurrence(matches);
+  return { nodes, weight: (a, b) => w.get(a)?.get(b) ?? 0 };
+};
+
+/**
+ * 共起グラフを貪欲モジュラリティ最大化（凝集型）でクラスタリングし、アーキタイプを抽出する。
+ * 各ノード単独から開始し、モジュラリティ利得 ΔQ が最大の2コミュニティを併合、ΔQ>0 が
+ * 無くなるまで反復する。決定的（同点は (lo,hi) の小さい方で破る）。n≤27 なので素朴実装で十分。
+ */
+export const detectArchetypes = (matches: Match[]): Archetype[] => {
+  const { w, nodes } = buildCooccurrence(matches);
+  if (nodes.length === 0) return [];
+
+  // 重み付き次数 k_i と 2m
+  const degree = new Map<string, number>();
+  let twoM = 0;
+  for (const a of nodes) {
+    let k = 0;
+    const row = w.get(a);
+    if (row) for (const v of row.values()) k += v;
+    degree.set(a, k);
+    twoM += k;
+  }
+
+  const comm = new Map<string, number>();
+  nodes.forEach((p, i) => comm.set(p, i));
+
+  if (twoM > 0) {
+    // a<b のエッジ一覧（重み w[a][b]）
+    const edges: { a: string; b: string; w: number }[] = [];
+    for (let i = 0; i < nodes.length; i += 1) {
+      for (let j = i + 1; j < nodes.length; j += 1) {
+        const wij = w.get(nodes[i])?.get(nodes[j]) ?? 0;
+        if (wij > 0) edges.push({ a: nodes[i], b: nodes[j], w: wij });
+      }
+    }
+
+    while (true) {
+      // コミュニティ次数和 a_C
+      const aOf = new Map<number, number>();
+      for (const p of nodes) {
+        const c = comm.get(p) as number;
+        aOf.set(c, (aOf.get(c) ?? 0) + (degree.get(p) as number));
+      }
+      // コミュニティ間重み e_CD（lo<hi）
+      const eBetween = new Map<string, number>();
+      for (const e of edges) {
+        const ca = comm.get(e.a) as number;
+        const cb = comm.get(e.b) as number;
+        if (ca === cb) continue;
+        const lo = Math.min(ca, cb);
+        const hi = Math.max(ca, cb);
+        eBetween.set(`${lo}_${hi}`, (eBetween.get(`${lo}_${hi}`) ?? 0) + e.w);
+      }
+
+      // ΔQ 最大ペア（決定的: キー昇順で厳密最大、同点は先勝ち＝小さいキー）
+      const pairs = [...eBetween.entries()]
+        .map(([key, e]) => {
+          const [loS, hiS] = key.split("_");
+          return { lo: Number(loS), hi: Number(hiS), e };
+        })
+        .sort((x, y) => x.lo - y.lo || x.hi - y.hi);
+
+      let bestGain = 1e-12;
+      let bestLo = -1;
+      let bestHi = -1;
+      for (const { lo, hi, e } of pairs) {
+        const gain =
+          2 *
+          (e / twoM -
+            ((aOf.get(lo) as number) * (aOf.get(hi) as number)) /
+              (twoM * twoM));
+        if (gain > bestGain) {
+          bestGain = gain;
+          bestLo = lo;
+          bestHi = hi;
+        }
+      }
+      if (bestLo === -1) break;
+      // bestHi を bestLo に併合
+      for (const p of nodes) {
+        if (comm.get(p) === bestHi) comm.set(p, bestLo);
+      }
+    }
+  }
+
+  // コミュニティ -> プロトコル
+  const byComm = new Map<number, string[]>();
+  for (const p of nodes) {
+    const c = comm.get(p) as number;
+    if (!byComm.has(c)) byComm.set(c, []);
+    (byComm.get(c) as string[]).push(p);
+  }
+  const groups = [...byComm.values()].map((ps) => [...ps].sort());
+  // サイズ降順 → 先頭プロトコル昇順
+  groups.sort((x, y) => y.length - x.length || (x[0] < y[0] ? -1 : 1));
+  return groups.map((ps, i) => ({ id: i, label: ps.join("/"), protocols: ps }));
+};
+
+export type ArchetypeMatchup = {
+  archetypes: Archetype[];
+  // matrix[i][j] = アーキタイプ i の side が j の side に勝った勝率(0..100)。g<minGames は null。
+  matrix: (number | null)[][];
+  games: number[][];
+};
+
+/**
+ * 各デッキを「3枚の多数決」でアーキタイプに割り当て、アーキタイプ間の相性を集計する。
+ * 27×27 の疎な相性表より密で解釈しやすい。
+ */
+export const archetypeMatchup = (
+  matches: Match[],
+  minGames = MIN_GAMES_FOR_MATRIX,
+): ArchetypeMatchup => {
+  const archetypes = detectArchetypes(matches);
+  const n = archetypes.length;
+
+  const archOf = new Map<string, number>();
+  archetypes.forEach((a, i) => {
+    for (const p of a.protocols) archOf.set(p, i);
+  });
+
+  // trio を所属アーキタイプの多数決で割り当てる（同点は小さい index）。
+  const assign = (trio: Trio): number => {
+    const counts = new Map<number, number>();
+    for (const p of trio) {
+      const idx = archOf.get(p);
+      if (idx === undefined) continue;
+      counts.set(idx, (counts.get(idx) ?? 0) + 1);
+    }
+    let bestIdx = -1;
+    let bestCount = 0;
+    for (const [idx, c] of [...counts.entries()].sort((a, b) => a[0] - b[0])) {
+      if (c > bestCount) {
+        bestCount = c;
+        bestIdx = idx;
+      }
+    }
+    return bestIdx;
+  };
+
+  const games: number[][] = Array.from({ length: n }, () =>
+    new Array(n).fill(0),
+  );
+  const wins: number[][] = Array.from({ length: n }, () =>
+    new Array(n).fill(0),
+  );
+
+  for (const mt of matches) {
+    if (!isValidTrio(mt.first) || !isValidTrio(mt.second)) continue;
+    const fa = assign(mt.first);
+    const sa = assign(mt.second);
+    if (fa < 0 || sa < 0) continue;
+    const firstWin = mt.winner === "FIRST" ? 1 : 0;
+    games[fa][sa] += 1;
+    wins[fa][sa] += firstWin;
+    // 異アーキタイプは後攻側視点も加算（対称な相補関係）。同一は二重計上を避ける。
+    if (fa !== sa) {
+      games[sa][fa] += 1;
+      wins[sa][fa] += 1 - firstWin;
+    }
+  }
+
+  const matrix: (number | null)[][] = Array.from({ length: n }, (_, i) =>
+    Array.from({ length: n }, (_, j) =>
+      games[i][j] >= minGames ? percent(wins[i][j], games[i][j]) : null,
+    ),
+  );
+
+  return { archetypes, matrix, games };
+};

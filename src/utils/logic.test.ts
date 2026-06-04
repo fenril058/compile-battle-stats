@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { PROTOCOL_SETS, RATIO_SETS } from "../config";
 import type { Match, Trio } from "../types";
 import {
+  archetypeMatchup,
+  detectArchetypes,
   fitStrengthModel,
   isRatioBattle,
   makeStats,
@@ -11,6 +13,7 @@ import {
   pairSynergy,
   parseMatchCsvRow,
   percent,
+  protocolCooccurrence,
   quadrantPoints,
   ratioSum,
   rows,
@@ -836,6 +839,69 @@ describe("utils/logic", () => {
       );
       const m = matchupResidual([invalid, invalid, invalid], zeroModel, protos);
       expect(m.FIRE?.LIFE).toBeNull();
+    });
+  });
+
+  describe("archetypes（共起クラスタリング）", () => {
+    let idSeq = 0;
+    const mk = (
+      first: Trio,
+      second: Trio,
+      winner: "FIRST" | "SECOND",
+    ): Match => ({
+      id: `a${idSeq++}`,
+      first,
+      second,
+      winner,
+      ratio: false,
+      createdAt: 0,
+    });
+
+    // 2クリーク: {FIRE,WATER,METAL} と {LIFE,SPEED,SPIRIT} が常に別々に握られる。
+    const twoCliques = () =>
+      Array.from({ length: 5 }, () =>
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      );
+
+    it("protocolCooccurrence: 同一 trio の共起回数を返す", () => {
+      const { nodes, weight } = protocolCooccurrence(twoCliques());
+      expect(nodes).toContain("FIRE");
+      expect(weight("FIRE", "WATER")).toBe(5); // 5 試合で毎回共起
+      expect(weight("FIRE", "LIFE")).toBe(0); // 別クリーク → 共起なし
+    });
+
+    it("detectArchetypes: 2クリークを2アーキタイプに分割する", () => {
+      const archs = detectArchetypes(twoCliques());
+      expect(archs).toHaveLength(2);
+      const sets = archs.map((a) => a.protocols.join(","));
+      expect(sets).toContain("FIRE,METAL,WATER");
+      expect(sets).toContain("LIFE,SPEED,SPIRIT");
+    });
+
+    it("detectArchetypes: 有効試合が無ければ空配列", () => {
+      expect(detectArchetypes([])).toEqual([]);
+    });
+
+    it("archetypeMatchup: アーキタイプ間の相性を集計する", () => {
+      const res = archetypeMatchup(twoCliques());
+      expect(res.archetypes).toHaveLength(2);
+      // arch0 = FIRE/METAL/WATER（先頭プロトコル FIRE が小さい）, arch1 = LIFE/SPEED/SPIRIT
+      const i = res.archetypes.findIndex((a) => a.protocols.includes("FIRE"));
+      const j = res.archetypes.findIndex((a) => a.protocols.includes("LIFE"));
+      // FIRE 系が常に先攻で勝利 → i が j に 100%、逆は 0%
+      expect(res.matrix[i][j]).toBe(100);
+      expect(res.matrix[j][i]).toBe(0);
+    });
+
+    it("archetypeMatchup: g<minGames のセルは null", () => {
+      // 2 試合では minGames(3) 未満
+      const res = archetypeMatchup([
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      ]);
+      const i = res.archetypes.findIndex((a) => a.protocols.includes("FIRE"));
+      const j = res.archetypes.findIndex((a) => a.protocols.includes("LIFE"));
+      expect(res.matrix[i][j]).toBeNull();
     });
   });
 });
