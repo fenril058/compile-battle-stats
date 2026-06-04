@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.8.1...compile-battle-stats-v2.0.0) (2026-06-03)
+
+
+### Features
+
+* i18n 基盤を導入し UI の日本語/英語切替を追加する ([#87](https://github.com/fenril058/compile-battle-stats/issues/87)) ([f51a0f5](https://github.com/fenril058/compile-battle-stats/commit/f51a0f5a7cb905f2435120a10e8cc0ee4ad509db))
+* UI 全体を i18n 化し英語版 README を追加して ver 2.0 とする ([#93](https://github.com/fenril058/compile-battle-stats/issues/93)) ([f776d95](https://github.com/fenril058/compile-battle-stats/commit/f776d959d0ba18394f742c8cd49a1c0e00c45cb9))
+
+
+### Miscellaneous Chores
+
+* ver 2.0.0 としてリリースする ([#94](https://github.com/fenril058/compile-battle-stats/issues/94)) ([db85595](https://github.com/fenril058/compile-battle-stats/commit/db8559561c720575093744a8e12ceb061609f7d5))
+
 ## [1.8.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.8.0...compile-battle-stats-v1.8.1) (2026-06-02)
 
 
