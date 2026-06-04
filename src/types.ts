@@ -50,6 +50,8 @@ export type StatRow = {
   w: number; // 勝利数 (Win)
   l: number; // 敗北数 (Lose)
   p: number; // 勝率 (%)
+  low: number; // Wilson 下限 (0..100)
+  high: number; // Wilson 上限 (0..100)
 };
 
 /**
