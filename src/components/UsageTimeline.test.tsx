@@ -10,7 +10,7 @@ const data: UsageTimelineData = {
   ],
   series: [
     { protocol: "FIRE", points: [50, 40] },
-    { protocol: "OTHER", points: [50, 60] },
+    { protocol: "WATER", points: [30, 20] },
   ],
 };
 
@@ -27,9 +27,9 @@ describe("UsageTimeline", () => {
     render(<UsageTimeline data={data} title="使用率推移" />);
     expect(screen.getByRole("img")).toBeInTheDocument();
 
-    // 凡例とデータ表に系列名（FIRE）と OTHER の訳（その他）が出る
+    // 凡例とデータ表に系列名（FIRE / WATER）が出る
     expect(screen.getAllByText("FIRE").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("その他").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("WATER").length).toBeGreaterThan(0);
 
     // sr-only データ表に各バケットの行が出る
     const table = screen.getByRole("table");

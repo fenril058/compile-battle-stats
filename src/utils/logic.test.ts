@@ -563,18 +563,16 @@ describe("utils/logic", () => {
       expect(total).toBeLessThanOrEqual(101);
     });
 
-    it("topN 集約で OTHER 系列が作られる", () => {
+    it("topN を超えるプロトコルは OTHER に集約せず上位のみ系列化する", () => {
       const m = mkMatch(
         MON_2025_01_06,
         ["FIRE", "WATER", "METAL"],
         ["LIFE", "SPEED", "SPIRIT"],
       );
-      // 6 プロトコル登場、topN=3 なら残り 3 が OTHER に集約される
+      // 6 プロトコル登場、topN=3 なら上位 3 系列のみ（OTHER は作らない）
       const result = usageTimeline([m], { topN: 3 });
-      const other = result.series.find((s) => s.protocol === "OTHER");
-      expect(other).toBeDefined();
-      // OTHER の最後に配置される
-      expect(result.series[result.series.length - 1].protocol).toBe("OTHER");
+      expect(result.series).toHaveLength(3);
+      expect(result.series.some((s) => s.protocol === "OTHER")).toBe(false);
     });
 
     it("バケット内のピック率は 0..100 の範囲", () => {

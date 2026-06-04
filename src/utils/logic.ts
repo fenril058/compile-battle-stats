@@ -400,22 +400,20 @@ export const usageTimeline = (
     return { label: `${y}-${mo}-${da}`, start };
   });
 
-  // 全期間の総出現数で上位 topN プロトコルを決定（降順）
+  // 全期間の総出現数で上位 topN プロトコルを決定（降順）。
+  // 上位のみを系列化する。残りを束ねる「その他」系列は、値が大きく主役の
+  // 折れ線を覆い隠して見づらくなるため作らない（#5）。
   const sortedByTotal = [...totalCount.entries()].sort((a, b) => b[1] - a[1]);
   const topProtocols = sortedByTotal.slice(0, topN).map(([p]) => p);
-  const topSet = new Set(topProtocols);
-  const hasOther = sortedByTotal.length > topN;
 
   // 各系列のポイント配列を構築
   const seriesMap = new Map<string, number[]>();
   for (const p of topProtocols) seriesMap.set(p, []);
-  if (hasOther) seriesMap.set("OTHER", []);
 
   // 事前に各系列の points 配列への参照を取得し、ループ内でアクセスする。
   // seriesMap.get() が undefined にならないことはここまでのコードで保証済みだが、
   // 非 null アサーション (!.) を避けるため参照を変数に取り出す。
   const topSeriesPoints = topProtocols.map((p) => seriesMap.get(p) as number[]);
-  const otherPoints = hasOther ? (seriesMap.get("OTHER") as number[]) : null;
 
   for (const start of sortedStarts) {
     const b = bucketMap.get(start) as {
@@ -428,24 +426,13 @@ export const usageTimeline = (
       const count = b.slots.get(topProtocols[i] as string) ?? 0;
       topSeriesPoints[i]?.push(Math.round((count / total) * 1000) / 10);
     }
-
-    if (otherPoints !== null) {
-      let otherCount = 0;
-      for (const [p, count] of b.slots.entries()) {
-        if (!topSet.has(p)) otherCount += count;
-      }
-      otherPoints.push(Math.round((otherCount / total) * 1000) / 10);
-    }
   }
 
-  // series: 総使用率降順（上位 topN はすでに降順）、OTHER は最後
+  // series: 総使用率降順（上位 topN はすでに降順）
   const series: UsageSeries[] = topProtocols.map((p, i) => ({
     protocol: p,
     points: topSeriesPoints[i] ?? [],
   }));
-  if (otherPoints !== null) {
-    series.push({ protocol: "OTHER", points: otherPoints });
-  }
 
   return { buckets, series };
 };
