@@ -32,6 +32,46 @@ export const isRatioBattle = (
 export const percent = (w: number, g: number): number =>
   g ? Math.round((w / g) * 1000) / 10 : 0;
 
+export type WinRateCI = { p: number; low: number; high: number };
+
+/**
+ * Wilson score interval を用いた勝率の信頼区間を計算する。
+ * @param w 勝ち数
+ * @param g 試合数
+ * @param z 標準正規分位点（既定 1.96 ≒ 95%）
+ * @returns p: 点推定値（percentと同じ計算、0..100スケール小数第1位）
+ *          low: 信頼区間下限（0..100スケール小数第1位）
+ *          high: 信頼区間上限（0..100スケール小数第1位）
+ */
+export const wilsonInterval = (w: number, g: number, z = 1.96): WinRateCI => {
+  // 試合数が0の場合は0..100スケールで {p:0, low:0, high:0}を返す
+  if (g === 0) {
+    return { p: 0, low: 0, high: 0 };
+  }
+
+  // 点推定値（0..1スケール）
+  const phat = w / g;
+
+  // Wilson score interval の計算（0..1スケール）
+  const z2 = z * z;
+  const denominator = 1 + z2 / g;
+  const center = (phat + z2 / (2 * g)) / denominator;
+  const marginNumerator =
+    z * Math.sqrt((phat * (1 - phat)) / g + z2 / (4 * g * g));
+  const margin = marginNumerator / denominator;
+
+  // 信頼区間（0..1スケール）
+  const lowRatio = center - margin;
+  const highRatio = center + margin;
+
+  // 0..100スケールに変換して小数第1位に丸める
+  const p = percent(w, g);
+  const low = Math.max(0, Math.round(lowRatio * 1000) / 10);
+  const high = Math.min(100, Math.round(highRatio * 1000) / 10);
+
+  return { p, low, high };
+};
+
 /**
  * 統計集計の対象となる「妥当なトリオ」かを判定する。
  * 長さが 3 で、チーム内にプロトコルの重複が無いこと。
