@@ -15,6 +15,7 @@ export const en: TranslationDict = {
   "common.second": "Second",
   "common.ratio": "Ratio",
   "common.noData": "No data",
+  "common.explainer": "How to read this",
 
   // Header
   "header.seasonSelect": "Season",
@@ -80,6 +81,8 @@ export const en: TranslationDict = {
   "statsDashboard.residualTitle": "{name} matchup residual (actual − model)",
   "statsDashboard.residualNote":
     "Green (+) = more favorable than individual strength, red (−) = less. Deconfounded counters.",
+  "statsDashboard.residualExplain":
+    'Each number is the matchup residual (percentage points) of "row protocol vs column protocol." It\'s the actual head-to-head win rate minus the win rate the strength model predicts, so 0 means "exactly as strength would suggest."\nPositive (green) means the row side does better than its individual strength implies (a counter); negative (red) means worse (a bad matchup).\nBecause it shows the over/under-performance that strength can\'t explain — not the raw win rate — even strong protocols reveal their good and bad matchups. The raw win-rate matrix is kept in the old-view fold below.',
   "statsDashboard.matrixOld": "Old view (win-rate matrix & pair list)",
   "statsDashboard.stat.normal": "Normal",
   "statsDashboard.stat.combined": "Normal + Ratio",
@@ -96,6 +99,8 @@ export const en: TranslationDict = {
   "stat.section.second": "Win rate when going second",
   "stat.minGames": "{label} ({games}+ games)",
   "stat.sortNote": "Sorted by Wilson lower bound (95% CI)",
+  "stat.wilsonExplain":
+    "Win rates swing wildly on small samples. The Wilson lower bound is a conservative floor: \"we're 95% confident the true win rate is above this value.\"\nWe sort by this bound so protocols that merely got lucky in a few games don't float to the top.\nEach bar shows the 95% confidence interval (line) and point estimate (dot); the center line is 50%. Fewer games means a wider interval.",
   "stat.oldTable": "Old view (table)",
   "stat.ci.aria": "{n}: win rate {p}%, 95% CI {low}–{high}%, {g} games",
 
@@ -135,6 +140,8 @@ export const en: TranslationDict = {
   "strength.note":
     "Estimated from {games} matches. With less data, values shrink toward 0 (even).",
   "strength.row": "{n}: strength θ={theta}",
+  "strength.explain":
+    'θ (theta) is each protocol\'s "deconfounded" strength. A raw single win rate is contaminated by which partners and opponents it was paired with; θ solves all matches jointly with logistic regression to estimate pure contribution, subtracting out partner and opponent effects.\n0 is even, positive is strong, negative is weak.\nβ (beta) is the first-player edge itself — the win rate of the first player when decks are even. With less data, values shrink conservatively toward 0 (even).',
 
   // Synergy (pair residual vs model)
   "synergy.title": "Pair Synergy (actual − model)",
@@ -142,11 +149,15 @@ export const en: TranslationDict = {
     "Residual: green (+) = better together than individual strength, red (−) = worse.",
   "synergy.row":
     "{n}: residual {residual}pp (actual {actual}% / expected {expected}%, {g} games)",
+  "synergy.explain":
+    "Pair synergy measures how well two protocols mesh, as a residual. It's the actual pair win rate minus the win rate the strength model (θ) predicts from the two protocols' individual strength alone.\nPositive (green) means they click beyond their individual strength; negative (red) means they get in each other's way.\nUnlike a raw pair win rate, this removes the part that's just \"two strong protocols winning anyway,\" revealing the true synergy.",
 
   // Archetype (co-occurrence clusters)
   "archetype.title": "Archetype Matchups",
   "archetype.note":
     "Deck types extracted from protocol co-occurrence. Cell = win rate of the row archetype.",
+  "archetype.explain":
+    'Archetypes are groups of protocols that tend to be drafted together, auto-extracted as deck types (co-occurrence clustering). The legend\'s A1, A2… are the types, shown with their member protocols abbreviated.\nEach cell is the win rate of "row type vs column type" — the share the row side wins. Green is good for the row, red is bad, and – means too little data.\nThis table is for a rough read on which deck types beat which, rather than individual protocols.',
 
   // Quadrant (scatter chart)
   "quadrant.title": "Pick Rate vs Win Rate",

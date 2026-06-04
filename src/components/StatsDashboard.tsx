@@ -11,6 +11,7 @@ import type {
   UsageTimeline,
 } from "../utils/logic";
 import { Archetypes } from "./Archetypes";
+import { Explainer } from "./Explainer";
 import { Matrix } from "./Matrix";
 import { MatrixPairList } from "./MatrixPairList";
 import { Quadrant } from "./Quadrant";
@@ -232,18 +233,21 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             minTrio={minTrio}
           />
         </div>
+        <Explainer bodyKey="stat.wilsonExplain" />
       </section>
 
       {/* Strength section (Bradley-Terry θ / β) */}
       <section>
         <h2 className="font-semibold mb-3">{t("strength.title")}</h2>
         <Strength model={strengthModel} />
+        <Explainer bodyKey="strength.explain" />
       </section>
 
       {/* Synergy section (pair residual vs model) */}
       <section>
         <h2 className="font-semibold mb-3">{t("synergy.title")}</h2>
         <Synergy pairs={synergy} />
+        <Explainer bodyKey="synergy.explain" />
       </section>
 
       {/* Quadrant section */}
@@ -345,9 +349,11 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
                 bg="bg-zinc-900/50"
                 protocols={matrixProtocols}
               />
-              <p className="text-[10px] text-zinc-500 -mt-4 mb-4 text-center">
+              <p className="text-[10px] text-zinc-500 -mt-4 mb-2 text-center">
                 {t("statsDashboard.residualNote")}
               </p>
+              <Explainer bodyKey="statsDashboard.residualExplain" />
+              <div className="mb-4" />
               {/* 旧表示: 実測勝率の相性表 + 出現ペア一覧（折りたたみ保存） */}
               <details className="mt-1">
                 <summary className="cursor-pointer select-none text-sm text-zinc-400">
@@ -378,6 +384,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       <section>
         <h2 className="font-semibold mb-3">{t("archetype.title")}</h2>
         <Archetypes data={archetypes} />
+        <Explainer bodyKey="archetype.explain" />
       </section>
     </>
   );
