@@ -54,4 +54,37 @@ describe("Matrix", () => {
     // 対角の null セルが 2 つ
     expect(screen.getAllByText("–")).toHaveLength(2);
   });
+
+  describe("variant='residual'（0中心の発散表示）", () => {
+    // 残差: +30(強い正) / -25(強い負) / +5(微小=中立) / null
+    const residual: MatrixData = {
+      FIRE: { FIRE: null, WATER: 30 },
+      WATER: { FIRE: -25, WATER: 5 },
+    };
+
+    it("符号付きで表示し、正は緑・負は赤・±10pp 未満は中立で配色する", () => {
+      render(
+        <Matrix
+          title="m"
+          m={residual}
+          bg="bg-zinc-900"
+          protocols={protocols}
+          variant="residual"
+        />,
+      );
+
+      const pos = screen.getByText("+30");
+      expect(pos.className).toContain("bg-green-700/40");
+
+      const neg = screen.getByText("-25");
+      expect(neg.className).toContain("bg-red-700/40");
+
+      // +5 は閾値(±10)未満なので中立色
+      const neutral = screen.getByText("+5");
+      expect(neutral.className).toContain("bg-zinc-700/40");
+
+      // null セルは従来どおり『–』（1 つ）
+      expect(screen.getAllByText("–")).toHaveLength(1);
+    });
+  });
 });

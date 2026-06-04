@@ -8,9 +8,18 @@ type MatrixProps = {
   m: MatrixData;
   bg: string;
   protocols: readonly Protocol[];
+  // "winRate"（既定）: 0..100 を 50 中心で配色。
+  // "residual": モデル残差(pp, 0中心)を発散配色＋符号付きで表示。
+  variant?: "winRate" | "residual";
 };
 
-export const Matrix: React.FC<MatrixProps> = ({ title, m, bg, protocols }) => {
+export const Matrix: React.FC<MatrixProps> = ({
+  title,
+  m,
+  bg,
+  protocols,
+  variant = "winRate",
+}) => {
   const { t } = useT();
   // プロトコルがない場合は、最低限の高さだけ持つ空の箱を返す
   if (!protocols || protocols.length === 0) {
@@ -76,18 +85,29 @@ export const Matrix: React.FC<MatrixProps> = ({ title, m, bg, protocols }) => {
                       </td>
                     );
                   }
+                  // winRate: 50 中心 / residual: 0 中心（±10pp 閾値）で配色。
                   const tone =
-                    v > 60
-                      ? "bg-green-700/40"
-                      : v < 40
-                        ? "bg-red-700/40"
-                        : "bg-zinc-700/40";
+                    variant === "residual"
+                      ? v >= 10
+                        ? "bg-green-700/40"
+                        : v <= -10
+                          ? "bg-red-700/40"
+                          : "bg-zinc-700/40"
+                      : v > 60
+                        ? "bg-green-700/40"
+                        : v < 40
+                          ? "bg-red-700/40"
+                          : "bg-zinc-700/40";
+                  const label =
+                    variant === "residual"
+                      ? `${v > 0 ? "+" : ""}${v.toFixed(0)}`
+                      : v.toFixed(0);
                   return (
                     <td
                       key={`c-${a}-${b}`}
                       className={`p-1 text-center ${tone}`}
                     >
-                      {v.toFixed(0)}
+                      {label}
                     </td>
                   );
                 })}

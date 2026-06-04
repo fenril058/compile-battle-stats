@@ -34,6 +34,7 @@ const emptyMatrix: MatrixData = {};
 
 const emptyMatrixView: MatrixView = {
   data: emptyMatrix,
+  residual: emptyMatrix,
   protocols: ["FIRE", "WATER"],
 };
 
@@ -217,6 +218,7 @@ describe("StatsDashboard", () => {
       matrixViews: {
         all: {
           data: emptyMatrix,
+          residual: emptyMatrix,
           protocols: ["FIRE", "WATER"],
           reducedProtocols: [], // 空 = compact empty
           pairs: [],
@@ -242,23 +244,25 @@ describe("StatsDashboard", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("pairs が定義された matrixView では「出現ペア一覧」details を描画する", () => {
+  it("pairs が定義された matrixView では出現ペア一覧を描画する（旧表示の折りたたみ内）", () => {
     render(<StatsDashboard {...makeProps()} />);
-    expect(screen.getByText("出現ペア一覧（実験的）")).toBeInTheDocument();
+    expect(screen.getByTestId("matrix-pair-list")).toBeInTheDocument();
+    // 旧表示（実測勝率の相性表・ペア一覧）の summary も存在する
+    expect(
+      screen.getByText(/旧表示（実測勝率の相性表・ペア一覧）/),
+    ).toBeInTheDocument();
   });
 
-  it("pairs が undefined の matrixView では「出現ペア一覧」details を描画しない", () => {
+  it("pairs が undefined の matrixView では出現ペア一覧を描画しない", () => {
     const props = makeProps({
       matrixViews: {
-        all: { data: emptyMatrix, protocols: ["FIRE"] },
+        all: { data: emptyMatrix, residual: emptyMatrix, protocols: ["FIRE"] },
         v1aux: emptyMatrixView,
         main2aux: emptyMatrixView,
         ratio: emptyMatrixView,
       },
     });
     render(<StatsDashboard {...props} />);
-    expect(
-      screen.queryByText("出現ペア一覧（実験的）"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("matrix-pair-list")).not.toBeInTheDocument();
   });
 });

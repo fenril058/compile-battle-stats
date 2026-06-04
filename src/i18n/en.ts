@@ -77,6 +77,10 @@ export const en: TranslationDict = {
   "statsDashboard.matrixEmpty": "No matches with {games}+ games yet.",
   "statsDashboard.pairListSummary": "Matchup pair list (experimental)",
   "statsDashboard.matrixTitle": "{name} matrix",
+  "statsDashboard.residualTitle": "{name} matchup residual (actual − model)",
+  "statsDashboard.residualNote":
+    "Green (+) = more favorable than individual strength, red (−) = less. Deconfounded counters.",
+  "statsDashboard.matrixOld": "Old view (win-rate matrix & pair list)",
   "statsDashboard.stat.normal": "Normal",
   "statsDashboard.stat.combined": "Normal + Ratio",
   "statsDashboard.statTypeAria": "Stat type",

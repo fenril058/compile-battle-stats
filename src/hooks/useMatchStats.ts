@@ -7,6 +7,7 @@ import {
   makeStats,
   matchup,
   matchupPairs,
+  matchupResidual,
   pairSynergy,
   type StrengthModel,
   type SynergyPair,
@@ -30,6 +31,8 @@ const isMain2Aux2Trio = (trio: readonly string[]) =>
 
 export type MatrixView = {
   data: MatrixData;
+  // 実測勝率 − モデル期待（残差ヒートマップ用、0中心）。data と同じ protocols で対応。
+  residual: MatrixData;
   protocols: readonly Protocol[];
   // 出現したプロトコル（MIN_GAMES到達セルを持つもの）だけに絞った行/列。
   // 全体相性表（全試合）の縮約表示に使う。未指定なら protocols と同じ扱い。
@@ -135,27 +138,50 @@ export const useMatchStats = (
     ],
   );
 
+  // 交絡を外したプロトコル強度 θ と先攻補正 β（全有効試合から推定）。
+  // 相性表の残差計算でも使うので matrixViews より前に置く。
+  const strengthModel: StrengthModel = useMemo(
+    () => fitStrengthModel(matches),
+    [matches],
+  );
+
   const matrixViews = useMemo(
     () => ({
       // 全試合・全プロトコルの相性表（30×30）。縮約と別表現の補助データ付き。
       all: {
         data: matchup(matches, protocols),
+        residual: matchupResidual(matches, strengthModel, protocols),
         protocols,
         reducedProtocols: allReducedProtocols,
         pairs: allPairs,
       },
       v1aux: {
         data: matchup(v1AuxMatches, V1_AUX_PROTOCOLS),
+        residual: matchupResidual(
+          v1AuxMatches,
+          strengthModel,
+          V1_AUX_PROTOCOLS,
+        ),
         protocols: V1_AUX_PROTOCOLS,
         pairs: matchupPairs(v1AuxMatches),
       },
       main2aux: {
         data: matchup(main2Aux2Matches, MAIN2_AUX2_PROTOCOLS),
+        residual: matchupResidual(
+          main2Aux2Matches,
+          strengthModel,
+          MAIN2_AUX2_PROTOCOLS,
+        ),
         protocols: MAIN2_AUX2_PROTOCOLS,
         pairs: matchupPairs(main2Aux2Matches),
       },
       ratio: {
         data: matchup(ratioMatches, V1_AUX_PROTOCOLS),
+        residual: matchupResidual(
+          ratioMatches,
+          strengthModel,
+          V1_AUX_PROTOCOLS,
+        ),
         protocols: V1_AUX_PROTOCOLS,
         pairs: matchupPairs(ratioMatches),
       },
@@ -168,13 +194,8 @@ export const useMatchStats = (
       protocols,
       allReducedProtocols,
       allPairs,
+      strengthModel,
     ],
-  );
-
-  // 交絡を外したプロトコル強度 θ と先攻補正 β（全有効試合から推定）。
-  const strengthModel: StrengthModel = useMemo(
-    () => fitStrengthModel(matches),
-    [matches],
   );
 
   // ペアのシナジー残差（実測勝率 − モデル期待勝率）。強度モデルに依存。

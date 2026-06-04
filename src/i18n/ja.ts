@@ -84,6 +84,10 @@ export const ja = {
   "statsDashboard.matrixEmpty": "{games} 戦以上の対戦データがまだありません。",
   "statsDashboard.pairListSummary": "出現ペア一覧（実験的）",
   "statsDashboard.matrixTitle": "{name} 相性表",
+  "statsDashboard.residualTitle": "{name} 相性残差（実測 − モデル期待）",
+  "statsDashboard.residualNote":
+    "正(緑)＝個々の強さ以上に有利、負(赤)＝不利。交絡を外したカウンター関係。",
+  "statsDashboard.matrixOld": "旧表示（実測勝率の相性表・ペア一覧）",
   "statsDashboard.stat.normal": "通常戦",
   "statsDashboard.stat.combined": "通常+レシオ",
   "statsDashboard.statTypeAria": "統計種別",

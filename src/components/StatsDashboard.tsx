@@ -326,24 +326,42 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
               {t("statsDashboard.matrixEmpty", { games: MIN_GAMES_FOR_MATRIX })}
             </p>
           ) : (
-            <Matrix
-              title={t("statsDashboard.matrixTitle", {
-                name: t(MATRIX_TAB_LABELS[activeMatrixKey]),
-              })}
-              m={activeView.data}
-              bg="bg-zinc-900/50"
-              protocols={matrixProtocols}
-            />
-          )}
-          {activeView.pairs !== undefined && (
-            <details className="mt-1">
-              <summary className="cursor-pointer select-none text-sm text-zinc-400">
-                {t("statsDashboard.pairListSummary")}
-              </summary>
-              <div className="mt-2 overflow-x-auto">
-                <MatrixPairList pairs={activeView.pairs} />
-              </div>
-            </details>
+            <>
+              {/* 主表示: モデル残差ヒートマップ（交絡を外したカウンター） */}
+              <Matrix
+                variant="residual"
+                title={t("statsDashboard.residualTitle", {
+                  name: t(MATRIX_TAB_LABELS[activeMatrixKey]),
+                })}
+                m={activeView.residual}
+                bg="bg-zinc-900/50"
+                protocols={matrixProtocols}
+              />
+              <p className="text-[10px] text-zinc-500 -mt-4 mb-4 text-center">
+                {t("statsDashboard.residualNote")}
+              </p>
+              {/* 旧表示: 実測勝率の相性表 + 出現ペア一覧（折りたたみ保存） */}
+              <details className="mt-1">
+                <summary className="cursor-pointer select-none text-sm text-zinc-400">
+                  {t("statsDashboard.matrixOld")}
+                </summary>
+                <div className="mt-2">
+                  <Matrix
+                    title={t("statsDashboard.matrixTitle", {
+                      name: t(MATRIX_TAB_LABELS[activeMatrixKey]),
+                    })}
+                    m={activeView.data}
+                    bg="bg-zinc-900/50"
+                    protocols={matrixProtocols}
+                  />
+                  {activeView.pairs !== undefined && (
+                    <div className="mt-2 overflow-x-auto">
+                      <MatrixPairList pairs={activeView.pairs} />
+                    </div>
+                  )}
+                </div>
+              </details>
+            </>
           )}
         </div>
       </section>
