@@ -52,6 +52,13 @@ const makeProps = (overrides?: Partial<Parameters<typeof StatsDashboard>[0]>) =>
     },
     minPair: 5,
     minTrio: 3,
+    strengthModel: {
+      theta: {},
+      firstAdvantage: 0,
+      games: 0,
+      iterations: 0,
+      converged: true,
+    },
     ...overrides,
   }) satisfies Parameters<typeof StatsDashboard>[0];
 

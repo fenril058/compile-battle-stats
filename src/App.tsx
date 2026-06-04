@@ -83,10 +83,8 @@ export default function App() {
   } = useFirestore<Match>(currentConfig.collectionName);
 
   // --- Derived Stats (Expensive Calcs) ---
-  const { statViews, matrixViews, sortedMatches } = useMatchStats(
-    matches,
-    currentProtocols,
-  );
+  const { statViews, matrixViews, sortedMatches, strengthModel } =
+    useMatchStats(matches, currentProtocols);
   const { exportToCsv } = useCsvExport(
     matches,
     seasonKey,
@@ -201,6 +199,7 @@ export default function App() {
             matrixViews={matrixViews}
             minPair={MIN_GAMES_FOR_PAIR_STATS}
             minTrio={MIN_GAMES_FOR_TRIO_STATS}
+            strengthModel={strengthModel}
           />
 
           {/* Data Management Section */}

@@ -4,10 +4,12 @@ import { flushSync } from "react-dom";
 import { MIN_GAMES_FOR_MATRIX } from "../config";
 import type { MatrixView, StatsView } from "../hooks/useMatchStats";
 import { type TranslationKey, useT } from "../i18n";
+import type { StrengthModel } from "../utils/logic";
 import { Matrix } from "./Matrix";
 import { MatrixPairList } from "./MatrixPairList";
 import { Quadrant } from "./Quadrant";
 import { Stat } from "./Stat";
+import { Strength } from "./Strength";
 
 interface StatsDashboardProps {
   statViews: {
@@ -24,6 +26,7 @@ interface StatsDashboardProps {
   };
   minPair: number;
   minTrio: number;
+  strengthModel: StrengthModel;
 }
 
 const STAT_VIEW_KEYS = ["all", "v1aux", "main2aux", "mixed"] as const;
@@ -49,6 +52,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   matrixViews,
   minPair,
   minTrio,
+  strengthModel,
 }) => {
   const { t } = useT();
   const [activeStatViewKey, setActiveStatViewKey] =
@@ -214,6 +218,12 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             minTrio={minTrio}
           />
         </div>
+      </section>
+
+      {/* Strength section (Bradley-Terry θ / β) */}
+      <section>
+        <h2 className="font-semibold mb-3">{t("strength.title")}</h2>
+        <Strength model={strengthModel} />
       </section>
 
       {/* Quadrant section */}
