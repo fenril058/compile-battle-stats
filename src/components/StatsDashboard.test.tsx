@@ -214,6 +214,22 @@ describe("StatsDashboard", () => {
     ).toHaveAttribute("aria-pressed", "true");
   });
 
+  it("散布図の対象トグル（全体/通常戦/レシオ）で aria-pressed が切り替わる", () => {
+    render(<StatsDashboard {...makeProps()} />);
+    // これらはタブ(role=tab)ではなく散布図トグルの button として一意
+    const allBtn = screen.getByRole("button", { name: "全体" });
+    const normalBtn = screen.getByRole("button", { name: "通常戦" });
+    const ratioBtn = screen.getByRole("button", { name: "レシオ" });
+    expect(allBtn).toHaveAttribute("aria-pressed", "true");
+    expect(normalBtn).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(normalBtn);
+    expect(normalBtn).toHaveAttribute("aria-pressed", "true");
+    expect(allBtn).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(ratioBtn);
+    expect(ratioBtn).toHaveAttribute("aria-pressed", "true");
+    expect(normalBtn).toHaveAttribute("aria-pressed", "false");
+  });
+
   it("matrixCompactEmpty のとき「データがありません」メッセージを表示する", () => {
     const props = makeProps({
       matrixViews: {

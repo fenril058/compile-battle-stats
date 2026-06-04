@@ -161,6 +161,7 @@ export const en: TranslationDict = {
 
   // Quadrant (scatter chart)
   "quadrant.title": "Pick Rate vs Win Rate",
+  "quadrant.scopeLabel": "Scope:",
   "quadrant.xAxis": "Pick Rate (%)",
   "quadrant.yAxis": "Win Rate (%)",
   "quadrant.svgAriaLabel": "{title} scatter chart",

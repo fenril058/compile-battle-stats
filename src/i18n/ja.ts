@@ -167,6 +167,7 @@ export const ja = {
 
   // Quadrant (散布図)
   "quadrant.title": "ピック率 vs 勝率 散布図",
+  "quadrant.scopeLabel": "対象:",
   "quadrant.xAxis": "ピック率 (%)",
   "quadrant.yAxis": "勝率 (%)",
   "quadrant.svgAriaLabel": "{title} 散布図",
