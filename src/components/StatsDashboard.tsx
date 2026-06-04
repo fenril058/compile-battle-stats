@@ -382,6 +382,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
                 m={activeView.residual}
                 bg="bg-zinc-900/50"
                 protocols={matrixProtocols}
+                theta={strengthModel.theta}
               />
               <p className="text-[10px] text-zinc-500 -mt-4 mb-2 text-center">
                 {t("statsDashboard.residualNote")}
