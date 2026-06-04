@@ -6,6 +6,7 @@ import type { MatrixView, StatsView } from "../hooks/useMatchStats";
 import { type TranslationKey, useT } from "../i18n";
 import { Matrix } from "./Matrix";
 import { MatrixPairList } from "./MatrixPairList";
+import { Quadrant } from "./Quadrant";
 import { Stat } from "./Stat";
 
 interface StatsDashboardProps {
@@ -213,6 +214,12 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             minTrio={minTrio}
           />
         </div>
+      </section>
+
+      {/* Quadrant section */}
+      <section>
+        <h2 className="font-semibold mb-3">{t("quadrant.title")}</h2>
+        <Quadrant single={activeStats.all.single} title={t("quadrant.title")} />
       </section>
 
       {/* Matrix section */}

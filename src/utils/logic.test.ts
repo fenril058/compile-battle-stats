@@ -8,6 +8,7 @@ import {
   matchupPairs,
   parseMatchCsvRow,
   percent,
+  quadrantPoints,
   ratioSum,
   rows,
   wilsonInterval,
@@ -385,6 +386,63 @@ describe("utils/logic", () => {
           expect(row.p).toBeLessThanOrEqual(row.high);
         }
       }
+    });
+  });
+
+  describe("quadrantPoints", () => {
+    it("returns [] when single is empty (Σg = 0)", () => {
+      expect(quadrantPoints({})).toEqual([]);
+    });
+
+    it("each point's p equals percent(w, g)", () => {
+      const single = {
+        FIRE: { g: 10, w: 7 },
+        WATER: { g: 6, w: 3 },
+        METAL: { g: 4, w: 2 },
+      };
+      const pts = quadrantPoints(single);
+      for (const pt of pts) {
+        const entry = single[pt.n as keyof typeof single];
+        expect(pt.p).toBe(percent(entry.w, entry.g));
+      }
+    });
+
+    it("pickRate sum ≈ 100 when minGames = 1 and no point is filtered", () => {
+      const single = {
+        FIRE: { g: 10, w: 7 },
+        WATER: { g: 6, w: 3 },
+        METAL: { g: 4, w: 2 },
+      };
+      const pts = quadrantPoints(single, 1);
+      const total = pts.reduce((acc, pt) => acc + pt.pickRate, 0);
+      expect(total).toBeGreaterThanOrEqual(99.5);
+      expect(total).toBeLessThanOrEqual(100.5);
+    });
+
+    it("excludes points with g < minGames", () => {
+      const single = {
+        FIRE: { g: 5, w: 3 },
+        WATER: { g: 2, w: 1 }, // g=2 < minGames=3 → 除外
+        METAL: { g: 3, w: 2 },
+      };
+      const pts = quadrantPoints(single, 3);
+      expect(pts.map((p) => p.n)).not.toContain("WATER");
+      expect(pts).toHaveLength(2);
+    });
+
+    it("sorts by pickRate desc, then p desc on tie", () => {
+      // totalG = 4 + 4 + 2 = 10
+      // pickRate: A=40, B=40, C=20
+      // A.p = 75, B.p = 50 → A before B
+      const single = {
+        A: { g: 4, w: 3 }, // pickRate = 40, p = 75
+        B: { g: 4, w: 2 }, // pickRate = 40, p = 50
+        C: { g: 2, w: 1 }, // pickRate = 20, p = 50
+      };
+      const pts = quadrantPoints(single);
+      expect(pts[0].n).toBe("A");
+      expect(pts[1].n).toBe("B");
+      expect(pts[2].n).toBe("C");
     });
   });
 

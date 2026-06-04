@@ -276,6 +276,41 @@ export const matchupPairs = (list: Match[]): MatchupPair[] => {
   return pairs;
 };
 
+export type QuadrantPoint = {
+  n: string; // プロトコル名
+  g: number; // 出現スロット数
+  w: number;
+  p: number; // 勝率 (0..100)
+  pickRate: number; // ピック率 (0..100)
+};
+
+/**
+ * SideStats からクアドラント散布図用のデータ点を生成する。
+ * @param single - makeStats().single 等の SideStats
+ * @param minGames - この数未満の試合数を持つ点は除外（既定 1）
+ * @returns pickRate 降順（同率は p 降順）でソートされた QuadrantPoint[]
+ */
+export const quadrantPoints = (
+  single: SideStats,
+  minGames = 1,
+): QuadrantPoint[] => {
+  const entries = Object.entries(single);
+  const totalG = entries.reduce((acc, [, { g }]) => acc + g, 0);
+
+  if (totalG === 0) return [];
+
+  return entries
+    .filter(([, { g }]) => g >= minGames)
+    .map(([n, { g, w }]) => ({
+      n,
+      g,
+      w,
+      p: percent(w, g),
+      pickRate: Math.round((g / totalG) * 1000) / 10,
+    }))
+    .sort((a, b) => b.pickRate - a.pickRate || b.p - a.p);
+};
+
 export const parseMatchCsvRow = (
   row: string[],
   validProtocols: readonly Protocol[],
