@@ -10,6 +10,9 @@ type UsageTimelineProps = {
 // SVG layout constants
 const SVG_WIDTH = 520;
 const SVG_HEIGHT = 300;
+// 表示上限幅。スマホでは width="100%" でコンテナ幅まで縮むが、PC では
+// この上限まで拡大して小さく見えないようにする（viewBox 基準で等比拡大）。
+const MAX_DISPLAY_WIDTH = 760;
 const MARGIN = { top: 20, right: 20, bottom: 56, left: 52 };
 const PLOT_W = SVG_WIDTH - MARGIN.left - MARGIN.right;
 const PLOT_H = SVG_HEIGHT - MARGIN.top - MARGIN.bottom;
@@ -77,7 +80,7 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
           aria-label={svgAriaLabel}
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           width="100%"
-          style={{ display: "block", maxWidth: SVG_WIDTH }}
+          style={{ display: "block", maxWidth: MAX_DISPLAY_WIDTH }}
           className="overflow-visible"
         >
           <title>{svgAriaLabel}</title>
