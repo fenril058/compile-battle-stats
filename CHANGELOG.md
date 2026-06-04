@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.1.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.0.0...compile-battle-stats-v2.1.0) (2026-06-04)
+
+
+### Features
+
+* Bradley-Terry 型回帰でプロトコル強度θと先攻補正βを推定する ([#108](https://github.com/fenril058/compile-battle-stats/issues/108)) ([60f4b3e](https://github.com/fenril058/compile-battle-stats/commit/60f4b3ea501abbc8eead274c4cf7796823658aa2))
+* rows() の各統計行に Wilson 信頼区間 (low/high) を付与する ([#100](https://github.com/fenril058/compile-battle-stats/issues/100)) ([72b61d6](https://github.com/fenril058/compile-battle-stats/commit/72b61d6f7a76e505f37f67d6438fada61e53f609))
+* **ui:** 各分析ブロックに折りたたみ解説を追加 ([#127](https://github.com/fenril058/compile-battle-stats/issues/127)) ([f21b0e7](https://github.com/fenril058/compile-battle-stats/commit/f21b0e70e1e2b8153a1a08c12d69366bf2790d66))
+* **ui:** 推移グラフから「その他」系列を削除 ([#131](https://github.com/fenril058/compile-battle-stats/issues/131)) ([d53f46f](https://github.com/fenril058/compile-battle-stats/commit/d53f46fb5ef3c488cccdd8a294bff84198acdf7e))
+* **ui:** 散布図に 全体/通常戦/レシオ の対象トグルを追加 ([#129](https://github.com/fenril058/compile-battle-stats/issues/129)) ([ea297a0](https://github.com/fenril058/compile-battle-stats/commit/ea297a080cb393a85ef0ab7e9d9b2b82162111dc))
+* **ui:** 相性残差表の行ヘッダにプロトコル強度θを併記 ([#137](https://github.com/fenril058/compile-battle-stats/issues/137)) ([eb38e84](https://github.com/fenril058/compile-battle-stats/commit/eb38e84af9ca71cf0b7b889387ce148b83e43d1f))
+* **ui:** 解説を数式付きで拡充（forest plot 列の意味 / 強度θ・Bradley-Terry / シナジー） ([#133](https://github.com/fenril058/compile-battle-stats/issues/133)) ([00ccb39](https://github.com/fenril058/compile-battle-stats/commit/00ccb39d11f124ae1bfada45f7e2224086832ac2))
+* アーキタイプ一覧と相性ヒートマップを可視化する ([#122](https://github.com/fenril058/compile-battle-stats/issues/122)) ([5bf7ce2](https://github.com/fenril058/compile-battle-stats/commit/5bf7ce2c07803bfff65ff8f6e765ec7657ef7f5b))
+* ピック率×勝率の散布図(4象限)でメタを俯瞰できるようにする ([#104](https://github.com/fenril058/compile-battle-stats/issues/104)) ([53dc6d2](https://github.com/fenril058/compile-battle-stats/commit/53dc6d2bc70db72e34423b66d314a90b6326e5f3))
+* プロトコル使用率の週別時系列(折れ線)でメタの変遷を可視化する ([#114](https://github.com/fenril058/compile-battle-stats/issues/114)) ([2aeaa58](https://github.com/fenril058/compile-battle-stats/commit/2aeaa58248ffa1be3727a0d306a9ab5670d6ed0d))
+* プロトコル強度θと先攻補正βを可視化する Strength セクションを追加する ([#110](https://github.com/fenril058/compile-battle-stats/issues/110)) ([932117d](https://github.com/fenril058/compile-battle-stats/commit/932117d45cf5e2f3d55315e9943272cf795cd316))
+* 共起クラスタリングでアーキタイプを抽出しアーキタイプ相性表の土台を作る ([#120](https://github.com/fenril058/compile-battle-stats/issues/120)) ([bb04344](https://github.com/fenril058/compile-battle-stats/commit/bb043449245b1fd8bd9c1b15c5ada3399425823e))
+* 勝率の Wilson 信頼区間ヘルパーを logic.ts に追加する ([#97](https://github.com/fenril058/compile-battle-stats/issues/97)) ([2dd9ead](https://github.com/fenril058/compile-battle-stats/commit/2dd9eadd6a55b4675d21027540aacad13238bc7f))
+* 勝率ランキングを forest plot 化し Wilson 下限ソート＋旧表を折りたたみ保存する ([#103](https://github.com/fenril058/compile-battle-stats/issues/103)) ([3a3f332](https://github.com/fenril058/compile-battle-stats/commit/3a3f33236d2db2ddec8b3e93ab635b016d4947bb))
+* 相性表をモデル残差ヒートマップ化し実測勝率表を折りたたみ保存する ([#116](https://github.com/fenril058/compile-battle-stats/issues/116)) ([044ac5d](https://github.com/fenril058/compile-battle-stats/commit/044ac5d22b4affbf53c4811174d038582c7870be))
+
+
+### Bug Fixes
+
+* **ui:** forest plot のペア/トリオ名の見切れ解消とPCでのチャート拡大 ([#124](https://github.com/fenril058/compile-battle-stats/issues/124)) ([689a75d](https://github.com/fenril058/compile-battle-stats/commit/689a75d080e3aa902e2a4196d259ab7a1cb02343))
+
 ## [2.0.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v1.8.1...compile-battle-stats-v2.0.0) (2026-06-03)
 
 
