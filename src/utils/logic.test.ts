@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { PROTOCOL_SETS, RATIO_SETS } from "../config";
 import type { Match, Trio } from "../types";
 import {
+  fitStrengthModel,
   isRatioBattle,
   makeStats,
   matchup,
@@ -470,6 +471,93 @@ describe("utils/logic", () => {
       expect(ci.low).toBeLessThan(ci.high);
       expect(ci.low).toBeGreaterThanOrEqual(0);
       expect(ci.high).toBeLessThanOrEqual(100);
+    });
+  });
+
+  describe("fitStrengthModel", () => {
+    let idSeq = 0;
+    const mk = (
+      first: Trio,
+      second: Trio,
+      winner: "FIRST" | "SECOND",
+    ): Match => ({
+      id: `m${idSeq++}`,
+      first,
+      second,
+      winner,
+      ratio: false,
+      createdAt: 0,
+    });
+
+    const maxAbs = (theta: Record<string, number>): number =>
+      Math.max(0, ...Object.values(theta).map((v) => Math.abs(v)));
+
+    // A=FIRE が（相方を変えても）常に勝ち、F=SPIRIT が常に負ける合成データ。
+    // 各プロトコルは先攻/後攻に均等に出るので β（先後）では説明できず、
+    // 強さの差は θ に表れる。
+    const aStrongest = (): Match[] => [
+      mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      mk(["LIFE", "SPEED", "SPIRIT"], ["FIRE", "WATER", "METAL"], "SECOND"),
+      mk(["FIRE", "LIFE", "SPEED"], ["WATER", "METAL", "SPIRIT"], "FIRST"),
+      mk(["WATER", "METAL", "SPIRIT"], ["FIRE", "LIFE", "SPEED"], "SECOND"),
+    ];
+
+    it("有効試合が無ければ空モデルを返す", () => {
+      expect(fitStrengthModel([])).toEqual({
+        theta: {},
+        firstAdvantage: 0,
+        games: 0,
+        iterations: 0,
+        converged: true,
+      });
+    });
+
+    it("不正な試合（重複/長さ違い）は学習対象から除外する", () => {
+      const matches = [
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+        // チーム内重複 → isValidTrio で除外
+        mk(["FIRE", "FIRE", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      ];
+      expect(fitStrengthModel(matches).games).toBe(1);
+    });
+
+    it("先攻が常に勝つデータでは firstAdvantage > 0 になる", () => {
+      // 同じ2デッキを先後入れ替え、どちらも先攻勝ち → θ は相殺し β だけが効く。
+      const matches = [
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+        mk(["LIFE", "SPEED", "SPIRIT"], ["FIRE", "WATER", "METAL"], "FIRST"),
+      ];
+      const model = fitStrengthModel(matches);
+      expect(model.firstAdvantage).toBeGreaterThan(0);
+    });
+
+    it("常勝プロトコルの θ が最大・常敗プロトコルの θ が最小になる", () => {
+      const model = fitStrengthModel(aStrongest());
+      const values = Object.values(model.theta);
+      expect(model.theta.FIRE).toBe(Math.max(...values));
+      expect(model.theta.SPIRIT).toBe(Math.min(...values));
+      expect(model.theta.FIRE).toBeGreaterThan(0);
+      expect(model.theta.SPIRIT).toBeLessThan(0);
+      expect(model.converged).toBe(true);
+    });
+
+    it("先後・強さが対称なデータでは β≈0 かつ θ が小さく縮む", () => {
+      // 同一カードでも先攻勝ち/後攻勝ちが半々 → 五分。
+      const matches = [
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "SECOND"),
+      ];
+      const model = fitStrengthModel(matches);
+      expect(Math.abs(model.firstAdvantage)).toBeLessThan(0.05);
+      expect(maxAbs(model.theta)).toBeLessThan(0.3);
+      expect(model.converged).toBe(true);
+    });
+
+    it("L2 正則化を強めると θ の絶対値が縮む", () => {
+      // 安定域（lr·λ < 2）の範囲で比較する。
+      const weak = fitStrengthModel(aStrongest(), { lambda: 0.1 });
+      const strong = fitStrengthModel(aStrongest(), { lambda: 1 });
+      expect(maxAbs(strong.theta)).toBeLessThan(maxAbs(weak.theta));
     });
   });
 });

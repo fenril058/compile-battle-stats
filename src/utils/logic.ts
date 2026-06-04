@@ -360,3 +360,124 @@ export const parseMatchCsvRow = (
     matchDate: matchDate,
   };
 };
+
+// --- Bradley-Terry 型 強度推定 ---------------------------------------------
+
+export type StrengthModel = {
+  // プロトコル → 強度 (log-odds 寄与)。相方・相手を統制した「真の強さ」。
+  theta: Record<string, number>;
+  // 先攻補正 β（環境全体の先後有利を表す単一スカラー、log-odds）。
+  firstAdvantage: number;
+  // 学習に使った有効試合数（isValidTrio を通った試合）。
+  games: number;
+  iterations: number;
+  converged: boolean;
+};
+
+export type StrengthModelOptions = {
+  lambda?: number; // L2 正則化の強さ（β は非正則化）
+  lr?: number; // 学習率
+  maxIter?: number; // 最大反復回数
+  tol?: number; // 収束判定（勾配の最大絶対値）
+};
+
+// オーバーフローを避けた数値的に安定なロジスティック関数。
+const sigmoid = (z: number): number =>
+  z >= 0 ? 1 / (1 + Math.exp(-z)) : Math.exp(z) / (1 + Math.exp(z));
+
+/**
+ * Bradley-Terry 型の L2 正則化ロジスティック回帰で、各プロトコルの強度 θ と
+ * 先攻補正 β を推定する。
+ *
+ *   P(先攻勝ち) = σ( β + Σ_{p∈first} θ_p − Σ_{p∈second} θ_p )
+ *
+ * 両デッキとも3枚なので全 θ に定数を足しても差が不変（列が線形従属）。L2 正則化
+ * （β を除く）が最小ノルム解を選び一意化し、θ をおおよそ 0 中心へ縮小する
+ * （データが少ないほど 0=五分へシュリンクし過信を防ぐ）。初期値 θ=0,β=0 の決定的実装。
+ */
+export const fitStrengthModel = (
+  matches: Match[],
+  options: StrengthModelOptions = {},
+): StrengthModel => {
+  // バッチ勾配降下。L2 項により1ステップの θ 収縮率は (1 - lr·lambda) なので、
+  // 安定には lr·lambda < 2 が必要（既定 0.5·0.1=0.05 は十分安定）。
+  const { lambda = 0.1, lr = 0.5, maxIter = 2000, tol = 1e-6 } = options;
+
+  // 有効試合のみを抽出し、各試合を「先攻3枚・後攻3枚・先攻勝ちか」に正規化する。
+  const samples: { first: Trio; second: Trio; y: number }[] = [];
+  for (const mt of matches) {
+    if (!isValidTrio(mt.first) || !isValidTrio(mt.second)) continue;
+    samples.push({
+      first: mt.first,
+      second: mt.second,
+      y: mt.winner === "FIRST" ? 1 : 0,
+    });
+  }
+
+  const games = samples.length;
+  if (games === 0) {
+    return {
+      theta: {},
+      firstAdvantage: 0,
+      games: 0,
+      iterations: 0,
+      converged: true,
+    };
+  }
+
+  // 出現プロトコルにインデックスを割り当てる。
+  const index = new Map<string, number>();
+  for (const s of samples) {
+    for (const p of [...s.first, ...s.second]) {
+      if (!index.has(p)) index.set(p, index.size);
+    }
+  }
+  const dim = index.size;
+  const theta = new Float64Array(dim);
+  let beta = 0;
+
+  let iterations = 0;
+  let converged = false;
+  for (let it = 0; it < maxIter; it += 1) {
+    iterations = it + 1;
+    const gradTheta = new Float64Array(dim);
+    let gradBeta = 0;
+
+    for (const s of samples) {
+      let logit = beta;
+      for (const p of s.first) logit += theta[index.get(p) as number];
+      for (const p of s.second) logit -= theta[index.get(p) as number];
+      const err = sigmoid(logit) - s.y;
+      gradBeta += err;
+      for (const p of s.first) gradTheta[index.get(p) as number] += err;
+      for (const p of s.second) gradTheta[index.get(p) as number] -= err;
+    }
+
+    // 平均勾配 + L2（β は非正則化）。
+    gradBeta /= games;
+    let maxGrad = Math.abs(gradBeta);
+    for (let i = 0; i < dim; i += 1) {
+      gradTheta[i] = gradTheta[i] / games + lambda * theta[i];
+      if (Math.abs(gradTheta[i]) > maxGrad) maxGrad = Math.abs(gradTheta[i]);
+    }
+
+    beta -= lr * gradBeta;
+    for (let i = 0; i < dim; i += 1) theta[i] -= lr * gradTheta[i];
+
+    if (maxGrad < tol) {
+      converged = true;
+      break;
+    }
+  }
+
+  const thetaOut: Record<string, number> = {};
+  for (const [p, i] of index) thetaOut[p] = theta[i];
+
+  return {
+    theta: thetaOut,
+    firstAdvantage: beta,
+    games,
+    iterations,
+    converged,
+  };
+};
