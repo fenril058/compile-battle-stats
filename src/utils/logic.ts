@@ -1,4 +1,8 @@
-import { ALL_PROTOCOLS, MIN_GAMES_FOR_MATRIX } from "../config";
+import {
+  ALL_PROTOCOLS,
+  MIN_GAMES_FOR_MATRIX,
+  MIN_GAMES_FOR_PAIR_STATS,
+} from "../config";
 import type {
   Match,
   MatrixData,
@@ -480,4 +484,78 @@ export const fitStrengthModel = (
     iterations,
     converged,
   };
+};
+
+// --- ペアシナジー残差 -------------------------------------------------------
+
+export type SynergyPair = {
+  n: string; // "P · Q"
+  g: number;
+  actual: number; // 実測勝率 (0..100)
+  expected: number; // モデル期待勝率 (0..100)
+  residual: number; // actual - expected（パーセントポイント、小数1桁）
+};
+
+/**
+ * ペア (p,q) の「実測勝率」と「強度モデル(θ/β)が予測する期待勝率」の差＝シナジー残差を返す。
+ *
+ * side S（3枚）が相手 O（3枚）と戦うときのモデル予測勝率は
+ *   P(S 勝ち) = σ( (S が先攻なら +β, 後攻なら −β) + Σθ_S − Σθ_O )
+ * これを makeStats と同じ走査でペア単位に平均し、実測勝率との差を取る。
+ * 正の残差＝個々の強さ以上に噛み合う（相乗）、負＝噛み合わない（反シナジー）。
+ *
+ * 残差降順（同値は g 降順）。g < minGames は除外。model.games===0 なら空配列。
+ */
+export const pairSynergy = (
+  matches: Match[],
+  model: StrengthModel,
+  minGames = MIN_GAMES_FOR_PAIR_STATS,
+): SynergyPair[] => {
+  if (model.games === 0) return [];
+
+  const beta = model.firstAdvantage;
+  const th = (p: string) => model.theta[p] ?? 0;
+
+  const acc: Record<string, { g: number; a: number; e: number }> = {};
+  const bump = (k: string, won: number, pred: number) => {
+    if (!acc[k]) acc[k] = { g: 0, a: 0, e: 0 };
+    acc[k].g += 1;
+    acc[k].a += won;
+    acc[k].e += pred;
+  };
+
+  for (const mt of matches) {
+    if (!isValidTrio(mt.first) || !isValidTrio(mt.second)) continue;
+    const firstWin = mt.winner === "FIRST";
+    const sides = [
+      { t: mt.first, opp: mt.second, isFirst: true, won: firstWin },
+      { t: mt.second, opp: mt.first, isFirst: false, won: !firstWin },
+    ];
+
+    for (const s of sides) {
+      const sumS = th(s.t[0]) + th(s.t[1]) + th(s.t[2]);
+      const sumO = th(s.opp[0]) + th(s.opp[1]) + th(s.opp[2]);
+      const pred = sigmoid((s.isFirst ? beta : -beta) + sumS - sumO);
+      const wonNum = s.won ? 1 : 0;
+      for (let i = 0; i < 3; i += 1) {
+        for (let j = i + 1; j < 3; j += 1) {
+          const key = [s.t[i], s.t[j]].sort().join(" · ");
+          bump(key, wonNum, pred);
+        }
+      }
+    }
+  }
+
+  const out: SynergyPair[] = [];
+  for (const [n, v] of Object.entries(acc)) {
+    if (v.g < minGames) continue;
+    const actual = Math.round((v.a / v.g) * 1000) / 10;
+    const expected = Math.round((v.e / v.g) * 1000) / 10;
+    const residual = Math.round((actual - expected) * 10) / 10;
+    out.push({ n, g: v.g, actual, expected, residual });
+  }
+  out.sort((x, y) =>
+    y.residual !== x.residual ? y.residual - x.residual : y.g - x.g,
+  );
+  return out;
 };

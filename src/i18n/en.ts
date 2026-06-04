@@ -132,6 +132,13 @@ export const en: TranslationDict = {
     "Estimated from {games} matches. With less data, values shrink toward 0 (even).",
   "strength.row": "{n}: strength θ={theta}",
 
+  // Synergy (pair residual vs model)
+  "synergy.title": "Pair Synergy (actual − model)",
+  "synergy.note":
+    "Residual: green (+) = better together than individual strength, red (−) = worse.",
+  "synergy.row":
+    "{n}: residual {residual}pp (actual {actual}% / expected {expected}%, {g} games)",
+
   // Quadrant (scatter chart)
   "quadrant.title": "Pick Rate vs Win Rate",
   "quadrant.xAxis": "Pick Rate (%)",
