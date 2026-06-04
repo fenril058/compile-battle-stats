@@ -17,7 +17,7 @@ const MARGIN = { top: 20, right: 20, bottom: 56, left: 52 };
 const PLOT_W = SVG_WIDTH - MARGIN.left - MARGIN.right;
 const PLOT_H = SVG_HEIGHT - MARGIN.top - MARGIN.bottom;
 
-// Series colors: top protocols get distinct colors, OTHER gets a muted zinc color.
+// Series colors for the top protocols (one distinct color each).
 const SERIES_COLORS = [
   "#60a5fa", // blue-400
   "#f87171", // red-400
@@ -26,7 +26,8 @@ const SERIES_COLORS = [
   "#a78bfa", // violet-400
   "#facc15", // yellow-400
 ] as const;
-const OTHER_COLOR = "#71717a"; // zinc-500
+// 色数を超えた場合のフォールバック色（topN ≤ 6 では通常使われない）。
+const FALLBACK_COLOR = "#71717a"; // zinc-500
 
 /** ピック率 (y, 0..maxY) を SVG 座標に変換する（上が maxY）。 */
 const toY = (rate: number, maxY: number): number =>
@@ -194,10 +195,8 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
 
             {/* Series lines */}
             {series.map((s, si) => {
-              const isOther = s.protocol === "OTHER";
-              const color = isOther
-                ? OTHER_COLOR
-                : (SERIES_COLORS[si % SERIES_COLORS.length] ?? OTHER_COLOR);
+              const color =
+                SERIES_COLORS[si % SERIES_COLORS.length] ?? FALLBACK_COLOR;
 
               // バケットが1個の場合はラインなしで点だけ描画
               const pathD =
@@ -234,7 +233,7 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
                       fillOpacity={0.9}
                     >
                       <title>
-                        {`${s.protocol === "OTHER" ? t("usage.other") : s.protocol}: ${pt.toFixed(1)}% (${buckets[i].label})`}
+                        {`${s.protocol}: ${pt.toFixed(1)}% (${buckets[i].label})`}
                       </title>
                     </circle>
                   ))}
@@ -247,11 +246,8 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
         {/* 凡例 */}
         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-zinc-300">
           {series.map((s, si) => {
-            const isOther = s.protocol === "OTHER";
-            const color = isOther
-              ? OTHER_COLOR
-              : (SERIES_COLORS[si % SERIES_COLORS.length] ?? OTHER_COLOR);
-            const label = isOther ? t("usage.other") : s.protocol;
+            const color =
+              SERIES_COLORS[si % SERIES_COLORS.length] ?? FALLBACK_COLOR;
             return (
               <span key={s.protocol} className="flex items-center gap-1">
                 <svg width="16" height="4" aria-hidden="true">
@@ -264,7 +260,7 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
                     strokeWidth="2"
                   />
                 </svg>
-                {label}
+                {s.protocol}
               </span>
             );
           })}
@@ -278,7 +274,7 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
               <th scope="col">{t("usage.tableBucket")}</th>
               {series.map((s) => (
                 <th key={s.protocol} scope="col">
-                  {s.protocol === "OTHER" ? t("usage.other") : s.protocol}
+                  {s.protocol}
                 </th>
               ))}
             </tr>

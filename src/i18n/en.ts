@@ -174,7 +174,6 @@ export const en: TranslationDict = {
   "usage.title": "Weekly Pick Rate Trends",
   "usage.xAxis": "Week",
   "usage.yAxis": "Pick Rate (%)",
-  "usage.other": "Other",
   "usage.svgAriaLabel": "{title} line chart",
   "usage.tableCaption": "{title} data table",
   "usage.tableBucket": "Week",

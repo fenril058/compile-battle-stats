@@ -180,7 +180,6 @@ export const ja = {
   "usage.title": "週別ピック率推移",
   "usage.xAxis": "週",
   "usage.yAxis": "ピック率 (%)",
-  "usage.other": "その他",
   "usage.svgAriaLabel": "{title} 折れ線グラフ",
   "usage.tableCaption": "{title} データ表",
   "usage.tableBucket": "週",
