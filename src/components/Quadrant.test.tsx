@@ -24,4 +24,24 @@ describe("Quadrant", () => {
     expect(within(table).getByText("FIRE")).toBeInTheDocument();
     expect(within(table).getByText("WATER")).toBeInTheDocument();
   });
+
+  it("X 軸に 5% 刻みの目盛りラベルを描画する", () => {
+    render(<Quadrant single={single} title="散布図" />);
+    // 5, 10 は X 目盛り専用の値（Y 目盛りは 0/25/50/75/100）
+    expect(screen.getByText("5")).toBeInTheDocument();
+    expect(screen.getByText("10")).toBeInTheDocument();
+  });
+
+  it("点が重なってもすべてのラベル（略号）を描画する", () => {
+    // 3 点とも pickRate=33.3 / 勝率=60 で完全に重なる
+    const overlap: SideStats = {
+      FIRE: { g: 5, w: 3 },
+      WATER: { g: 5, w: 3 },
+      METAL: { g: 5, w: 3 },
+    };
+    render(<Quadrant single={overlap} title="散布図" />);
+    expect(screen.getByText("FIR")).toBeInTheDocument();
+    expect(screen.getByText("WAT")).toBeInTheDocument();
+    expect(screen.getByText("MET")).toBeInTheDocument();
+  });
 });

@@ -56,6 +56,39 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
     const refY = toY(50);
     const refX = toX(avgPickRate, maxPickRate);
 
+    // toX 内部と同じ x ドメイン上限。X 軸目盛りの生成に使う。
+    const domainMax = Math.max(maxPickRate * 1.1, 1);
+    // X 軸（ピック率）の目盛り: 5% 刻み。罫線＋目盛り＋ラベルを描く。
+    const xTicks: number[] = [];
+    for (let v = 0; v <= domainMax + 1e-9; v += 5) xTicks.push(v);
+
+    // ラベルの重なり回避: 点を y 昇順に並べ、最小間隔を確保して縦にずらす。
+    // 元の点位置からずれたラベルには引き出し線を描く（点が密集しても読める）。
+    const LABEL_GAP = 9;
+    const placed = points
+      .map((pt) => {
+        const cx = toX(pt.pickRate, maxPickRate);
+        const cy = toY(pt.p);
+        const r = radius(pt.g);
+        const abbr = ABBR[pt.n as keyof typeof ABBR] ?? pt.n.slice(0, 3);
+        // 右に出すと枠外になりそうな点は左にラベルを置く。
+        const rightSide = cx <= PLOT_W - 40;
+        return { pt, cx, cy, r, abbr, rightSide, labelY: cy };
+      })
+      .sort((a, b) => a.cy - b.cy);
+    // 前方パス: 下方向へ押し下げて最小間隔を確保
+    let prevY = Number.NEGATIVE_INFINITY;
+    for (const p of placed) {
+      p.labelY = Math.max(p.cy, prevY + LABEL_GAP);
+      prevY = p.labelY;
+    }
+    // 後方パス: 下端を超えた分を上へ詰めて枠内へ収める
+    let limit = PLOT_H;
+    for (let i = placed.length - 1; i >= 0; i -= 1) {
+      if (placed[i].labelY > limit) placed[i].labelY = limit;
+      limit = placed[i].labelY - LABEL_GAP;
+    }
+
     const svgAriaLabel = t("quadrant.svgAriaLabel", { title });
     const tableCaption = t("quadrant.tableCaption", { title });
 
@@ -122,9 +155,17 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
               strokeWidth={1}
             />
 
-            {/* Y axis ticks: 0, 25, 50, 75, 100 */}
+            {/* Y axis ticks + gridlines: 0, 25, 50, 75, 100 */}
             {[0, 25, 50, 75, 100].map((v) => (
               <g key={v} transform={`translate(0,${toY(v)})`}>
+                <line
+                  x1={0}
+                  y1={0}
+                  x2={PLOT_W}
+                  y2={0}
+                  stroke="#3f3f46"
+                  strokeWidth={0.5}
+                />
                 <line x1={-4} y1={0} x2={0} y2={0} stroke="#52525b" />
                 <text
                   x={-6}
@@ -138,6 +179,39 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
                 </text>
               </g>
             ))}
+
+            {/* X axis ticks + gridlines: 5% ごと（ピック率） */}
+            {xTicks.map((v) => {
+              const x = toX(v, maxPickRate);
+              return (
+                <g key={`xt-${v}`}>
+                  <line
+                    x1={x}
+                    y1={0}
+                    x2={x}
+                    y2={PLOT_H}
+                    stroke="#3f3f46"
+                    strokeWidth={0.5}
+                  />
+                  <line
+                    x1={x}
+                    y1={PLOT_H}
+                    x2={x}
+                    y2={PLOT_H + 4}
+                    stroke="#52525b"
+                  />
+                  <text
+                    x={x}
+                    y={PLOT_H + 14}
+                    textAnchor="middle"
+                    fontSize={9}
+                    fill="#a1a1aa"
+                  >
+                    {v}
+                  </text>
+                </g>
+              );
+            })}
 
             {/* Y axis label */}
             <text
@@ -160,22 +234,27 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
               {t("quadrant.xAxis")}
             </text>
 
-            {/* Data points */}
-            {points.map((pt) => {
-              const cx = toX(pt.pickRate, maxPickRate);
-              const cy = toY(pt.p);
-              const r = radius(pt.g);
-              const abbr = ABBR[pt.n as keyof typeof ABBR] ?? pt.n.slice(0, 3);
-
-              // Choose label position to keep it inside the SVG area
-              const labelDx = cx > PLOT_W - 30 ? -r - 2 : r + 2;
-              const labelAnchor = cx > PLOT_W - 30 ? "end" : "start";
-
+            {/* Data points（ラベルは重なり回避済み・ずれた場合は引き出し線） */}
+            {placed.map(({ pt, cx, cy, r, abbr, rightSide, labelY }) => {
+              const labelX = rightSide ? cx + r + 3 : cx - r - 3;
+              const labelAnchor = rightSide ? "start" : "end";
+              // ラベルが点から縦に離れたら引き出し線を描く。
+              const moved = Math.abs(labelY - cy) > 1.5;
               return (
                 <g key={pt.n}>
                   <title>
                     {`${pt.n}: ${t("quadrant.tablePickRate")} ${pt.pickRate.toFixed(1)}, ${t("quadrant.tableWinRate")} ${pt.p.toFixed(1)}, ${t("quadrant.tableGames")} ${pt.g}`}
                   </title>
+                  {moved && (
+                    <line
+                      x1={cx}
+                      y1={cy}
+                      x2={labelX}
+                      y2={labelY}
+                      stroke="#52525b"
+                      strokeWidth={0.5}
+                    />
+                  )}
                   <circle
                     cx={cx}
                     cy={cy}
@@ -186,8 +265,8 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
                     strokeWidth={0.5}
                   />
                   <text
-                    x={cx + labelDx}
-                    y={cy}
+                    x={labelX}
+                    y={labelY}
                     dominantBaseline="middle"
                     textAnchor={labelAnchor}
                     fontSize={8}
