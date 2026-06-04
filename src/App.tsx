@@ -90,6 +90,7 @@ export default function App() {
     strengthModel,
     synergy,
     usage,
+    archetypes,
   } = useMatchStats(matches, currentProtocols);
   const { exportToCsv } = useCsvExport(
     matches,
@@ -208,6 +209,7 @@ export default function App() {
             strengthModel={strengthModel}
             synergy={synergy}
             usage={usage}
+            archetypes={archetypes}
           />
 
           {/* Data Management Section */}

@@ -143,6 +143,11 @@ export const en: TranslationDict = {
   "synergy.row":
     "{n}: residual {residual}pp (actual {actual}% / expected {expected}%, {g} games)",
 
+  // Archetype (co-occurrence clusters)
+  "archetype.title": "Archetype Matchups",
+  "archetype.note":
+    "Deck types extracted from protocol co-occurrence. Cell = win rate of the row archetype.",
+
   // Quadrant (scatter chart)
   "quadrant.title": "Pick Rate vs Win Rate",
   "quadrant.xAxis": "Pick Rate (%)",

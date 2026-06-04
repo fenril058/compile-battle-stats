@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import { PROTOCOL_SETS } from "../config";
 import type { Match, MatrixData, Protocol, StatsResult } from "../types";
 import {
+  type ArchetypeMatchup,
+  archetypeMatchup,
   fitStrengthModel,
   type MatchupPair,
   makeStats,
@@ -207,6 +209,12 @@ export const useMatchStats = (
   // 週別ピック率時系列（全試合対象）。
   const usage: UsageTimeline = useMemo(() => usageTimeline(matches), [matches]);
 
+  // 共起クラスタで抽出したアーキタイプと、その相性。
+  const archetypes: ArchetypeMatchup = useMemo(
+    () => archetypeMatchup(matches),
+    [matches],
+  );
+
   return {
     statViews,
     matrixViews,
@@ -214,5 +222,6 @@ export const useMatchStats = (
     strengthModel,
     synergy,
     usage,
+    archetypes,
   };
 };

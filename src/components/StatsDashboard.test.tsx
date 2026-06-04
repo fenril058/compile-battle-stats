@@ -65,6 +65,7 @@ const makeProps = (overrides?: Partial<Parameters<typeof StatsDashboard>[0]>) =>
     },
     synergy: [],
     usage: emptyUsage,
+    archetypes: { archetypes: [], matrix: [], games: [] },
     ...overrides,
   }) satisfies Parameters<typeof StatsDashboard>[0];
 
