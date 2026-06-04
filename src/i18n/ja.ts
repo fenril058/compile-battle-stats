@@ -139,6 +139,12 @@ export const ja = {
     "{games} 試合から推定。データが少ないほど 0（五分）へ縮小されます。",
   "strength.row": "{n}: 強度 θ={theta}",
 
+  // Synergy (ペアシナジー残差)
+  "synergy.title": "ペアシナジー（実測 − モデル期待）",
+  "synergy.note": "残差(緑+)＝個々の強さ以上に噛み合う、(赤−)＝噛み合わない。",
+  "synergy.row":
+    "{n}: 残差 {residual}pp（実測 {actual}% / 期待 {expected}%、{g}戦）",
+
   // Quadrant (散布図)
   "quadrant.title": "ピック率 vs 勝率 散布図",
   "quadrant.xAxis": "ピック率 (%)",

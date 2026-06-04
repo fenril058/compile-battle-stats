@@ -59,6 +59,7 @@ const makeProps = (overrides?: Partial<Parameters<typeof StatsDashboard>[0]>) =>
       iterations: 0,
       converged: true,
     },
+    synergy: [],
     ...overrides,
   }) satisfies Parameters<typeof StatsDashboard>[0];
 

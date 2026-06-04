@@ -7,6 +7,7 @@ import {
   makeStats,
   matchup,
   matchupPairs,
+  pairSynergy,
   parseMatchCsvRow,
   percent,
   quadrantPoints,
@@ -558,6 +559,100 @@ describe("utils/logic", () => {
       const weak = fitStrengthModel(aStrongest(), { lambda: 0.1 });
       const strong = fitStrengthModel(aStrongest(), { lambda: 1 });
       expect(maxAbs(strong.theta)).toBeLessThan(maxAbs(weak.theta));
+    });
+  });
+
+  describe("pairSynergy", () => {
+    let idSeq = 0;
+    const mk = (
+      first: Trio,
+      second: Trio,
+      winner: "FIRST" | "SECOND",
+    ): Match => ({
+      id: `s${idSeq++}`,
+      first,
+      second,
+      winner,
+      ratio: false,
+      createdAt: 0,
+    });
+
+    // θ=0, β=0 のモデル。pred は常に σ(0)=0.5 → expected=50。
+    const zeroModel = {
+      theta: {
+        FIRE: 0,
+        WATER: 0,
+        METAL: 0,
+        LIFE: 0,
+        SPEED: 0,
+        SPIRIT: 0,
+      },
+      firstAdvantage: 0,
+      games: 5,
+      iterations: 1,
+      converged: true,
+    };
+
+    it("model.games===0 なら空配列を返す", () => {
+      const empty = { ...zeroModel, theta: {}, games: 0 };
+      const matches = [
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      ];
+      expect(pairSynergy(matches, empty)).toEqual([]);
+    });
+
+    it("θ=0 モデルでは残差 = 実測勝率 − 50 になる", () => {
+      // FIRE·WATER が常勝、LIFE·SPEED が常敗（5戦で minGames 到達）。
+      const matches = Array.from({ length: 5 }, () =>
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      );
+      const res = pairSynergy(matches, zeroModel);
+
+      const fw = res.find((r) => r.n === "FIRE · WATER");
+      expect(fw).toMatchObject({
+        g: 5,
+        actual: 100,
+        expected: 50,
+        residual: 50,
+      });
+
+      const ls = res.find((r) => r.n === "LIFE · SPEED");
+      expect(ls).toMatchObject({
+        g: 5,
+        actual: 0,
+        expected: 50,
+        residual: -50,
+      });
+
+      // 残差降順
+      expect(res[0].residual).toBeGreaterThanOrEqual(
+        res[res.length - 1].residual,
+      );
+    });
+
+    it("minGames 未満のペアは除外する", () => {
+      const matches = Array.from({ length: 3 }, () =>
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      );
+      // 既定 minGames=5 なので 3 戦では全除外
+      expect(pairSynergy(matches, zeroModel)).toEqual([]);
+      // minGames=3 にすれば現れる
+      expect(pairSynergy(matches, zeroModel, 3).length).toBeGreaterThan(0);
+    });
+
+    it("強いプロトコルを含むペアは期待勝率が 50% より高くなる", () => {
+      // FIRE が強い(θ=2)モデル。FIRE を含む常勝ペアの expected は σ(2)≈88% 付近。
+      const model = { ...zeroModel, theta: { ...zeroModel.theta, FIRE: 2 } };
+      const matches = Array.from({ length: 5 }, () =>
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      );
+      const fw = pairSynergy(matches, model).find(
+        (r) => r.n === "FIRE · WATER",
+      );
+      expect(fw).toBeDefined();
+      expect((fw as { expected: number }).expected).toBeGreaterThan(50);
+      // 実測100%のうち多くを FIRE の強さで説明 → 残差は θ=0 時(50)より小さい
+      expect((fw as { residual: number }).residual).toBeLessThan(50);
     });
   });
 });

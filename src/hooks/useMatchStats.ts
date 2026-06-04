@@ -7,7 +7,9 @@ import {
   makeStats,
   matchup,
   matchupPairs,
+  pairSynergy,
   type StrengthModel,
+  type SynergyPair,
 } from "../utils/logic";
 
 // Module-level sets for O(1) protocol lookup.
@@ -173,5 +175,11 @@ export const useMatchStats = (
     [matches],
   );
 
-  return { statViews, matrixViews, sortedMatches, strengthModel };
+  // ペアのシナジー残差（実測勝率 − モデル期待勝率）。強度モデルに依存。
+  const synergy: SynergyPair[] = useMemo(
+    () => pairSynergy(matches, strengthModel),
+    [matches, strengthModel],
+  );
+
+  return { statViews, matrixViews, sortedMatches, strengthModel, synergy };
 };
