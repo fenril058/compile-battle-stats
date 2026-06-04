@@ -11,7 +11,14 @@ type MatrixProps = {
   // "winRate"（既定）: 0..100 を 50 中心で配色。
   // "residual": モデル残差(pp, 0中心)を発散配色＋符号付きで表示。
   variant?: "winRate" | "residual";
+  // 行ヘッダに併記する各プロトコルの強度 θ（任意）。残差表で「行が強い/弱い」を
+  // 読み取りやすくする。未指定なら従来どおり略号のみ。
+  theta?: Record<string, number>;
 };
+
+/** θ を符号付き小数2桁で整形（θ+0.30 / θ−0.12）。 */
+const formatTheta = (v: number): string =>
+  `θ${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(2)}`;
 
 export const Matrix: React.FC<MatrixProps> = ({
   title,
@@ -19,6 +26,7 @@ export const Matrix: React.FC<MatrixProps> = ({
   bg,
   protocols,
   variant = "winRate",
+  theta,
 }) => {
   const { t } = useT();
   // プロトコルがない場合は、最低限の高さだけ持つ空の箱を返す
@@ -65,10 +73,15 @@ export const Matrix: React.FC<MatrixProps> = ({
             {protocols.map((a) => (
               <tr key={`r-${a}`} className="h-[28px]">
                 <th
-                  className="bg-zinc-800 px-2 py-1 sticky left-0 z-10 bg-zinc-800"
+                  className="bg-zinc-800 px-2 py-1 sticky left-0 z-10 bg-zinc-800 whitespace-nowrap"
                   scope="row"
                 >
                   {ABBR[a] ?? a.slice(0, 3)}
+                  {theta && theta[a] !== undefined && (
+                    <span className="ml-1 text-[9px] font-normal text-zinc-400 tabular-nums">
+                      {formatTheta(theta[a])}
+                    </span>
+                  )}
                 </th>
                 {protocols.map((b) => {
                   const row = m[a];

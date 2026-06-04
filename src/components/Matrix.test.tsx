@@ -86,5 +86,20 @@ describe("Matrix", () => {
       // null セルは従来どおり『–』（1 つ）
       expect(screen.getAllByText("–")).toHaveLength(1);
     });
+
+    it("theta を渡すと行ヘッダに θ を符号付きで併記する", () => {
+      render(
+        <Matrix
+          title="m"
+          m={residual}
+          bg="bg-zinc-900"
+          protocols={protocols}
+          variant="residual"
+          theta={{ FIRE: 0.5, WATER: -0.12 }}
+        />,
+      );
+      expect(screen.getByText("θ+0.50")).toBeInTheDocument();
+      expect(screen.getByText("θ−0.12")).toBeInTheDocument();
+    });
   });
 });
