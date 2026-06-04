@@ -328,7 +328,7 @@ describe("utils/logic", () => {
       const result = rows(stats, "single", 5, 3);
 
       expect(result.map((r) => r.n)).toEqual(["WATER", "FIRE", "METAL"]);
-      expect(result[0]).toEqual({ n: "WATER", g: 4, w: 3, l: 1, p: 75 });
+      expect(result[0]).toMatchObject({ n: "WATER", g: 4, w: 3, l: 1, p: 75 });
     });
 
     it("filters out pairs below minPair", () => {
@@ -353,6 +353,38 @@ describe("utils/logic", () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].n).toBe("A · B · C");
+    });
+
+    it("includes numeric low and high Wilson CI fields in each row", () => {
+      const stats = {
+        FIRE: { g: 10, w: 5 }, // p = 50
+        WATER: { g: 4, w: 3 }, // p = 75
+        METAL: { g: 2, w: 0 }, // p = 0
+      };
+
+      const result = rows(stats, "single", 5, 3);
+
+      for (const row of result) {
+        expect(typeof row.low).toBe("number");
+        expect(typeof row.high).toBe("number");
+      }
+    });
+
+    it("satisfies low <= p <= high for rows with g > 0", () => {
+      const stats = {
+        FIRE: { g: 10, w: 5 }, // p = 50
+        WATER: { g: 4, w: 3 }, // p = 75
+        METAL: { g: 2, w: 0 }, // p = 0
+      };
+
+      const result = rows(stats, "single", 5, 3);
+
+      for (const row of result) {
+        if (row.g > 0) {
+          expect(row.low).toBeLessThanOrEqual(row.p);
+          expect(row.p).toBeLessThanOrEqual(row.high);
+        }
+      }
     });
   });
 

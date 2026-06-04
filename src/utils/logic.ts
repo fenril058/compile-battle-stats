@@ -166,13 +166,18 @@ export const rows = (
 ): StatRow[] => {
   // ← 戻り値の型を StatRow[] に指定
   const data: StatRow[] = Object.entries(stats) // ★ data の型を StatRow[] で明示
-    .map(([n, { g, w }]) => ({
-      n,
-      g,
-      w,
-      l: g - w,
-      p: percent(w, g),
-    }))
+    .map(([n, { g, w }]) => {
+      const ci = wilsonInterval(w, g);
+      return {
+        n,
+        g,
+        w,
+        l: g - w,
+        p: ci.p,
+        low: ci.low,
+        high: ci.high,
+      };
+    })
     .filter((v) => {
       // 最小試合数に満たないデータを除外するフィルター
       if (key === "pair" && v.g < minPair) return false;
