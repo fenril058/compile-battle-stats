@@ -100,7 +100,7 @@ export const en: TranslationDict = {
   "stat.minGames": "{label} ({games}+ games)",
   "stat.sortNote": "Sorted by Wilson lower bound (95% CI)",
   "stat.wilsonExplain":
-    "Win rates swing wildly on small samples. The Wilson lower bound is a conservative floor: \"we're 95% confident the true win rate is above this value.\"\nWe sort by this bound so protocols that merely got lucky in a few games don't float to the top.\nEach bar shows the 95% confidence interval (line) and point estimate (dot); the center line is 50%. Fewer games means a wider interval.",
+    "Each row, left to right: rank, the protocol(s), game count, the win-rate bar, and the win rate % on the right. The bar shows the 95% confidence interval (horizontal line) and point estimate (dot); the center vertical line is 50%. Fewer games means a wider bar.\n\nSorting uses the Wilson lower bound (the interval's lower end), not the raw win rate. On few games a win rate swings by chance, so we rank by a conservative floor — \"we're 95% confident the true rate is above this\" — to keep small-sample flukes off the top.\n\nWilson lower bound (p̂ = win rate, n = games, z = 1.96):\n　lower = ( p̂ + z²/2n − z·√( p̂(1−p̂)/n + z²/4n² ) ) / ( 1 + z²/n )",
   "stat.oldTable": "Old view (table)",
   "stat.ci.aria": "{n}: win rate {p}%, 95% CI {low}–{high}%, {g} games",
 
@@ -141,7 +141,7 @@ export const en: TranslationDict = {
     "Estimated from {games} matches. With less data, values shrink toward 0 (even).",
   "strength.row": "{n}: strength θ={theta}",
   "strength.explain":
-    'θ (theta) is each protocol\'s "deconfounded" strength. A raw single win rate is contaminated by which partners and opponents it was paired with; θ solves all matches jointly with logistic regression to estimate pure contribution, subtracting out partner and opponent effects.\n0 is even, positive is strong, negative is weak.\nβ (beta) is the first-player edge itself — the win rate of the first player when decks are even. With less data, values shrink conservatively toward 0 (even).',
+    "θ (theta) is each protocol's strength — but on a logit (log-odds) scale, not a win rate. 0 is average strength, positive is strong, negative is weak. A value like 0.3 is not a percentage.\n\nIt comes from a Bradley-Terry style model: all matches are solved jointly with logistic regression. The predicted win probability when three-vs-three decks meet is\n　P(first wins) = σ( β + (θf1+θf2+θf3) − (θs1+θs2+θs3) ),　σ(x)=1/(1+e^−x)\nwhere σ is the logistic function. The bigger the gap between the two teams' θ sums, the more lopsided the win rate.\n\nRough θ-gap → win rate (all else equal): raising θ by 0.3 gives σ(0.3)≈57%, by 1.0 gives σ(1.0)≈73%. Unlike a raw win rate, this is the pure contribution with partner/opponent strength (confounding) subtracted out.\n\nβ (beta) is the first-player advantage itself (also logit scale): with even decks the first player wins σ(β). With less data, θ and β shrink conservatively toward 0 (average).",
 
   // Synergy (pair residual vs model)
   "synergy.title": "Pair Synergy (actual − model)",
@@ -150,7 +150,7 @@ export const en: TranslationDict = {
   "synergy.row":
     "{n}: residual {residual}pp (actual {actual}% / expected {expected}%, {g} games)",
   "synergy.explain":
-    "Pair synergy measures how well two protocols mesh, as a residual. It's the actual pair win rate minus the win rate the strength model (θ) predicts from the two protocols' individual strength alone.\nPositive (green) means they click beyond their individual strength; negative (red) means they get in each other's way.\nUnlike a raw pair win rate, this removes the part that's just \"two strong protocols winning anyway,\" revealing the true synergy.",
+    "Pair synergy measures how two protocols mesh, as a residual:\n　residual = actual win rate − model-expected win rate (percentage points)\nThe expected win rate averages each containing match's predicted σ( ±β + Σθ_self − Σθ_opp ) — the win rate explained by individual strength θ alone.\n\nPositive (green) means they mesh beyond their individual strength; negative (red) means they get in each other's way. Unlike a raw pair win rate, the \"two strong protocols winning anyway\" part is removed, revealing true synergy.",
 
   // Archetype (co-occurrence clusters)
   "archetype.title": "Archetype Matchups",
