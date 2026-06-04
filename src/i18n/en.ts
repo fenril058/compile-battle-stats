@@ -91,6 +91,9 @@ export const en: TranslationDict = {
   "stat.section.first": "Win rate when going first",
   "stat.section.second": "Win rate when going second",
   "stat.minGames": "{label} ({games}+ games)",
+  "stat.sortNote": "Sorted by Wilson lower bound (95% CI)",
+  "stat.oldTable": "Old view (table)",
+  "stat.ci.aria": "{n}: win rate {p}%, 95% CI {low}–{high}%, {g} games",
 
   // Matrix
   "matrix.gamesHeading": "{title} ({games}+ games)",

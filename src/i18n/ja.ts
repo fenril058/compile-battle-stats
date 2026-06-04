@@ -98,6 +98,9 @@ export const ja = {
   "stat.section.first": "先攻時の勝率",
   "stat.section.second": "後攻時の勝率",
   "stat.minGames": "{label}（{games}戦以上）",
+  "stat.sortNote": "Wilson 下限で並べ替え（95%信頼区間）",
+  "stat.oldTable": "旧表示（表）",
+  "stat.ci.aria": "{n}: 勝率 {p}%、95%信頼区間 {low}〜{high}%、{g}戦",
 
   // Matrix
   "matrix.gamesHeading": "{title}（{games} 戦以上）",
