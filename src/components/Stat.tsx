@@ -150,6 +150,11 @@ const StatSection: React.FC<StatSectionProps> = ({
     displayLabel = t("stat.minGames", { label, games: minTrio });
   }
 
+  // 名前列の幅は種別で変える。2枚組/3枚組は "FIRE · WATER · METAL" のように長く、
+  // 単体幅(w-16)だと見切れるため広げ、収まらない分は折り返す（truncate しない）。
+  const nameWidthClass =
+    type === "trio" ? "w-32" : type === "pair" ? "w-28" : "w-16";
+
   return (
     <div>
       <h3 className="text-sm text-zinc-400 mb-1 text-center">{displayLabel}</h3>
@@ -186,7 +191,10 @@ const StatSection: React.FC<StatSectionProps> = ({
                   <span className="w-4 text-right text-zinc-500 tabular-nums">
                     {i + 1}
                   </span>
-                  <span className="w-16 truncate" title={v.n}>
+                  <span
+                    className={`${nameWidthClass} break-words leading-tight`}
+                    title={v.n}
+                  >
                     {v.n}
                   </span>
                   <span className="w-5 text-right text-zinc-500 tabular-nums">
