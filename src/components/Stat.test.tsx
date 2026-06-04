@@ -54,8 +54,8 @@ describe("Stat", () => {
         name: "プロトコル2枚組勝率（5戦以上）",
       }),
     ).toBeInTheDocument();
-    // 5戦以上の FIRE · WATER だけ残る
-    expect(screen.getByText("FIRE · WATER")).toBeInTheDocument();
+    // 5戦以上の FIRE · WATER だけ残る（forest plot と旧表(old version)の双方に出る）
+    expect(screen.getAllByText("FIRE · WATER").length).toBeGreaterThan(0);
     expect(screen.queryByText("FIRE · METAL")).not.toBeInTheDocument();
   });
 
