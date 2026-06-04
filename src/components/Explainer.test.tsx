@@ -8,9 +8,9 @@ describe("Explainer", () => {
     render(<Explainer bodyKey="stat.wilsonExplain" />);
     // 既定の summary は common.explainer
     expect(screen.getByText(ja["common.explainer"])).toBeInTheDocument();
-    // 本文（Wilson 解説の冒頭）が含まれる
+    // 本文（Wilson 解説）が含まれる
     expect(
-      screen.getByText(/Wilson 下限は/, { exact: false }),
+      screen.getByText(/Wilson 下限/, { exact: false }),
     ).toBeInTheDocument();
   });
 
