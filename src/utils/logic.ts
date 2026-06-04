@@ -694,3 +694,66 @@ export const pairSynergy = (
   );
   return out;
 };
+
+// --- 相性表の残差（実測勝率 − モデル期待勝率）-------------------------------
+
+/**
+ * 相性表 matchup と同じ有向ペア走査で、各セル (a,b)＝「a を含む side が b を含む side に
+ * 勝った実測勝率」と「強度モデル(θ/β)が予測する勝率」の差（残差, pp, 0中心）を返す。
+ *
+ * 各試合の P(先攻勝ち) = σ(β + Σθ_first − Σθ_second) を予測とし、(lp∈first, rp∈second) と
+ * その逆 (rp∈first 視点) の双方を集計する。g < minGames のセルは null（実測 matchup と同じ閾値）。
+ * 正＝個々の強さ以上に有利、負＝不利。交絡を外した「真のカウンター」を表す。
+ */
+export const matchupResidual = (
+  list: Match[],
+  model: StrengthModel,
+  protocols: readonly Protocol[] = ALL_PROTOCOLS,
+  minGames = MIN_GAMES_FOR_MATRIX,
+): MatrixData => {
+  const beta = model.firstAdvantage;
+  const th = (p: string) => model.theta[p] ?? 0;
+
+  // 有向ペアキー → { g, 実測勝利数 w, モデル予測勝率の総和 e }
+  const r: Record<string, { g: number; w: number; e: number }> = {};
+  const bump = (k: string, won: number, pred: number) => {
+    if (!r[k]) r[k] = { g: 0, w: 0, e: 0 };
+    r[k].g += 1;
+    r[k].w += won;
+    r[k].e += pred;
+  };
+
+  for (const mt of list) {
+    if (!isValidTrio(mt.first) || !isValidTrio(mt.second)) continue;
+    const firstWin = mt.winner === "FIRST" ? 1 : 0;
+    const sumF = th(mt.first[0]) + th(mt.first[1]) + th(mt.first[2]);
+    const sumS = th(mt.second[0]) + th(mt.second[1]) + th(mt.second[2]);
+    const predFirst = sigmoid(beta + sumF - sumS); // P(先攻勝ち)
+
+    for (const lp of mt.first) {
+      for (const rp of mt.second) {
+        bump(`${lp}__${rp}`, firstWin, predFirst);
+        bump(`${rp}__${lp}`, 1 - firstWin, 1 - predFirst);
+      }
+    }
+  }
+
+  const m: MatrixData = {};
+  for (const a of protocols) {
+    m[a] = {};
+    for (const b of protocols) {
+      m[a][b] = null;
+    }
+  }
+  for (const [k, v] of Object.entries(r)) {
+    const [aStr, bStr] = k.split("__");
+    const a = aStr as Protocol;
+    const b = bStr as Protocol;
+    if (m[a] && v.g >= minGames) {
+      // 実測% − 期待%（pp、小数1桁）
+      m[a][b] = Math.round(((v.w - v.e) / v.g) * 1000) / 10;
+    }
+  }
+
+  return m;
+};

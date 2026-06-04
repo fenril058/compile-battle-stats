@@ -7,6 +7,7 @@ import {
   makeStats,
   matchup,
   matchupPairs,
+  matchupResidual,
   pairSynergy,
   parseMatchCsvRow,
   percent,
@@ -772,6 +773,69 @@ describe("utils/logic", () => {
       expect((fw as { expected: number }).expected).toBeGreaterThan(50);
       // 実測100%のうち多くを FIRE の強さで説明 → 残差は θ=0 時(50)より小さい
       expect((fw as { residual: number }).residual).toBeLessThan(50);
+    });
+  });
+
+  describe("matchupResidual", () => {
+    let idSeq = 0;
+    const mk = (
+      first: Trio,
+      second: Trio,
+      winner: "FIRST" | "SECOND",
+    ): Match => ({
+      id: `mr${idSeq++}`,
+      first,
+      second,
+      winner,
+      ratio: false,
+      createdAt: 0,
+    });
+
+    const protos = [
+      "FIRE",
+      "WATER",
+      "METAL",
+      "LIFE",
+      "SPEED",
+      "SPIRIT",
+    ] as const;
+
+    // θ=0, β=0 → predFirst = σ(0) = 0.5。残差セル = 実測% − 50。
+    const zeroModel = {
+      theta: { FIRE: 0, WATER: 0, METAL: 0, LIFE: 0, SPEED: 0, SPIRIT: 0 },
+      firstAdvantage: 0,
+      games: 5,
+      iterations: 1,
+      converged: true,
+    };
+
+    it("θ=0 モデルでは残差 = 実測勝率 − 50（先攻常勝で +50、逆向きで −50）", () => {
+      const matches = Array.from({ length: 5 }, () =>
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      );
+      const m = matchupResidual(matches, zeroModel, protos);
+      expect(m.FIRE?.LIFE).toBe(50);
+      expect(m.LIFE?.FIRE).toBe(-50);
+    });
+
+    it("MIN_GAMES 未満のセルは null になる", () => {
+      // 2 戦のみ → どの有向ペアも g=2 < 3 なので全 null
+      const matches = [
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      ];
+      const m = matchupResidual(matches, zeroModel, protos);
+      expect(m.FIRE?.LIFE).toBeNull();
+    });
+
+    it("不正な試合は集計しない", () => {
+      const invalid = mk(
+        ["FIRE", "FIRE", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+        "FIRST",
+      );
+      const m = matchupResidual([invalid, invalid, invalid], zeroModel, protos);
+      expect(m.FIRE?.LIFE).toBeNull();
     });
   });
 });
