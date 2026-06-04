@@ -123,4 +123,15 @@ export const en: TranslationDict = {
 
   // ProtocolSelect
   "protocolSelect.noOptions": "No matching protocols",
+
+  // Quadrant (scatter chart)
+  "quadrant.title": "Pick Rate vs Win Rate",
+  "quadrant.xAxis": "Pick Rate (%)",
+  "quadrant.yAxis": "Win Rate (%)",
+  "quadrant.svgAriaLabel": "{title} scatter chart",
+  "quadrant.tableCaption": "{title} data table",
+  "quadrant.tableProtocol": "Protocol",
+  "quadrant.tablePickRate": "Pick Rate (%)",
+  "quadrant.tableWinRate": "Win Rate (%)",
+  "quadrant.tableGames": "Games",
 };

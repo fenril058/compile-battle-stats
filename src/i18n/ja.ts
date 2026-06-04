@@ -130,6 +130,17 @@ export const ja = {
 
   // ProtocolSelect
   "protocolSelect.noOptions": "一致するプロトコルがありません",
+
+  // Quadrant (散布図)
+  "quadrant.title": "ピック率 vs 勝率 散布図",
+  "quadrant.xAxis": "ピック率 (%)",
+  "quadrant.yAxis": "勝率 (%)",
+  "quadrant.svgAriaLabel": "{title} 散布図",
+  "quadrant.tableCaption": "{title} データ表",
+  "quadrant.tableProtocol": "プロトコル",
+  "quadrant.tablePickRate": "ピック率 (%)",
+  "quadrant.tableWinRate": "勝率 (%)",
+  "quadrant.tableGames": "試合数",
 } as const;
 
 export type TranslationKey = keyof typeof ja;
