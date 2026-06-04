@@ -823,7 +823,9 @@ export const detectArchetypes = (matches: Match[]): Archetype[] => {
   }
 
   const comm = new Map<string, number>();
-  nodes.forEach((p, i) => comm.set(p, i));
+  nodes.forEach((p, i) => {
+    comm.set(p, i);
+  });
 
   if (twoM > 0) {
     // a<b のエッジ一覧（重み w[a][b]）
