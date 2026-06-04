@@ -149,6 +149,11 @@ export const ja = {
   "synergy.row":
     "{n}: 残差 {residual}pp（実測 {actual}% / 期待 {expected}%、{g}戦）",
 
+  // Archetype (共起クラスタ)
+  "archetype.title": "アーキタイプ相性",
+  "archetype.note":
+    "一緒に握られるプロトコルの共起からデッキ類型を抽出。セルは行のアーキタイプが勝つ側。",
+
   // Quadrant (散布図)
   "quadrant.title": "ピック率 vs 勝率 散布図",
   "quadrant.xAxis": "ピック率 (%)",

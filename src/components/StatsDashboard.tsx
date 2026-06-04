@@ -4,7 +4,13 @@ import { flushSync } from "react-dom";
 import { MIN_GAMES_FOR_MATRIX } from "../config";
 import type { MatrixView, StatsView } from "../hooks/useMatchStats";
 import { type TranslationKey, useT } from "../i18n";
-import type { StrengthModel, SynergyPair, UsageTimeline } from "../utils/logic";
+import type {
+  ArchetypeMatchup,
+  StrengthModel,
+  SynergyPair,
+  UsageTimeline,
+} from "../utils/logic";
+import { Archetypes } from "./Archetypes";
 import { Matrix } from "./Matrix";
 import { MatrixPairList } from "./MatrixPairList";
 import { Quadrant } from "./Quadrant";
@@ -31,6 +37,7 @@ interface StatsDashboardProps {
   strengthModel: StrengthModel;
   synergy: readonly SynergyPair[];
   usage: UsageTimeline;
+  archetypes: ArchetypeMatchup;
 }
 
 const STAT_VIEW_KEYS = ["all", "v1aux", "main2aux", "mixed"] as const;
@@ -59,6 +66,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   strengthModel,
   synergy,
   usage,
+  archetypes,
 }) => {
   const { t } = useT();
   const [activeStatViewKey, setActiveStatViewKey] =
@@ -364,6 +372,12 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
             </>
           )}
         </div>
+      </section>
+
+      {/* Archetype section (共起クラスタ) */}
+      <section>
+        <h2 className="font-semibold mb-3">{t("archetype.title")}</h2>
+        <Archetypes data={archetypes} />
       </section>
     </>
   );
