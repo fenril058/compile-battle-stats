@@ -131,6 +131,14 @@ export const ja = {
   // ProtocolSelect
   "protocolSelect.noOptions": "一致するプロトコルがありません",
 
+  // Strength (Bradley-Terry θ / β)
+  "strength.title": "プロトコル強度（交絡を外した推定）",
+  "strength.firstAdvantage":
+    "先攻有利: 五分のデッキ同士なら先攻が {rate}% 勝つ（β={beta}）",
+  "strength.note":
+    "{games} 試合から推定。データが少ないほど 0（五分）へ縮小されます。",
+  "strength.row": "{n}: 強度 θ={theta}",
+
   // Quadrant (散布図)
   "quadrant.title": "ピック率 vs 勝率 散布図",
   "quadrant.xAxis": "ピック率 (%)",

@@ -124,6 +124,14 @@ export const en: TranslationDict = {
   // ProtocolSelect
   "protocolSelect.noOptions": "No matching protocols",
 
+  // Strength (Bradley-Terry θ / β)
+  "strength.title": "Protocol Strength (deconfounded)",
+  "strength.firstAdvantage":
+    "First-player edge: with even decks, first wins {rate}% (β={beta})",
+  "strength.note":
+    "Estimated from {games} matches. With less data, values shrink toward 0 (even).",
+  "strength.row": "{n}: strength θ={theta}",
+
   // Quadrant (scatter chart)
   "quadrant.title": "Pick Rate vs Win Rate",
   "quadrant.xAxis": "Pick Rate (%)",

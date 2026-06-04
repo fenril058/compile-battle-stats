@@ -2,10 +2,12 @@ import { useMemo } from "react";
 import { PROTOCOL_SETS } from "../config";
 import type { Match, MatrixData, Protocol, StatsResult } from "../types";
 import {
+  fitStrengthModel,
   type MatchupPair,
   makeStats,
   matchup,
   matchupPairs,
+  type StrengthModel,
 } from "../utils/logic";
 
 // Module-level sets for O(1) protocol lookup.
@@ -165,5 +167,11 @@ export const useMatchStats = (
     ],
   );
 
-  return { statViews, matrixViews, sortedMatches };
+  // 交絡を外したプロトコル強度 θ と先攻補正 β（全有効試合から推定）。
+  const strengthModel: StrengthModel = useMemo(
+    () => fitStrengthModel(matches),
+    [matches],
+  );
+
+  return { statViews, matrixViews, sortedMatches, strengthModel };
 };
