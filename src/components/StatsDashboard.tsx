@@ -50,6 +50,15 @@ const STAT_VIEW_LABELS: Record<StatViewKey, TranslationKey> = {
   mixed: "statsDashboard.view.mixed",
 };
 
+// 散布図の対象スライス（全体 / 通常戦 / レシオ）。activeStats の各 slice を引く。
+const QUADRANT_TYPES = ["all", "normal", "ratio"] as const;
+type QuadrantType = (typeof QUADRANT_TYPES)[number];
+const QUADRANT_TYPE_LABELS: Record<QuadrantType, TranslationKey> = {
+  all: "statsDashboard.view.all",
+  normal: "statsDashboard.stat.normal",
+  ratio: "common.ratio",
+};
+
 const MATRIX_KEYS = ["all", "v1aux", "main2aux", "ratio"] as const;
 type MatrixKey = (typeof MATRIX_KEYS)[number];
 const MATRIX_TAB_LABELS: Record<MatrixKey, TranslationKey> = {
@@ -73,6 +82,8 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   const [activeStatViewKey, setActiveStatViewKey] =
     useState<StatViewKey>("all");
   const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("all");
+  // 散布図の対象（全体 / 通常戦 / レシオ）。既定は全体。
+  const [quadrantType, setQuadrantType] = useState<QuadrantType>("all");
   // 全体相性表の表示範囲。既定は全プロトコル（全試合の 30×30 をそのまま）。
   // 未使用プロトコルの空行を畳みたい場合は「出現のみ」に切り替えられる。
   const [matrixCompact, setMatrixCompact] = useState(false);
@@ -253,7 +264,30 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       {/* Quadrant section */}
       <section>
         <h2 className="font-semibold mb-3">{t("quadrant.title")}</h2>
-        <Quadrant single={activeStats.all.single} title={t("quadrant.title")} />
+        <fieldset className="flex flex-wrap items-center gap-1 mb-2 border-0 p-0 m-0 min-w-0">
+          <legend className="text-xs text-zinc-400 mr-1 p-0 float-left">
+            {t("quadrant.scopeLabel")}
+          </legend>
+          {QUADRANT_TYPES.map((qt) => (
+            <button
+              key={qt}
+              type="button"
+              onClick={() => setQuadrantType(qt)}
+              aria-pressed={quadrantType === qt}
+              className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                quadrantType === qt
+                  ? "bg-zinc-500 text-white font-medium"
+                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+              }`}
+            >
+              {t(QUADRANT_TYPE_LABELS[qt])}
+            </button>
+          ))}
+        </fieldset>
+        <Quadrant
+          single={activeStats[quadrantType].single}
+          title={t("quadrant.title")}
+        />
       </section>
 
       {/* Usage Timeline section */}
