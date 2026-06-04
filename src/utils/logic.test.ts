@@ -10,6 +10,7 @@ import {
   percent,
   ratioSum,
   rows,
+  wilsonInterval,
 } from "./logic";
 
 const MOCK_RATIOS = RATIO_SETS.S1;
@@ -352,6 +353,33 @@ describe("utils/logic", () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].n).toBe("A · B · C");
+    });
+  });
+
+  describe("wilsonInterval", () => {
+    it("returns {p:0, low:0, high:0} when g === 0", () => {
+      expect(wilsonInterval(0, 0)).toEqual({ p: 0, low: 0, high: 0 });
+    });
+
+    it("returns smaller low bound for smaller sample size (w=2,g=2 < w=20,g=20)", () => {
+      const ci_2_2 = wilsonInterval(2, 2);
+      const ci_20_20 = wilsonInterval(20, 20);
+
+      expect(ci_2_2.low).toBeLessThan(ci_20_20.low);
+    });
+
+    it("keeps high <= 100 for 100% win rate (w=g>0)", () => {
+      const ci = wilsonInterval(5, 5);
+      expect(ci.high).toBeLessThanOrEqual(100);
+      expect(ci.low).toBeLessThan(100);
+    });
+
+    it("computes correct p, low < high bounds, and respects 0..100 clamp for w=8,g=10", () => {
+      const ci = wilsonInterval(8, 10);
+      expect(ci.p).toBe(80);
+      expect(ci.low).toBeLessThan(ci.high);
+      expect(ci.low).toBeGreaterThanOrEqual(0);
+      expect(ci.high).toBeLessThanOrEqual(100);
     });
   });
 });
