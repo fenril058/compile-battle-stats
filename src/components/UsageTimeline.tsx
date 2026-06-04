@@ -43,17 +43,29 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
 
     const { buckets, series } = data;
 
-    const maxPickRate = useMemo(() => {
-      if (series.length === 0) return 100;
+    // Y 軸（ピック率）の最大値と目盛り。固定の 25 刻みだと、値が小さいとき
+    // 0 と 25 しか出ず粗すぎたため、データに応じて 5% 程度の細かい刻みを選ぶ。
+    const { maxY, yTicks } = useMemo(() => {
       let m = 0;
       for (const s of series) {
         for (const pt of s.points) {
           if (pt > m) m = pt;
         }
       }
-      // Y 軸の最大値: 上に 10% 余白。25 の倍数に切り上げて目盛りと揃える。
-      const raw = m * 1.1;
-      return Math.ceil(raw / 25) * 25 || 25;
+      // 上に 10% 余白を取った目標上限。目盛りが概ね 4〜6 本になる刻みを選ぶ。
+      const target = Math.max(m * 1.1, 1);
+      const candidates = [1, 2, 5, 10, 20, 25, 50];
+      let step = 50;
+      for (const s of candidates) {
+        if (target / s <= 6) {
+          step = s;
+          break;
+        }
+      }
+      const top = Math.ceil(target / step) * step;
+      const ticks: number[] = [];
+      for (let v = 0; v <= top + 1e-9; v += step) ticks.push(v);
+      return { maxY: top, yTicks: ticks };
     }, [series]);
 
     if (buckets.length === 0) {
@@ -95,32 +107,30 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
               className="fill-zinc-900/50"
             />
 
-            {/* Y axis gridlines and ticks */}
-            {[0, 25, 50, 75, 100]
-              .filter((v) => v <= maxPickRate)
-              .map((v) => (
-                <g key={v} transform={`translate(0,${toY(v, maxPickRate)})`}>
-                  <line
-                    x1={0}
-                    y1={0}
-                    x2={PLOT_W}
-                    y2={0}
-                    stroke="#3f3f46"
-                    strokeWidth={1}
-                  />
-                  <line x1={-4} y1={0} x2={0} y2={0} stroke="#52525b" />
-                  <text
-                    x={-6}
-                    y={0}
-                    dominantBaseline="middle"
-                    textAnchor="end"
-                    fontSize={9}
-                    fill="#a1a1aa"
-                  >
-                    {v}
-                  </text>
-                </g>
-              ))}
+            {/* Y axis gridlines and ticks（データに応じた刻み） */}
+            {yTicks.map((v) => (
+              <g key={v} transform={`translate(0,${toY(v, maxY)})`}>
+                <line
+                  x1={0}
+                  y1={0}
+                  x2={PLOT_W}
+                  y2={0}
+                  stroke="#3f3f46"
+                  strokeWidth={1}
+                />
+                <line x1={-4} y1={0} x2={0} y2={0} stroke="#52525b" />
+                <text
+                  x={-6}
+                  y={0}
+                  dominantBaseline="middle"
+                  textAnchor="end"
+                  fontSize={9}
+                  fill="#a1a1aa"
+                >
+                  {v}
+                </text>
+              </g>
+            ))}
 
             {/* Y axis */}
             <line
@@ -204,7 +214,7 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
                   ? s.points
                       .map((pt, i) => {
                         const x = toX(i, n);
-                        const y = toY(pt, maxPickRate);
+                        const y = toY(pt, maxY);
                         return `${i === 0 ? "M" : "L"} ${x} ${y}`;
                       })
                       .join(" ")
@@ -227,7 +237,7 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
                     <circle
                       key={`${s.protocol}-${buckets[i].start}`}
                       cx={toX(i, n)}
-                      cy={toY(pt, maxPickRate)}
+                      cy={toY(pt, maxY)}
                       r={3}
                       fill={color}
                       fillOpacity={0.9}
