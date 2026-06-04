@@ -10,6 +10,8 @@ import {
   pairSynergy,
   type StrengthModel,
   type SynergyPair,
+  type UsageTimeline,
+  usageTimeline,
 } from "../utils/logic";
 
 // Module-level sets for O(1) protocol lookup.
@@ -181,5 +183,15 @@ export const useMatchStats = (
     [matches, strengthModel],
   );
 
-  return { statViews, matrixViews, sortedMatches, strengthModel, synergy };
+  // 週別ピック率時系列（全試合対象）。
+  const usage: UsageTimeline = useMemo(() => usageTimeline(matches), [matches]);
+
+  return {
+    statViews,
+    matrixViews,
+    sortedMatches,
+    strengthModel,
+    synergy,
+    usage,
+  };
 };

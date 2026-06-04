@@ -13,6 +13,7 @@ import {
   quadrantPoints,
   ratioSum,
   rows,
+  usageTimeline,
   wilsonInterval,
 } from "./logic";
 
@@ -472,6 +473,124 @@ describe("utils/logic", () => {
       expect(ci.low).toBeLessThan(ci.high);
       expect(ci.low).toBeGreaterThanOrEqual(0);
       expect(ci.high).toBeLessThanOrEqual(100);
+    });
+  });
+
+  describe("usageTimeline", () => {
+    // 2025-01-06 (月) 00:00 UTC = 1736121600000
+    const MON_2025_01_06 = Date.UTC(2025, 0, 6);
+    // 2025-01-13 (月) 00:00 UTC = 1736726400000
+    const MON_2025_01_13 = Date.UTC(2025, 0, 13);
+
+    const mkMatch = (
+      matchDate: number | null,
+      first: Trio,
+      second: Trio,
+    ): Match =>
+      ({
+        id: `m-${Math.random()}`,
+        first,
+        second,
+        winner: "FIRST",
+        ratio: false,
+        createdAt: 0,
+        matchDate,
+      }) as Match;
+
+    it("空入力で { buckets: [], series: [] } を返す", () => {
+      expect(usageTimeline([])).toEqual({ buckets: [], series: [] });
+    });
+
+    it("matchDate 無しの試合は除外される", () => {
+      const m = mkMatch(
+        null,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      expect(usageTimeline([m])).toEqual({ buckets: [], series: [] });
+    });
+
+    it("同一週の複数試合が1バケットにまとまる", () => {
+      // 月曜と水曜は同じ週
+      const mon = mkMatch(
+        MON_2025_01_06,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      const wed = mkMatch(
+        MON_2025_01_06 + 2 * 86400000,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      const result = usageTimeline([mon, wed]);
+      expect(result.buckets).toHaveLength(1);
+      expect(result.buckets[0].label).toBe("2025-01-06");
+    });
+
+    it("別週は別バケットになる", () => {
+      const week1 = mkMatch(
+        MON_2025_01_06,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      const week2 = mkMatch(
+        MON_2025_01_13,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      const result = usageTimeline([week1, week2]);
+      expect(result.buckets).toHaveLength(2);
+      expect(result.buckets[0].start).toBeLessThan(result.buckets[1].start);
+    });
+
+    it("topN を全プロトコル数以上にした場合、ある bucket のピック率合計が概ね 100", () => {
+      const m = mkMatch(
+        MON_2025_01_06,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      // 6 プロトコルしか登場しないので topN=6 で OTHER なし
+      const result = usageTimeline([m], { topN: 6 });
+      const total = result.series.reduce(
+        (acc, s) => acc + (s.points[0] ?? 0),
+        0,
+      );
+      expect(total).toBeGreaterThanOrEqual(99);
+      expect(total).toBeLessThanOrEqual(101);
+    });
+
+    it("topN 集約で OTHER 系列が作られる", () => {
+      const m = mkMatch(
+        MON_2025_01_06,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      // 6 プロトコル登場、topN=3 なら残り 3 が OTHER に集約される
+      const result = usageTimeline([m], { topN: 3 });
+      const other = result.series.find((s) => s.protocol === "OTHER");
+      expect(other).toBeDefined();
+      // OTHER の最後に配置される
+      expect(result.series[result.series.length - 1].protocol).toBe("OTHER");
+    });
+
+    it("バケット内のピック率は 0..100 の範囲", () => {
+      const m1 = mkMatch(
+        MON_2025_01_06,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      const m2 = mkMatch(
+        MON_2025_01_13,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      const result = usageTimeline([m1, m2], { topN: 3 });
+      for (const s of result.series) {
+        for (const pt of s.points) {
+          expect(pt).toBeGreaterThanOrEqual(0);
+          expect(pt).toBeLessThanOrEqual(100);
+        }
+      }
     });
   });
 

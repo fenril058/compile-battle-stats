@@ -155,6 +155,15 @@ export const ja = {
   "quadrant.tablePickRate": "ピック率 (%)",
   "quadrant.tableWinRate": "勝率 (%)",
   "quadrant.tableGames": "試合数",
+
+  // UsageTimeline (週別ピック率折れ線グラフ)
+  "usage.title": "週別ピック率推移",
+  "usage.xAxis": "週",
+  "usage.yAxis": "ピック率 (%)",
+  "usage.other": "その他",
+  "usage.svgAriaLabel": "{title} 折れ線グラフ",
+  "usage.tableCaption": "{title} データ表",
+  "usage.tableBucket": "週",
 } as const;
 
 export type TranslationKey = keyof typeof ja;
