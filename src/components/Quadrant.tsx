@@ -73,6 +73,8 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
     // ラベルの重なり回避: 点を y 昇順に並べ、最小間隔を確保して縦にずらす。
     // 元の点位置からずれたラベルには引き出し線を描く（点が密集しても読める）。
     const LABEL_GAP = 9;
+    // ずれたラベル（=密集帯）の引き出し線終点を縦一列へ寄せる際の、円群とラベル列の水平間隔。
+    const COL_GAP = 6;
     const placed = points
       .map((pt) => {
         const cx = toX(pt.pickRate, maxPickRate);
@@ -81,7 +83,17 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
         const abbr = ABBR[pt.n as keyof typeof ABBR] ?? pt.n.slice(0, 3);
         // 右に出すと枠外になりそうな点は左にラベルを置く。
         const rightSide = cx <= PLOT_W - 40;
-        return { pt, cx, cy, r, abbr, rightSide, labelY: cy };
+        return {
+          pt,
+          cx,
+          cy,
+          r,
+          abbr,
+          rightSide,
+          labelY: cy,
+          labelX: 0,
+          moved: false,
+        };
       })
       .sort((a, b) => a.cy - b.cy);
     // 前方パス: 下方向へ押し下げて最小間隔を確保
@@ -95,6 +107,35 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
     for (let i = placed.length - 1; i >= 0; i -= 1) {
       if (placed[i].labelY > limit) placed[i].labelY = limit;
       limit = placed[i].labelY - LABEL_GAP;
+    }
+
+    // 元位置から縦にずれたラベル（密集帯）を検出する。
+    for (const p of placed) p.moved = Math.abs(p.labelY - p.cy) > 1.5;
+
+    // ラベル列の整列:
+    //   - ずれていないラベルは点のすぐ脇（従来どおり）に置く。
+    //   - ずれたラベルは「連続するずれラベル群（chain）」ごと・左右の側ごとに
+    //     終点 x を一列へ揃え、引き出し線を縦列に整列させて密集帯でも読めるようにする。
+    //     列は円群の外側（右側群は右端、左側群は左端）へ寄せるのでラベルが他点の円に被らない。
+    for (let i = 0; i < placed.length; ) {
+      if (!placed[i].moved) {
+        const p = placed[i];
+        p.labelX = p.rightSide ? p.cx + p.r + 3 : p.cx - p.r - 3;
+        i += 1;
+        continue;
+      }
+      let j = i;
+      while (j < placed.length && placed[j].moved) j += 1;
+      const chain = placed.slice(i, j);
+      for (const side of [true, false]) {
+        const group = chain.filter((p) => p.rightSide === side);
+        if (group.length === 0) continue;
+        const col = side
+          ? Math.max(...group.map((p) => p.cx + p.r)) + COL_GAP
+          : Math.min(...group.map((p) => p.cx - p.r)) - COL_GAP;
+        for (const p of group) p.labelX = col;
+      }
+      i = j;
     }
 
     const svgAriaLabel = t("quadrant.svgAriaLabel", { title });
@@ -254,48 +295,47 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
             </text>
 
             {/* Data points（ラベルは重なり回避済み・ずれた場合は引き出し線） */}
-            {placed.map(({ pt, cx, cy, r, abbr, rightSide, labelY }) => {
-              const labelX = rightSide ? cx + r + 3 : cx - r - 3;
-              const labelAnchor = rightSide ? "start" : "end";
-              // ラベルが点から縦に離れたら引き出し線を描く。
-              const moved = Math.abs(labelY - cy) > 1.5;
-              return (
-                <g key={pt.n}>
-                  <title>
-                    {`${pt.n}: ${t("quadrant.tablePickRate")} ${pt.pickRate.toFixed(1)}, ${t("quadrant.tableWinRate")} ${pt.p.toFixed(1)}, ${t("quadrant.tableGames")} ${pt.g}`}
-                  </title>
-                  {moved && (
-                    <line
-                      x1={cx}
-                      y1={cy}
-                      x2={labelX}
-                      y2={labelY}
-                      stroke="#52525b"
+            {placed.map(
+              ({ pt, cx, cy, r, abbr, rightSide, labelY, labelX, moved }) => {
+                const labelAnchor = rightSide ? "start" : "end";
+                return (
+                  <g key={pt.n}>
+                    <title>
+                      {`${pt.n}: ${t("quadrant.tablePickRate")} ${pt.pickRate.toFixed(1)}, ${t("quadrant.tableWinRate")} ${pt.p.toFixed(1)}, ${t("quadrant.tableGames")} ${pt.g}`}
+                    </title>
+                    {moved && (
+                      <line
+                        x1={cx}
+                        y1={cy}
+                        x2={labelX}
+                        y2={labelY}
+                        stroke="#52525b"
+                        strokeWidth={0.5}
+                      />
+                    )}
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={r}
+                      fill="#60a5fa"
+                      fillOpacity={0.8}
+                      stroke="#1d4ed8"
                       strokeWidth={0.5}
                     />
-                  )}
-                  <circle
-                    cx={cx}
-                    cy={cy}
-                    r={r}
-                    fill="#60a5fa"
-                    fillOpacity={0.8}
-                    stroke="#1d4ed8"
-                    strokeWidth={0.5}
-                  />
-                  <text
-                    x={labelX}
-                    y={labelY}
-                    dominantBaseline="middle"
-                    textAnchor={labelAnchor}
-                    fontSize={8}
-                    fill="#e4e4e7"
-                  >
-                    {abbr}
-                  </text>
-                </g>
-              );
-            })}
+                    <text
+                      x={labelX}
+                      y={labelY}
+                      dominantBaseline="middle"
+                      textAnchor={labelAnchor}
+                      fontSize={8}
+                      fill="#e4e4e7"
+                    >
+                      {abbr}
+                    </text>
+                  </g>
+                );
+              },
+            )}
           </g>
         </svg>
         <p className="text-[10px] text-zinc-500 mt-1">
