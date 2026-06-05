@@ -192,6 +192,16 @@ export const ja = {
   "usage.svgAriaLabel": "{title} 折れ線グラフ",
   "usage.tableCaption": "{title} データ表",
   "usage.tableBucket": "週",
+
+  // SectionNav (ページ内ナビゲーション)
+  "nav.aria": "セクション内ナビゲーション",
+  "nav.stat": "勝率",
+  "nav.strength": "強度",
+  "nav.synergy": "シナジー",
+  "nav.quadrant": "散布図",
+  "nav.usage": "推移",
+  "nav.matrix": "相性表",
+  "nav.archetype": "アーキタイプ",
 } as const;
 
 export type TranslationKey = keyof typeof ja;

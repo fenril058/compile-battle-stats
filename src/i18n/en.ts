@@ -186,4 +186,14 @@ export const en: TranslationDict = {
   "usage.svgAriaLabel": "{title} line chart",
   "usage.tableCaption": "{title} data table",
   "usage.tableBucket": "Week",
+
+  // SectionNav (in-page navigation)
+  "nav.aria": "Section navigation",
+  "nav.stat": "Stats",
+  "nav.strength": "Strength",
+  "nav.synergy": "Synergy",
+  "nav.quadrant": "Scatter",
+  "nav.usage": "Trends",
+  "nav.matrix": "Matrix",
+  "nav.archetype": "Archetypes",
 };
