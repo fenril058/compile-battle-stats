@@ -10,6 +10,7 @@ import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { MatchForm } from "./components/MatchForm";
 import { RatioTable } from "./components/RatioTable";
+import { SectionNav } from "./components/SectionNav";
 import { StatsDashboard } from "./components/StatsDashboard";
 
 const MatchList = lazy(() =>
@@ -184,6 +185,7 @@ export default function App() {
           handleSeasonChange={handleSeasonChange}
           mode={mode}
         />
+        <SectionNav />
 
         <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-8">
           {/* Input Section */}

@@ -183,7 +183,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   return (
     <>
       {/* Stat section */}
-      <section>
+      <section id="stat" className="scroll-mt-14">
         <div
           className="flex flex-wrap gap-1 mb-3"
           role="tablist"
@@ -248,21 +248,21 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       </section>
 
       {/* Strength section (Bradley-Terry θ / β) */}
-      <section>
+      <section id="strength" className="scroll-mt-14">
         <h2 className="font-semibold mb-3">{t("strength.title")}</h2>
         <Strength model={strengthModel} />
         <Explainer bodyKey="strength.explain" />
       </section>
 
       {/* Synergy section (pair residual vs model) */}
-      <section>
+      <section id="synergy" className="scroll-mt-14">
         <h2 className="font-semibold mb-3">{t("synergy.title")}</h2>
         <Synergy pairs={synergy} />
         <Explainer bodyKey="synergy.explain" />
       </section>
 
       {/* Quadrant section */}
-      <section>
+      <section id="quadrant" className="scroll-mt-14">
         <h2 className="font-semibold mb-3">{t("quadrant.title")}</h2>
         <fieldset className="flex flex-wrap items-center gap-1 mb-2 border-0 p-0 m-0 min-w-0">
           <legend className="text-xs text-zinc-400 mr-1 p-0 float-left">
@@ -291,13 +291,13 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       </section>
 
       {/* Usage Timeline section */}
-      <section>
+      <section id="usage" className="scroll-mt-14">
         <h2 className="font-semibold mb-3">{t("usage.title")}</h2>
         <UsageTimelineChart data={usage} title={t("usage.title")} />
       </section>
 
       {/* Matrix section */}
-      <section>
+      <section id="matrix" className="scroll-mt-14">
         <div
           className="flex flex-wrap gap-1 mb-3"
           role="tablist"
@@ -416,7 +416,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       </section>
 
       {/* Archetype section (共起クラスタ) */}
-      <section>
+      <section id="archetype" className="scroll-mt-14">
         <h2 className="font-semibold mb-3">{t("archetype.title")}</h2>
         <Archetypes data={archetypes} />
         <Explainer bodyKey="archetype.explain" />

@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* === Focus-visible ring === */
 :focus-visible {
   outline: 2px solid #60a5fa;
