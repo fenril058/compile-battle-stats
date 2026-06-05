@@ -136,7 +136,7 @@ export const en: TranslationDict = {
   "protocolSelect.noOptions": "No matching protocols",
 
   // Strength (Bradley-Terry θ / β)
-  "strength.title": "Protocol Strength (deconfounded)",
+  "strength.title": "Protocol Strength θ (deconfounded)",
   "strength.firstAdvantage":
     "First-player edge: with even decks, first wins {rate}% (β={beta})",
   "strength.note":

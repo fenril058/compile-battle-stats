@@ -32,6 +32,18 @@ describe("Quadrant", () => {
     expect(screen.getByText("10")).toBeInTheDocument();
   });
 
+  it("総試合数を n = （プロトコル出現数 / 6）で表示する", () => {
+    // 1 試合 = 先攻3 + 後攻3 = 6 プロトコル出現。出現数の合計を 6 で割る。
+    const oneMatch: SideStats = {
+      FIRE: { g: 2, w: 1 },
+      WATER: { g: 2, w: 1 },
+      METAL: { g: 2, w: 1 },
+    };
+    render(<Quadrant single={oneMatch} title="散布図" />);
+    expect(screen.getByText("n = 1 試合")).toBeInTheDocument();
+    expect(screen.getByText("● の大きさ = ピック数")).toBeInTheDocument();
+  });
+
   it("点が重なってもすべてのラベル（略号）を描画する", () => {
     // 3 点とも pickRate=33.3 / 勝率=60 で完全に重なる
     const overlap: SideStats = {
