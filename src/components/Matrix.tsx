@@ -18,7 +18,7 @@ type MatrixProps = {
 
 /** θ を符号付き小数2桁で整形（θ+0.30 / θ−0.12）。 */
 const formatTheta = (v: number): string =>
-  `θ${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(2)}`;
+  `θ = ${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(2)}`;
 
 export const Matrix: React.FC<MatrixProps> = ({
   title,

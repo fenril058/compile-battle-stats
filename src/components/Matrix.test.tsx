@@ -98,8 +98,8 @@ describe("Matrix", () => {
           theta={{ FIRE: 0.5, WATER: -0.12 }}
         />,
       );
-      expect(screen.getByText("θ+0.50")).toBeInTheDocument();
-      expect(screen.getByText("θ−0.12")).toBeInTheDocument();
+      expect(screen.getByText("θ = +0.50")).toBeInTheDocument();
+      expect(screen.getByText("θ = −0.12")).toBeInTheDocument();
     });
   });
 });

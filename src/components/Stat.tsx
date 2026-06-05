@@ -167,6 +167,18 @@ const StatSection: React.FC<StatSectionProps> = ({
           <p className="text-[10px] text-zinc-500 mb-1 text-center">
             {t("stat.sortNote")}
           </p>
+          <div
+            className="flex items-center gap-1 text-[9px] text-zinc-600 mb-0.5"
+            aria-hidden="true"
+          >
+            <span className="w-4" />
+            <span className={nameWidthClass} />
+            <span className="w-5 text-right">{t("stat.forest.games")}</span>
+            <span className="flex-1 text-center">
+              {t("stat.forest.ciLabel")}
+            </span>
+            <span className="w-10 text-right">%</span>
+          </div>
           <ul aria-label={displayLabel} className="space-y-0.5">
             {forest.map((v, i) => {
               // 勝率で点の色分け（旧表の行ハイライトと同じ閾値）。
