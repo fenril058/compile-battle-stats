@@ -3,6 +3,24 @@ import { ABBR, MIN_GAMES_FOR_MATRIX } from "../config";
 import { useT } from "../i18n";
 import type { MatrixData, Protocol } from "../types";
 
+// 残差の絶対値をこの値でクランプしてから強度にマッピングする（pp 単位）
+const RESIDUAL_CLAMP_PP = 30;
+
+// green-700 / red-700 に相当する RGB 値
+const GREEN_RGB = "21,128,61";
+const RED_RGB = "185,28,28";
+
+/** 残差値を連続発散グラデーションの inline style に変換する。 */
+function residualCellStyle(v: number): React.CSSProperties {
+  const intensity = Math.min(Math.abs(v) / RESIDUAL_CLAMP_PP, 1);
+  const alpha = (intensity * 0.8 + 0.1).toFixed(2);
+  if (v > 0)
+    return { backgroundColor: `rgba(${GREEN_RGB},${alpha})`, color: "white" };
+  if (v < 0)
+    return { backgroundColor: `rgba(${RED_RGB},${alpha})`, color: "white" };
+  return { backgroundColor: "rgba(63,63,70,0.4)" };
+}
+
 type MatrixProps = {
   title: string;
   m: MatrixData;
@@ -98,23 +116,28 @@ export const Matrix: React.FC<MatrixProps> = ({
                       </td>
                     );
                   }
-                  // winRate: 50 中心 / residual: 0 中心（±10pp 閾値）で配色。
-                  const tone =
-                    variant === "residual"
-                      ? v >= 10
-                        ? "bg-green-700/40"
-                        : v <= -10
-                          ? "bg-red-700/40"
-                          : "bg-zinc-700/40"
-                      : v > 60
-                        ? "bg-green-700/40"
-                        : v < 40
-                          ? "bg-red-700/40"
-                          : "bg-zinc-700/40";
                   const label =
                     variant === "residual"
                       ? `${v > 0 ? "+" : ""}${v.toFixed(0)}`
                       : v.toFixed(0);
+                  if (variant === "residual") {
+                    return (
+                      <td
+                        key={`c-${a}-${b}`}
+                        className="p-1 text-center"
+                        style={residualCellStyle(v)}
+                      >
+                        {label}
+                      </td>
+                    );
+                  }
+                  // winRate: 50 中心で 3 段階配色
+                  const tone =
+                    v > 60
+                      ? "bg-green-700/40"
+                      : v < 40
+                        ? "bg-red-700/40"
+                        : "bg-zinc-700/40";
                   return (
                     <td
                       key={`c-${a}-${b}`}
