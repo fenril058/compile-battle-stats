@@ -71,10 +71,8 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
     for (let v = 0; v <= domainMax + 1e-9; v += 5) xTicks.push(v);
 
     // ラベルの重なり回避: 点を y 昇順に並べ、最小間隔を確保して縦にずらす。
-    // 元の点位置からずれたラベルには引き出し線を描く（点が密集しても読める）。
+    // labelX は各点の真横に固定（水平移動なし）。引き出し線は縦方向のみになり追いやすい。
     const LABEL_GAP = 9;
-    // ずれたラベル（=密集帯）の引き出し線終点を縦一列へ寄せる際の、円群とラベル列の水平間隔。
-    const COL_GAP = 6;
     const placed = points
       .map((pt) => {
         const cx = toX(pt.pickRate, maxPickRate);
@@ -109,33 +107,10 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
       limit = placed[i].labelY - LABEL_GAP;
     }
 
-    // 元位置から縦にずれたラベル（密集帯）を検出する。
-    for (const p of placed) p.moved = Math.abs(p.labelY - p.cy) > 1.5;
-
-    // ラベル列の整列:
-    //   - ずれていないラベルは点のすぐ脇（従来どおり）に置く。
-    //   - ずれたラベルは「連続するずれラベル群（chain）」ごと・左右の側ごとに
-    //     終点 x を一列へ揃え、引き出し線を縦列に整列させて密集帯でも読めるようにする。
-    //     列は円群の外側（右側群は右端、左側群は左端）へ寄せるのでラベルが他点の円に被らない。
-    for (let i = 0; i < placed.length; ) {
-      if (!placed[i].moved) {
-        const p = placed[i];
-        p.labelX = p.rightSide ? p.cx + p.r + 3 : p.cx - p.r - 3;
-        i += 1;
-        continue;
-      }
-      let j = i;
-      while (j < placed.length && placed[j].moved) j += 1;
-      const chain = placed.slice(i, j);
-      for (const side of [true, false]) {
-        const group = chain.filter((p) => p.rightSide === side);
-        if (group.length === 0) continue;
-        const col = side
-          ? Math.max(...group.map((p) => p.cx + p.r)) + COL_GAP
-          : Math.min(...group.map((p) => p.cx - p.r)) - COL_GAP;
-        for (const p of group) p.labelX = col;
-      }
-      i = j;
+    // ラベルを各点の真横に固定。縦にずれた場合のみ引き出し線を描く。
+    for (const p of placed) {
+      p.labelX = p.rightSide ? p.cx + p.r + 3 : p.cx - p.r - 3;
+      p.moved = Math.abs(p.labelY - p.cy) > 1.5;
     }
 
     const svgAriaLabel = t("quadrant.svgAriaLabel", { title });
@@ -298,6 +273,8 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
             {placed.map(
               ({ pt, cx, cy, r, abbr, rightSide, labelY, labelX, moved }) => {
                 const labelAnchor = rightSide ? "start" : "end";
+                // 引き出し線は円の縁から出す（中心からだと円に埋もれる）。
+                const lineX1 = rightSide ? cx + r : cx - r;
                 return (
                   <g key={pt.n}>
                     <title>
@@ -305,11 +282,11 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
                     </title>
                     {moved && (
                       <line
-                        x1={cx}
+                        x1={lineX1}
                         y1={cy}
                         x2={labelX}
                         y2={labelY}
-                        stroke="#52525b"
+                        stroke="#71717a"
                         strokeWidth={0.5}
                       />
                     )}
