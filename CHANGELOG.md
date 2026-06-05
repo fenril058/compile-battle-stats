@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.1.0...compile-battle-stats-v2.1.1) (2026-06-05)
+
+
+### Bug Fixes
+
+* **ui:** 推移グラフの縦軸を 5% 程度の細かい刻みにする ([#139](https://github.com/fenril058/compile-battle-stats/issues/139)) ([eda7f1e](https://github.com/fenril058/compile-battle-stats/commit/eda7f1e803601916b5a60d58c09b0c8c44715506))
+
 ## [2.1.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.0.0...compile-battle-stats-v2.1.0) (2026-06-04)
 
 
