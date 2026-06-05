@@ -60,7 +60,7 @@ export const Matrix: React.FC<MatrixProps> = ({
                 className="px-2 py-1 sticky left-0 z-10 bg-zinc-800"
                 scope="col"
               >
-                PRO
+                {t("matrix.cornerLabel")}
               </th>
               {protocols.map((p) => (
                 <th key={`h-${p}`} className="px-2 py-1" scope="col">

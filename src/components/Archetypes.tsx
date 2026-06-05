@@ -46,7 +46,7 @@ export const Archetypes: React.FC<ArchetypesProps> = React.memo(({ data }) => {
           <thead className="bg-zinc-800 text-zinc-300">
             <tr>
               <th className="px-2 py-1" scope="col">
-                A
+                {t("matrix.cornerLabel")}
               </th>
               {ids.map((id) => (
                 <th key={id} className="px-2 py-1" scope="col">
