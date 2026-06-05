@@ -41,8 +41,11 @@ export const Strength: React.FC<StrengthProps> = React.memo(({ model }) => {
           beta: model.firstAdvantage.toFixed(2),
         })}
       </p>
-      <p className="text-[10px] text-zinc-500 mb-2">
+      <p className="text-[10px] text-zinc-500 mb-1">
         {t("strength.note", { games: model.games })}
+      </p>
+      <p className="text-[10px] text-zinc-400 mb-2">
+        {t("strength.logitNote")}
       </p>
       <ul className="space-y-0.5" aria-label={t("strength.title")}>
         {ranked.map((r, i) => {

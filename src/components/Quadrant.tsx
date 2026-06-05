@@ -41,6 +41,14 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
       [single, minGames],
     );
 
+    const totalMatches = useMemo(
+      () =>
+        Math.round(
+          Object.values(single).reduce((acc, { g }) => acc + g, 0) / 6,
+        ),
+      [single],
+    );
+
     if (points.length === 0) {
       return (
         <p className="text-sm text-zinc-400 text-center py-12">
@@ -234,6 +242,17 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
               {t("quadrant.xAxis")}
             </text>
 
+            {/* Total matches annotation – top-right corner of plot area */}
+            <text
+              x={PLOT_W - 4}
+              y={12}
+              textAnchor="end"
+              fontSize={9}
+              fill="#71717a"
+            >
+              {t("quadrant.totalGames", { n: totalMatches })}
+            </text>
+
             {/* Data points（ラベルは重なり回避済み・ずれた場合は引き出し線） */}
             {placed.map(({ pt, cx, cy, r, abbr, rightSide, labelY }) => {
               const labelX = rightSide ? cx + r + 3 : cx - r - 3;
@@ -279,29 +298,34 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
             })}
           </g>
         </svg>
+        <p className="text-[10px] text-zinc-500 mt-1">
+          {t("quadrant.sizeNote")}
+        </p>
 
-        {/* sr-only table for accessibility */}
-        <table className="sr-only">
-          <caption>{tableCaption}</caption>
-          <thead>
-            <tr>
-              <th scope="col">{t("quadrant.tableProtocol")}</th>
-              <th scope="col">{t("quadrant.tablePickRate")}</th>
-              <th scope="col">{t("quadrant.tableWinRate")}</th>
-              <th scope="col">{t("quadrant.tableGames")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {points.map((pt) => (
-              <tr key={pt.n}>
-                <td>{pt.n}</td>
-                <td>{pt.pickRate.toFixed(1)}</td>
-                <td>{pt.p.toFixed(1)}</td>
-                <td>{pt.g}</td>
+        {/* sr-only table for accessibility – div wrapper prevents caption overflow */}
+        <div className="sr-only">
+          <table>
+            <caption>{tableCaption}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{t("quadrant.tableProtocol")}</th>
+                <th scope="col">{t("quadrant.tablePickRate")}</th>
+                <th scope="col">{t("quadrant.tableWinRate")}</th>
+                <th scope="col">{t("quadrant.tableGames")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {points.map((pt) => (
+                <tr key={pt.n}>
+                  <td>{pt.n}</td>
+                  <td>{pt.pickRate.toFixed(1)}</td>
+                  <td>{pt.p.toFixed(1)}</td>
+                  <td>{pt.g}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   },

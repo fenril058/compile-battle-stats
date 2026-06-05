@@ -103,6 +103,8 @@ export const en: TranslationDict = {
     "Each row, left to right: rank, the protocol(s), game count, the win-rate bar, and the win rate % on the right. The bar shows the 95% confidence interval (horizontal line) and point estimate (dot); the center vertical line is 50%. Fewer games means a wider bar.\n\nSorting uses the Wilson lower bound (the interval's lower end), not the raw win rate. On few games a win rate swings by chance, so we rank by a conservative floor — \"we're 95% confident the true rate is above this\" — to keep small-sample flukes off the top.\n\nWilson lower bound (p̂ = win rate, n = games, z = 1.96):\n　lower = ( p̂ + z²/2n − z·√( p̂(1−p̂)/n + z²/4n² ) ) / ( 1 + z²/n )",
   "stat.oldTable": "Old view (table)",
   "stat.ci.aria": "{n}: win rate {p}%, 95% CI {low}–{high}%, {g} games",
+  "stat.forest.games": "G",
+  "stat.forest.ciLabel": "← Win rate (95% CI) →",
 
   // Matrix
   "matrix.gamesHeading": "{title} ({games}+ games)",
@@ -139,6 +141,8 @@ export const en: TranslationDict = {
     "First-player edge: with even decks, first wins {rate}% (β={beta})",
   "strength.note":
     "Estimated from {games} matches. With less data, values shrink toward 0 (even).",
+  "strength.logitNote":
+    "θ and β use the logit (log-odds) scale = ln(p/(1−p)), not win-rate %",
   "strength.row": "{n}: strength θ={theta}",
   "strength.explain":
     "θ (theta) is each protocol's strength — but on a logit (log-odds) scale, not a win rate. 0 is average strength, positive is strong, negative is weak. A value like 0.3 is not a percentage.\n\nIt comes from a Bradley-Terry style model: all matches are solved jointly with logistic regression. The predicted win probability when three-vs-three decks meet is\n　P(first wins) = σ( β + (θf1+θf2+θf3) − (θs1+θs2+θs3) ),　σ(x)=1/(1+e^−x)\nwhere σ is the logistic function. The bigger the gap between the two teams' θ sums, the more lopsided the win rate.\n\nRough θ-gap → win rate (all else equal): raising θ by 0.3 gives σ(0.3)≈57%, by 1.0 gives σ(1.0)≈73%. Unlike a raw win rate, this is the pure contribution with partner/opponent strength (confounding) subtracted out.\n\nβ (beta) is the first-player advantage itself (also logit scale): with even decks the first player wins σ(β). With less data, θ and β shrink conservatively toward 0 (average).",
@@ -170,6 +174,8 @@ export const en: TranslationDict = {
   "quadrant.tablePickRate": "Pick Rate (%)",
   "quadrant.tableWinRate": "Win Rate (%)",
   "quadrant.tableGames": "Games",
+  "quadrant.totalGames": "n = {n} matches",
+  "quadrant.sizeNote": "Dot size = pick count",
 
   // UsageTimeline (weekly pick-rate line chart)
   "usage.title": "Weekly Pick Rate Trends",
