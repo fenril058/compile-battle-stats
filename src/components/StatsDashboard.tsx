@@ -84,9 +84,9 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   const [activeMatrixKey, setActiveMatrixKey] = useState<MatrixKey>("all");
   // 散布図の対象（全体 / 通常戦 / レシオ）。既定は全体。
   const [quadrantType, setQuadrantType] = useState<QuadrantType>("all");
-  // 全体相性表の表示範囲。既定は全プロトコル（全試合の 30×30 をそのまま）。
-  // 未使用プロトコルの空行を畳みたい場合は「出現のみ」に切り替えられる。
-  const [matrixCompact, setMatrixCompact] = useState(false);
+  // 全体相性表の表示範囲。既定は出現プロトコルのみ。
+  // トグルで全プロトコル表示に切り替えられる。
+  const [matrixCompact, setMatrixCompact] = useState(true);
   const statTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const matrixTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const statBaseId = useId();

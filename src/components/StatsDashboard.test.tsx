@@ -200,9 +200,9 @@ describe("StatsDashboard", () => {
     render(<StatsDashboard {...makeProps()} />);
     const compactBtn = screen.getByRole("button", { name: "出現のみ" });
     expect(compactBtn).toBeInTheDocument();
-    expect(compactBtn).toHaveAttribute("aria-pressed", "false");
-    fireEvent.click(compactBtn);
     expect(compactBtn).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: "全プロトコル" }));
+    expect(compactBtn).toHaveAttribute("aria-pressed", "false");
   });
 
   it("「全プロトコル」ボタンで compact を解除できる", () => {
