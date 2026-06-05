@@ -108,6 +108,7 @@ export const en: TranslationDict = {
 
   // Matrix
   "matrix.gamesHeading": "{title} ({games}+ games)",
+  "matrix.cornerLabel": "→",
 
   // MatrixPairList
   "matrixPairList.empty": "No matchup pairs with {games}+ games yet",

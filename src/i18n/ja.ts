@@ -115,6 +115,7 @@ export const ja = {
 
   // Matrix
   "matrix.gamesHeading": "{title}（{games} 戦以上）",
+  "matrix.cornerLabel": "→",
 
   // MatrixPairList
   "matrixPairList.empty": "{games} 戦以上の対戦ペアがまだありません",
