@@ -131,23 +131,24 @@ const StatSection: React.FC<StatSectionProps> = ({
   minTrio,
 }) => {
   const { t } = useT();
-  // 旧表示と同じ p 降順。`(old version)` の折りたたみ表でそのまま使う。
+  // forest plot: 下限なし（Wilson CI 幅で不確かさが表現されるため）、Wilson 下限降順
+  const forest = useMemo(() => {
+    if (!data) return [];
+    return rows(data, type, 0, 0).sort((a, b) => b.low - a.low || b.p - a.p);
+  }, [data, type]);
+
+  // 旧テーブル: 試合数下限フィルタあり、p 降順
   const r = useMemo(() => {
     if (!data) return [];
     return rows(data, type, minPair, minTrio);
   }, [data, type, minPair, minTrio]);
 
-  // forest plot の主表示は Wilson 下限の降順。小サンプルの偶然が上位に来るのを防ぐ。
-  const forest = useMemo(
-    () => [...r].sort((a, b) => b.low - a.low || b.p - a.p),
-    [r],
-  );
-
-  let displayLabel = label;
+  // 旧テーブルのラベルにのみ最小試合数を付記する
+  let oldTableLabel = label;
   if (type === "pair") {
-    displayLabel = t("stat.minGames", { label, games: minPair });
+    oldTableLabel = t("stat.minGames", { label, games: minPair });
   } else if (type === "trio") {
-    displayLabel = t("stat.minGames", { label, games: minTrio });
+    oldTableLabel = t("stat.minGames", { label, games: minTrio });
   }
 
   // 名前列の幅は種別で変える。2枚組/3枚組は "FIRE · WATER · METAL" のように長く、
@@ -157,8 +158,8 @@ const StatSection: React.FC<StatSectionProps> = ({
 
   return (
     <div>
-      <h3 className="text-sm text-zinc-400 mb-1 text-center">{displayLabel}</h3>
-      {r.length === 0 ? (
+      <h3 className="text-sm text-zinc-400 mb-1 text-center">{label}</h3>
+      {forest.length === 0 ? (
         <p className="text-xs text-zinc-400 text-center py-4">
           {t("common.noData")}
         </p>
@@ -179,7 +180,7 @@ const StatSection: React.FC<StatSectionProps> = ({
             </span>
             <span className="w-10 text-right">%</span>
           </div>
-          <ul aria-label={displayLabel} className="space-y-0.5">
+          <ul aria-label={label} className="space-y-0.5">
             {forest.map((v, i) => {
               // 勝率で点の色分け（旧表の行ハイライトと同じ閾値）。
               const dot =
@@ -252,7 +253,7 @@ const StatSection: React.FC<StatSectionProps> = ({
               {t("stat.oldTable")}
             </summary>
             <table className="mt-1 text-xs w-full border border-zinc-800">
-              <caption className="sr-only">{displayLabel}</caption>
+              <caption className="sr-only">{oldTableLabel}</caption>
               <thead className="bg-zinc-800 text-zinc-300">
                 <tr>
                   <th className="p-1" scope="col">

@@ -45,18 +45,22 @@ describe("Stat", () => {
     expect(rows[2]).toHaveTextContent("25.0");
   });
 
-  it("タブを切り替えると pair セクションへ（minPair でフィルタ）", () => {
+  it("タブを切り替えると pair セクションへ（forest は全件、旧表は minPair フィルタ）", () => {
     renderStat();
     fireEvent.click(screen.getByText("2枚組"));
 
+    // h3 は minGames なし（forest に下限不要なため）
     expect(
       screen.getByRole("heading", {
-        name: "プロトコル2枚組勝率（5戦以上）",
+        name: "プロトコル2枚組勝率",
       }),
     ).toBeInTheDocument();
-    // 5戦以上の FIRE · WATER だけ残る（forest plot と旧表(old version)の双方に出る）
+    // forest: FIRE · WATER・FIRE · METAL ともに表示（Wilson CI 幅で不確かさを表現）
     expect(screen.getAllByText("FIRE · WATER").length).toBeGreaterThan(0);
-    expect(screen.queryByText("FIRE · METAL")).not.toBeInTheDocument();
+    expect(screen.getAllByText("FIRE · METAL").length).toBeGreaterThan(0);
+    // 旧テーブルは minPair フィルタあり → FIRE · METAL は table 内に出ない
+    const table = screen.getByRole("table");
+    expect(table).not.toHaveTextContent("FIRE · METAL");
   });
 
   it("該当データが無ければ『データなし』を表示する", () => {
