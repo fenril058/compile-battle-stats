@@ -55,14 +55,14 @@ describe("Matrix", () => {
     expect(screen.getAllByText("–")).toHaveLength(2);
   });
 
-  describe("variant='residual'（0中心の発散表示）", () => {
-    // 残差: +30(強い正) / -25(強い負) / +5(微小=中立) / null
+  describe("variant='residual'（連続グラデーション）", () => {
+    // 残差: +30(強い正) / -25(強い負) / +5(小さい正) / null
     const residual: MatrixData = {
       FIRE: { FIRE: null, WATER: 30 },
       WATER: { FIRE: -25, WATER: 5 },
     };
 
-    it("符号付きで表示し、正は緑・負は赤・±10pp 未満は中立で配色する", () => {
+    it("符号付きで表示し、正は緑・負は赤を intensity に応じて連続配色する", () => {
       render(
         <Matrix
           title="m"
@@ -73,18 +73,62 @@ describe("Matrix", () => {
         />,
       );
 
+      // +30 → 最大強度の緑（intensity=1, alpha=0.90 → jsdom は 0.9 に正規化）
       const pos = screen.getByText("+30");
-      expect(pos.className).toContain("bg-green-700/40");
+      expect(pos.style.backgroundColor).toBe("rgba(21, 128, 61, 0.9)");
 
+      // -25 → 強度 25/30 ≈ 0.833 の赤（alpha=0.77）
       const neg = screen.getByText("-25");
-      expect(neg.className).toContain("bg-red-700/40");
+      expect(neg.style.backgroundColor).toBe("rgba(185, 28, 28, 0.77)");
 
-      // +5 は閾値(±10)未満なので中立色
-      const neutral = screen.getByText("+5");
-      expect(neutral.className).toContain("bg-zinc-700/40");
+      // +5 → 強度 5/30 ≈ 0.167 の薄い緑（alpha=0.23）
+      const small = screen.getByText("+5");
+      expect(small.style.backgroundColor).toBe("rgba(21, 128, 61, 0.23)");
 
       // null セルは従来どおり『–』（1 つ）
       expect(screen.getAllByText("–")).toHaveLength(1);
+    });
+
+    it("色の強度は |残差| が大きいほど高い（大 > 小）", () => {
+      render(
+        <Matrix
+          title="m"
+          m={residual}
+          bg="bg-zinc-900"
+          protocols={protocols}
+          variant="residual"
+        />,
+      );
+      const largeAlpha = Number.parseFloat(
+        (screen.getByText("+30").style.backgroundColor.match(/[\d.]+\)$/) ?? [
+          "0",
+        ])[0],
+      );
+      const smallAlpha = Number.parseFloat(
+        (screen.getByText("+5").style.backgroundColor.match(/[\d.]+\)$/) ?? [
+          "0",
+        ])[0],
+      );
+      expect(largeAlpha).toBeGreaterThan(smallAlpha);
+    });
+
+    it("RESIDUAL_CLAMP_PP (30pp) を超えた値はクランプされ最大強度と同じ alpha になる", () => {
+      const overClamp: MatrixData = {
+        FIRE: { FIRE: null, WATER: 60 }, // 30pp 超え
+        WATER: { FIRE: 30, WATER: null },
+      };
+      render(
+        <Matrix
+          title="m"
+          m={overClamp}
+          bg="bg-zinc-900"
+          protocols={protocols}
+          variant="residual"
+        />,
+      );
+      const over = screen.getByText("+60");
+      const at = screen.getByText("+30");
+      expect(over.style.backgroundColor).toBe(at.style.backgroundColor);
     });
 
     it("theta を渡すと行ヘッダに θ を符号付きで併記する", () => {
