@@ -9,8 +9,8 @@ const baseStats: StatsResult = {
     WATER: { g: 4, w: 1 }, // 25.0%
   },
   pair: {
-    "FIRE · WATER": { g: 6, w: 4 }, // 5戦以上 → 表示
-    "FIRE · METAL": { g: 2, w: 2 }, // 5戦未満 → 除外
+    "FIRE · WATER": { g: 6, w: 4 }, // スライダーデフォルト（3）以上 → 表示
+    "FIRE · METAL": { g: 2, w: 2 }, // スライダーデフォルト（3）未満 → 非表示
   },
   trio: {},
   first: {},
@@ -45,20 +45,26 @@ describe("Stat", () => {
     expect(rows[2]).toHaveTextContent("25.0");
   });
 
-  it("タブを切り替えると pair セクションへ（forest は全件、旧表は minPair フィルタ）", () => {
+  it("タブを切り替えると pair セクションへ（スライダーで試合数フィルタ）", () => {
     renderStat();
     fireEvent.click(screen.getByText("2枚組"));
 
-    // h3 は minGames なし（forest に下限不要なため）
     expect(
       screen.getByRole("heading", {
         name: "プロトコル2枚組勝率",
       }),
     ).toBeInTheDocument();
-    // forest: FIRE · WATER・FIRE · METAL ともに表示（Wilson CI 幅で不確かさを表現）
+
+    // デフォルト（3試合）: FIRE · WATER (6試合) は表示、FIRE · METAL (2試合) は非表示
     expect(screen.getAllByText("FIRE · WATER").length).toBeGreaterThan(0);
+    expect(screen.queryByText("FIRE · METAL")).not.toBeInTheDocument();
+
+    // スライダーを 1 に下げると FIRE · METAL も forest に現れる
+    const slider = screen.getByRole("slider");
+    fireEvent.change(slider, { target: { value: "1" } });
     expect(screen.getAllByText("FIRE · METAL").length).toBeGreaterThan(0);
-    // 旧テーブルは minPair フィルタあり → FIRE · METAL は table 内に出ない
+
+    // 旧テーブルはスライダーに関係なく minPair フィルタ（5戦以上）→ FIRE · METAL は非表示
     const table = screen.getByRole("table");
     expect(table).not.toHaveTextContent("FIRE · METAL");
   });

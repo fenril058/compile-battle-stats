@@ -112,6 +112,9 @@ export const ja = {
   "stat.ci.aria": "{n}: 勝率 {p}%、95%信頼区間 {low}〜{high}%、{g}戦",
   "stat.forest.games": "試合",
   "stat.forest.ciLabel": "← 勝率（95% 信頼区間）→",
+  "stat.slider.label": "最小試合数",
+  "stat.slider.games": "{n}試合",
+  "stat.slider.count": "（{shown}/{total}件）",
 
   // Matrix
   "matrix.gamesHeading": "{title}（{games} 戦以上）",
