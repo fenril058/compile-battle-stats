@@ -123,6 +123,8 @@ type StatSectionProps = {
   minTrio: number;
 };
 
+const DEFAULT_MIN_GAMES = 3;
+
 const StatSection: React.FC<StatSectionProps> = ({
   label,
   data,
@@ -131,11 +133,30 @@ const StatSection: React.FC<StatSectionProps> = ({
   minTrio,
 }) => {
   const { t } = useT();
-  // forest plot: 下限なし（Wilson CI 幅で不確かさが表現されるため）、Wilson 下限降順
-  const forest = useMemo(() => {
+  const sliderId = useId();
+  const isPairOrTrio = type === "pair" || type === "trio";
+  const [minGames, setMinGames] = useState(DEFAULT_MIN_GAMES);
+
+  // forest plot: Wilson 下限降順（スライダーで試合数下限を制御）
+  const allForest = useMemo(() => {
     if (!data) return [];
     return rows(data, type, 0, 0).sort((a, b) => b.low - a.low || b.p - a.p);
   }, [data, type]);
+
+  const maxGames = useMemo(
+    () => (allForest.length > 0 ? Math.max(...allForest.map((v) => v.g)) : 1),
+    [allForest],
+  );
+
+  // 実効下限を maxGames でクランプ: 初期値(3)が maxGames を超える小規模データや、
+  // データ再読込で maxGames が縮小した場合でも forest が空にならず、
+  // スライダーが消えて復帰不能になるのを防ぐ。
+  const clampedMin = Math.min(minGames, maxGames);
+
+  const forest = useMemo(() => {
+    if (!isPairOrTrio) return allForest;
+    return allForest.filter((v) => v.g >= clampedMin);
+  }, [allForest, isPairOrTrio, clampedMin]);
 
   // 旧テーブル: 試合数下限フィルタあり、p 降順
   const r = useMemo(() => {
@@ -165,6 +186,31 @@ const StatSection: React.FC<StatSectionProps> = ({
         </p>
       ) : (
         <>
+          {isPairOrTrio && maxGames > 1 && (
+            <div className="flex items-center gap-2 mb-2 text-xs text-zinc-400">
+              <label htmlFor={sliderId} className="shrink-0">
+                {t("stat.slider.label")}
+              </label>
+              <input
+                id={sliderId}
+                type="range"
+                min={1}
+                max={maxGames}
+                value={clampedMin}
+                onChange={(e) => setMinGames(Number(e.target.value))}
+                className="flex-1 accent-zinc-400"
+              />
+              <span className="shrink-0 tabular-nums">
+                {t("stat.slider.games", { n: clampedMin })}
+              </span>
+              <span className="shrink-0 text-zinc-500">
+                {t("stat.slider.count", {
+                  shown: forest.length,
+                  total: allForest.length,
+                })}
+              </span>
+            </div>
+          )}
           <p className="text-[10px] text-zinc-500 mb-1 text-center">
             {t("stat.sortNote")}
           </p>

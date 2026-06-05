@@ -105,6 +105,9 @@ export const en: TranslationDict = {
   "stat.ci.aria": "{n}: win rate {p}%, 95% CI {low}–{high}%, {g} games",
   "stat.forest.games": "G",
   "stat.forest.ciLabel": "← Win rate (95% CI) →",
+  "stat.slider.label": "Min. games",
+  "stat.slider.games": "{n} games",
+  "stat.slider.count": "({shown}/{total})",
 
   // Matrix
   "matrix.gamesHeading": "{title} ({games}+ games)",
