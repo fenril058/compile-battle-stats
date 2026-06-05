@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.2.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.1.1...compile-battle-stats-v2.2.0) (2026-06-05)
+
+
+### Features
+
+* **ui:** 2枚組・3枚組ランキングに最小試合数スライダーを追加する ([#162](https://github.com/fenril058/compile-battle-stats/issues/162)) ([82833d3](https://github.com/fenril058/compile-battle-stats/commit/82833d38b7bf27ecaef889e6fe9595ee31031a8f))
+* **ui:** forest plot 列ヘッダ・ロジット定義・散布図メタ情報を追加 ([#142](https://github.com/fenril058/compile-battle-stats/issues/142)) ([d7096ce](https://github.com/fenril058/compile-battle-stats/commit/d7096ce74820f8237326532f6c58437c11732124))
+* **ui:** ダッシュボードにセクション内ナビゲーションを追加する ([#156](https://github.com/fenril058/compile-battle-stats/issues/156)) ([3a47cfc](https://github.com/fenril058/compile-battle-stats/commit/3a47cfc1c7714b71200280c78d782362103e9a14))
+* **ui:** 残差マトリクスのセル配色を連続グラデーション化する ([#157](https://github.com/fenril058/compile-battle-stats/issues/157)) ([0d051ad](https://github.com/fenril058/compile-battle-stats/commit/0d051ad01602c42d842782919e1a36a3b15f8fa7))
+
+
+### Bug Fixes
+
+* **i18n:** strength.title の θ を en にも追加し散布図総試合数テストを追加 ([#144](https://github.com/fenril058/compile-battle-stats/issues/144)) ([b474ceb](https://github.com/fenril058/compile-battle-stats/commit/b474ceb0791d0116fc81c63af2f5a15206f079c3))
+* **ui:** forest plot の pair/trio 試合数下限を撤廃 ([#152](https://github.com/fenril058/compile-battle-stats/issues/152)) ([7caced0](https://github.com/fenril058/compile-battle-stats/commit/7caced0a1e7f3a6d5ff8e971284395c49d7f88d9))
+* **ui:** Synergyの表示件数を上位/下位N件に制限し中位をdetailsに折りたたむ ([#153](https://github.com/fenril058/compile-battle-stats/issues/153)) ([b5e4b7e](https://github.com/fenril058/compile-battle-stats/commit/b5e4b7ec0d31d288e140a969f545cae8b112c542))
+* **ui:** マトリクス左上「PRO」隅セルの意味を分かりやすくする ([#158](https://github.com/fenril058/compile-battle-stats/issues/158)) ([df4edd3](https://github.com/fenril058/compile-battle-stats/commit/df4edd3a1095dc050dec1bdbe4b8a0020bd2bd38))
+* **ui:** 散布図のラベルを各点の真横に固定し引き出し線を短縮する ([#161](https://github.com/fenril058/compile-battle-stats/issues/161)) ([bce13af](https://github.com/fenril058/compile-battle-stats/commit/bce13af43a944a82b30c8a6a082acb6c1710326d))
+* **ui:** 散布図の密集クラスタでラベル引き出し線終点を縦一列へ整列 ([#147](https://github.com/fenril058/compile-battle-stats/issues/147)) ([#155](https://github.com/fenril058/compile-battle-stats/issues/155)) ([93eb718](https://github.com/fenril058/compile-battle-stats/commit/93eb7189de4eb3a6ef788553d942571357f74213))
+* **ui:** 残差マトリクスの既定表示を「出現のみ」にして空カラムを抑制する ([#154](https://github.com/fenril058/compile-battle-stats/issues/154)) ([c20e5d2](https://github.com/fenril058/compile-battle-stats/commit/c20e5d276f99f3a5692dba245a50dcf72c2ac858))
+
 ## [2.1.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.1.0...compile-battle-stats-v2.1.1) (2026-06-05)
 
 
