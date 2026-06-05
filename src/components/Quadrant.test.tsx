@@ -56,4 +56,27 @@ describe("Quadrant", () => {
     expect(screen.getByText("WAT")).toBeInTheDocument();
     expect(screen.getByText("MET")).toBeInTheDocument();
   });
+
+  it("低ピック率の密集クラスタでは、ずれたラベルを共通 x 列へ整列し縦に重ねない", () => {
+    // FIRE は高ピック（クラスタ外）。WATER/METAL/LIGHT は低ピック・同勝率(33.3%)で
+    // 縦に重なる密集クラスタ。x（ピック率）は微妙に異なるので、整列前は各点脇に散る。
+    const cluster: SideStats = {
+      FIRE: { g: 60, w: 30 },
+      WATER: { g: 9, w: 3 },
+      METAL: { g: 6, w: 2 },
+      LIGHT: { g: 3, w: 1 },
+    };
+    render(<Quadrant single={cluster} title="散布図" />);
+
+    // クラスタ先頭(WATER)はその場に残り、押し下げられた MET/LIG は引き出し線の
+    // 終点 x を一列に揃える（= 同じ x 属性）。
+    const met = screen.getByText("MET");
+    const lig = screen.getByText("LIG");
+    expect(met.getAttribute("x")).toBe(lig.getAttribute("x"));
+
+    // 縦方向には最小間隔以上離れて重ならない。
+    const yMet = Number(met.getAttribute("y"));
+    const yLig = Number(lig.getAttribute("y"));
+    expect(Math.abs(yMet - yLig)).toBeGreaterThanOrEqual(8);
+  });
 });
