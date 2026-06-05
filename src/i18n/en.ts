@@ -156,6 +156,7 @@ export const en: TranslationDict = {
     "{n}: residual {residual}pp (actual {actual}% / expected {expected}%, {g} games)",
   "synergy.explain":
     "Pair synergy measures how two protocols mesh, as a residual:\n　residual = actual win rate − model-expected win rate (percentage points)\nThe expected win rate averages each containing match's predicted σ( ±β + Σθ_self − Σθ_opp ) — the win rate explained by individual strength θ alone.\n\nPositive (green) means they mesh beyond their individual strength; negative (red) means they get in each other's way. Unlike a raw pair win rate, the \"two strong protocols winning anyway\" part is removed, revealing true synergy.",
+  "synergy.more": "{count} more (middle tier, small residual)",
 
   // Archetype (co-occurrence clusters)
   "archetype.title": "Archetype Matchups",
