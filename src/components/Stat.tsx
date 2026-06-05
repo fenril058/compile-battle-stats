@@ -148,10 +148,15 @@ const StatSection: React.FC<StatSectionProps> = ({
     [allForest],
   );
 
+  // 実効下限を maxGames でクランプ: 初期値(3)が maxGames を超える小規模データや、
+  // データ再読込で maxGames が縮小した場合でも forest が空にならず、
+  // スライダーが消えて復帰不能になるのを防ぐ。
+  const clampedMin = Math.min(minGames, maxGames);
+
   const forest = useMemo(() => {
     if (!isPairOrTrio) return allForest;
-    return allForest.filter((v) => v.g >= minGames);
-  }, [allForest, isPairOrTrio, minGames]);
+    return allForest.filter((v) => v.g >= clampedMin);
+  }, [allForest, isPairOrTrio, clampedMin]);
 
   // 旧テーブル: 試合数下限フィルタあり、p 降順
   const r = useMemo(() => {
@@ -191,12 +196,12 @@ const StatSection: React.FC<StatSectionProps> = ({
                 type="range"
                 min={1}
                 max={maxGames}
-                value={minGames}
+                value={clampedMin}
                 onChange={(e) => setMinGames(Number(e.target.value))}
                 className="flex-1 accent-zinc-400"
               />
               <span className="shrink-0 tabular-nums">
-                {t("stat.slider.games", { n: minGames })}
+                {t("stat.slider.games", { n: clampedMin })}
               </span>
               <span className="shrink-0 text-zinc-500">
                 {t("stat.slider.count", {

@@ -69,6 +69,25 @@ describe("Stat", () => {
     expect(table).not.toHaveTextContent("FIRE · METAL");
   });
 
+  it("全ペアの試合数がデフォルト下限未満でも forest とスライダーを描画する", () => {
+    // 全ペアが 2 試合（maxGames=2 < デフォルト minGames=3）。
+    // クランプが無いと forest が空になり『データなし』表示＋スライダー消滅で復帰不能。
+    renderStat({
+      ...baseStats,
+      pair: {
+        "FIRE · WATER": { g: 2, w: 1 },
+        "FIRE · METAL": { g: 2, w: 2 },
+      },
+    });
+    fireEvent.click(screen.getByText("2枚組"));
+
+    // 『データなし』ではなく実データとスライダーが描画される
+    expect(screen.queryByText("データなし")).not.toBeInTheDocument();
+    expect(screen.getByRole("slider")).toBeInTheDocument();
+    expect(screen.getAllByText("FIRE · WATER").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("FIRE · METAL").length).toBeGreaterThan(0);
+  });
+
   it("該当データが無ければ『データなし』を表示する", () => {
     renderStat({ ...baseStats, single: {} });
     expect(screen.getByText("データなし")).toBeInTheDocument();
