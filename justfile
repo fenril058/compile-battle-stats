@@ -21,9 +21,21 @@ uninstall package:
 dev:
     npm run dev
 
+# 開発サーバーをLocalStorageモードで起動 (Firebase不要・UI作業向け)
+dev-local:
+    npm run dev:local
+
 # テストを実行 (例: just test --reporter=verbose)
 test *args:
-    npx vitest run {{args}}
+    vitest run {{args}}
+
+# ステージング済みファイルのみテスト
+test-staged:
+    npm run test:staged
+
+# Firebase Emulatorでインテグレーションテストを実行
+test-emulator:
+    npm run test:emulator
 
 # テストをwatch modeで実行
 test-watch:
@@ -48,3 +60,11 @@ typecheck:
 # プロダクションビルド
 build:
     npm run build
+
+# E2Eテストを実行
+e2e:
+    npm run e2e
+
+# E2EテストをUIモードで実行
+e2e-ui:
+    npm run e2e:ui
