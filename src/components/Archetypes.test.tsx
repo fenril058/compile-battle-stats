@@ -82,9 +82,11 @@ describe("Archetypes（クラスタ数の境界 / issue #149）", () => {
     const data = archetypeMatchup(matches);
 
     expect(data.archetypes).toHaveLength(1);
+    // 対角セルは同アーキ対戦数に関わらず常に null（A1 vs A1 は相性として無意味）
+    expect(data.matrix[0][0]).toBeNull();
 
     render(<Archetypes data={data} />);
-    // 凡例は 1 件、表は描画され自己対戦セルが出る（クラッシュしない）
+    // 凡例は 1 件、表は描画され対角セルは – で出る（クラッシュしない）
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
     expect(screen.getByRole("table")).toBeInTheDocument();
   });
@@ -107,6 +109,10 @@ describe("Archetypes（クラスタ数の境界 / issue #149）", () => {
     const data = archetypeMatchup(matches);
 
     expect(data.archetypes).toHaveLength(9);
+    // 全アーキタイプの対角セル（Ai vs Ai）が null であること
+    for (let i = 0; i < 9; i++) {
+      expect(data.matrix[i][i]).toBeNull();
+    }
 
     render(<Archetypes data={data} />);
     // 凡例は 9 件で、はみ出しを抑えるスクロールコンテナになっている
