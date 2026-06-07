@@ -952,7 +952,9 @@ export const archetypeMatchup = (
 
   const matrix: (number | null)[][] = Array.from({ length: n }, (_, i) =>
     Array.from({ length: n }, (_, j) =>
-      games[i][j] >= minGames ? percent(wins[i][j], games[i][j]) : null,
+      i !== j && games[i][j] >= minGames
+        ? percent(wins[i][j], games[i][j])
+        : null,
     ),
   );
 
