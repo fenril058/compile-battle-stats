@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.2.0...compile-battle-stats-v2.2.1) (2026-06-07)
+
+
+### Bug Fixes
+
+* アーキタイプ相性の対角セル（A1 vs A1）を常に null にする ([#167](https://github.com/fenril058/compile-battle-stats/issues/167)) ([d56cb37](https://github.com/fenril058/compile-battle-stats/commit/d56cb3700d11e4d990c80cd19d0ef190ad4793d0))
+
 ## [2.2.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.1.1...compile-battle-stats-v2.2.0) (2026-06-05)
 
 
