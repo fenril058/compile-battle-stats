@@ -109,6 +109,10 @@ describe("Archetypes（クラスタ数の境界 / issue #149）", () => {
     const data = archetypeMatchup(matches);
 
     expect(data.archetypes).toHaveLength(9);
+    // 全アーキタイプの対角セル（Ai vs Ai）が null であること
+    for (let i = 0; i < 9; i++) {
+      expect(data.matrix[i][i]).toBeNull();
+    }
 
     render(<Archetypes data={data} />);
     // 凡例は 9 件で、はみ出しを抑えるスクロールコンテナになっている
