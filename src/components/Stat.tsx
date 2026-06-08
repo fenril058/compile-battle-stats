@@ -1,7 +1,7 @@
 import React, { useId, useMemo, useRef, useState } from "react";
 import { type TranslationKey, useT } from "../i18n";
+import { rows } from "../lib/logic";
 import type { StatsResult } from "../types";
-import { rows } from "../utils/logic";
 
 type StatKey = keyof StatsResult;
 

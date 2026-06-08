@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useT } from "../i18n";
-import type { UsageTimeline as UsageTimelineData } from "../utils/logic";
+import type { UsageTimeline as UsageTimelineData } from "../lib/logic";
 
 type UsageTimelineProps = {
   data: UsageTimelineData;

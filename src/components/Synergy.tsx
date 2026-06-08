@@ -1,6 +1,6 @@
 import React from "react";
 import { useT } from "../i18n";
-import type { SynergyPair } from "../utils/logic";
+import type { SynergyPair } from "../lib/logic";
 
 const SYNERGY_N = 15;
 

@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { type ArchetypeMatchup, archetypeMatchup } from "../lib/logic";
 import type { Match, Trio } from "../types";
-import { type ArchetypeMatchup, archetypeMatchup } from "../utils/logic";
 import { Archetypes } from "./Archetypes";
 
 const data: ArchetypeMatchup = {

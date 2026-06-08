@@ -9,7 +9,7 @@ import {
 } from "firebase/auth";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { auth, isFirebaseEnabled } from "../firebase"; // Firebaseインスタンスをインポート
+import { auth, isFirebaseEnabled } from "../storage/firebase"; // Firebaseインスタンスをインポート
 
 type AuthState = {
   user: User | null;

@@ -6,8 +6,8 @@ import React, {
   useState,
 } from "react";
 import { useT } from "../i18n";
+import { formatCalendarDate } from "../lib/date";
 import type { Match } from "../types";
-import { formatCalendarDate } from "../utils/date";
 
 type MatchListProps = {
   matches: Match[];

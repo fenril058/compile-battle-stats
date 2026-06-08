@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MatrixView, StatsView } from "../hooks/useMatchStats";
+import type { UsageTimeline } from "../lib/logic";
 import type { MatrixData, StatsResult } from "../types";
-import type { UsageTimeline } from "../utils/logic";
 import { StatsDashboard } from "./StatsDashboard";
 
 // Matrix / MatrixPairList / Stat は描画コストが高いのでスタブ化

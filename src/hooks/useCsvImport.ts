@@ -1,8 +1,8 @@
 import type React from "react";
 import { useCallback } from "react";
 import { toast } from "react-toastify";
+import { parseMatchCsvRow } from "../lib/logic";
 import type { Match, Protocol, Ratios } from "../types";
-import { parseMatchCsvRow } from "../utils/logic";
 
 // useFirestoreから渡される add 関数用の型定義
 type AddMatchItemBatch = (payload: Omit<Match, "id">[]) => Promise<void>;

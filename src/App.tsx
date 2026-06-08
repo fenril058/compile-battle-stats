@@ -34,9 +34,9 @@ import { useCsvImport } from "./hooks/useCsvImport";
 import { useFirestore } from "./hooks/useFirestore";
 import { useMatchStats } from "./hooks/useMatchStats";
 import { useT } from "./i18n";
+import { isRatioBattle } from "./lib/logic";
+import { resolveSeasonKey } from "./lib/seasonKey";
 import type { Match, Protocol, Ratios, SeasonKey, Trio, Winner } from "./types";
-import { isRatioBattle } from "./utils/logic";
-import { resolveSeasonKey } from "./utils/seasonKey";
 
 export default function App() {
   const { t } = useT();

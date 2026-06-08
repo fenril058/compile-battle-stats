@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { PROTOCOL_SETS } from "../config";
-import type { Match, MatrixData, Protocol, StatsResult } from "../types";
 import {
   type ArchetypeMatchup,
   archetypeMatchup,
@@ -15,7 +14,8 @@ import {
   type SynergyPair,
   type UsageTimeline,
   usageTimeline,
-} from "../utils/logic";
+} from "../lib/logic";
+import type { Match, MatrixData, Protocol, StatsResult } from "../types";
 
 // Module-level sets for O(1) protocol lookup.
 // Protocol 型が V2 まで広がったので、PROTOCOL_SETS の値はそのまま Protocol[] として扱える（#73）。

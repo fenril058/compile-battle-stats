@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { SynergyPair } from "../utils/logic";
+import type { SynergyPair } from "../lib/logic";
 import { Synergy } from "./Synergy";
 
 const pairs: SynergyPair[] = [

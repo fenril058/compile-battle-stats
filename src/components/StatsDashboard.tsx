@@ -9,7 +9,7 @@ import type {
   StrengthModel,
   SynergyPair,
   UsageTimeline,
-} from "../utils/logic";
+} from "../lib/logic";
 import { Archetypes } from "./Archetypes";
 import { Explainer } from "./Explainer";
 import { Matrix } from "./Matrix";

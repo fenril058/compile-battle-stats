@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { StrengthModel } from "../utils/logic";
+import type { StrengthModel } from "../lib/logic";
 import { Strength } from "./Strength";
 
 const baseModel: StrengthModel = {
