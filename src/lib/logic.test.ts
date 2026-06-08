@@ -23,7 +23,7 @@ import {
 
 const MOCK_RATIOS = RATIO_SETS.S1;
 
-describe("utils/logic", () => {
+describe("lib/logic", () => {
   describe("ratioSum & isRatioBattle", () => {
     const ratios = MOCK_RATIOS;
     const allV1 = PROTOCOL_SETS.V1;
