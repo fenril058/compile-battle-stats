@@ -24,10 +24,17 @@ const RATIO_PROTOCOLS = PROTOCOL_SETS.V1;
 type AddBatch = (payload: Omit<Match, "id">[]) => Promise<void>;
 
 /** useCsvImport を初期化し、handleImportCsv と addBatch スパイを返す */
-const setup = () => {
+const setup = (userId?: string) => {
   const addBatch = vi.fn<AddBatch>().mockResolvedValue(undefined);
   const { result } = renderHook(() =>
-    useCsvImport(addBatch, PROTOCOLS, RATIOS, MAX_RATIO, RATIO_PROTOCOLS),
+    useCsvImport(
+      addBatch,
+      PROTOCOLS,
+      RATIOS,
+      MAX_RATIO,
+      RATIO_PROTOCOLS,
+      userId,
+    ),
   );
   return { addBatch, handleImportCsv: result.current.handleImportCsv };
 };
@@ -104,6 +111,22 @@ describe("useCsvImport", () => {
     expect(payloads[1].winner).toBe("SECOND");
     // 失敗行が無いので warn は呼ばれない
     expect(toast.warn).not.toHaveBeenCalled();
+  });
+
+  it("userId を渡すと一括登録の各行に所有者として付与する", async () => {
+    const { addBatch, handleImportCsv } = setup("owner-123");
+
+    handleImportCsv(
+      makeChangeEvent(
+        "fire,water,metal,life,spirit,speed,first,\n" +
+          "fire,water,metal,life,spirit,speed,second,",
+      ),
+    );
+
+    await waitFor(() => expect(addBatch).toHaveBeenCalledTimes(1));
+    const payloads = addBatch.mock.calls[0][0];
+    expect(payloads).toHaveLength(2);
+    expect(payloads.every((p) => p.userId === "owner-123")).toBe(true);
   });
 
   it("小文字入力も大文字化して取り込める", async () => {

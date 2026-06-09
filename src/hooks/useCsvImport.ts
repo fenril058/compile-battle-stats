@@ -55,6 +55,9 @@ export const useCsvImport = (
   ratios: Ratios,
   maxRatio: number,
   ratioProtocols: ReadonlyArray<string>,
+  // 一括登録するデータに付与する所有者 uid（remote モードで未ログインなら undefined）。
+  // Firestore ルールが create 時に userId == auth.uid を要求するため、ここで付与する。
+  userId?: string,
 ) => {
   const handleImportCsv = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,8 +113,8 @@ export const useCsvImport = (
               }
             }
 
-            // Batch処理するための配列に追加 (createdAt も含める)
-            payloadsToImport.push({ ...payload, createdAt });
+            // Batch処理するための配列に追加 (createdAt / 所有者 userId も含める)
+            payloadsToImport.push({ ...payload, createdAt, userId });
           } else {
             failCount++;
             if (failCount === 1) firstFailLine = line;
@@ -135,7 +138,14 @@ export const useCsvImport = (
       // ファイル入力の値をリセットし、同じファイルを再度選択できるようにする（ブラウザの仕様対応）
       event.target.value = "";
     },
-    [addMatchItemBatch, currentProtocols, ratios, maxRatio, ratioProtocols],
+    [
+      addMatchItemBatch,
+      currentProtocols,
+      ratios,
+      maxRatio,
+      ratioProtocols,
+      userId,
+    ],
   );
 
   return { handleImportCsv };

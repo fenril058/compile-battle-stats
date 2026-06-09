@@ -2,11 +2,45 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-    	// 読み取り（データ閲覧）は、誰でも許可 (if true)
-    	allow read: if true;
-      // 書き込み（追加、編集、削除）は、ログインしているユーザーのみ許可
-      allow write: if request.auth != null;
+
+    // --- helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 書き込み後ドキュメントの所有者が自分であること（create / update 共通）。
+    // 所有者の付け替え（他人 uid への userId 変更）を防ぐためにも使う。
+    function ownerIsSelf() {
+      return isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // 既存ドキュメントの所有者が自分であること（update / delete の前提）。
+    // userId フィールドを持たない過去データは false となり、編集・削除できない
+    // （= 読み取り専用として保護する。後方互換の移行方針は #187 を参照）。
+    function ownsExisting() {
+      return isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // 試合データの最小スキーマ検証。荒らし投稿で壊れた形のデータを入れさせない。
+    function isValidMatch() {
+      let d = request.resource.data;
+      return d.userId is string
+        && d.userId.size() > 0
+        && d.winner in ['FIRST', 'SECOND']
+        && d.first is list && d.first.size() == 3
+        && d.second is list && d.second.size() == 3
+        && d.ratio is bool;
+    }
+
+    // 試合データ（シーズン別 compile_* コレクション）。
+    // 閲覧は公開（read: if true）、作成は本人のみ、編集・削除は所有者のみ。
+    // Phase 2（承認制）では create / update の条件に `&& isApprovedMember()` を
+    // AND するだけで「承認されたメンバーだけが書き込める」へ移行できる（#187）。
+    match /{collection}/{matchId} {
+      allow read: if true;
+      allow create: if ownerIsSelf() && isValidMatch();
+      allow update: if ownsExisting() && ownerIsSelf() && isValidMatch();
+      allow delete: if ownsExisting();
     }
   }
 }

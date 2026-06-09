@@ -15,12 +15,34 @@ import {
 import rulesSource from "../../firestore.rules?raw";
 import { RemoteAdapter } from "./RemoteAdapter";
 
-type Row = { id: string; createdAt: number; name: string };
+// rules が所有者ベース＋試合スキーマ検証になったため、テスト行も
+// 有効な試合データ（userId=u1 所有）に name を付けた形にする。
+type Row = {
+  id: string;
+  createdAt: number;
+  name: string;
+  userId: string;
+  winner: "FIRST" | "SECOND";
+  first: string[];
+  second: string[];
+  ratio: boolean;
+};
+
+// name だけ差し替えた、u1 所有の有効な試合データを作る。
+const row = (name: string): Omit<Row, "id" | "createdAt"> => ({
+  name,
+  userId: "u1",
+  winner: "FIRST",
+  first: ["DARKNESS", "FIRE", "HATE"],
+  second: ["PSYCHIC", "GRAVITY", "WATER"],
+  ratio: false,
+});
 
 let testEnv: RulesTestEnvironment;
 
-// rules-unit-testing の認証済みコンテキストから Firestore を取り出して RemoteAdapter に渡す。
-// （rules は write=認証必須なので、未認証だと書き込みが拒否される）
+// rules-unit-testing の認証済みコンテキスト（uid=u1）から Firestore を取り出して
+// RemoteAdapter に渡す。rules は create で userId == auth.uid を要求するため、
+// 行データの userId も "u1" に揃える（上の row ヘルパー）。
 const authedDb = (): Firestore =>
   testEnv.authenticatedContext("u1").firestore() as unknown as Firestore;
 
@@ -49,7 +71,7 @@ describe("RemoteAdapter（emulator 統合・層②）", () => {
     const seen: Row[][] = [];
     const unsub = adapter.subscribe((items) => seen.push(items));
 
-    await adapter.add({ name: "alpha" } as Omit<Row, "id" | "createdAt">);
+    await adapter.add(row("alpha"));
 
     await vi.waitFor(() => {
       const hit = (seen.at(-1) ?? []).find((r) => r.name === "alpha");
@@ -66,9 +88,9 @@ describe("RemoteAdapter（emulator 統合・層②）", () => {
     const unsub = adapter.subscribe((items) => seen.push(items));
 
     await adapter.addBatch([
-      { name: "a", createdAt: 1 } as Omit<Row, "id">,
-      { name: "b", createdAt: 2 } as Omit<Row, "id">,
-      { name: "c", createdAt: 3 } as Omit<Row, "id">,
+      { ...row("a"), createdAt: 1 },
+      { ...row("b"), createdAt: 2 },
+      { ...row("c"), createdAt: 3 },
     ]);
 
     await vi.waitFor(() => {
@@ -87,7 +109,7 @@ describe("RemoteAdapter（emulator 統合・層②）", () => {
     const seen: Row[][] = [];
     const unsub = adapter.subscribe((items) => seen.push(items));
 
-    await adapter.add({ name: "doomed" } as Omit<Row, "id" | "createdAt">);
+    await adapter.add(row("doomed"));
     await vi.waitFor(() => {
       expect((seen.at(-1) ?? []).some((r) => r.name === "doomed")).toBe(true);
     }, waitOpts);
