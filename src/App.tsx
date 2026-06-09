@@ -225,6 +225,8 @@ export default function App() {
                 matches={sortedMatches}
                 onRemove={handleRemoveMatch}
                 isRegistrationAllowed={isRegistrationAllowed}
+                mode={mode}
+                currentUserId={user?.uid}
               />
             </Suspense>
             {/* CSV export and import */}

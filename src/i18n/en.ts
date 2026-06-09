@@ -60,6 +60,7 @@ export const en: TranslationDict = {
   "matchList.prevPage": "Previous page",
   "matchList.nextPage": "Next page",
   "matchList.pageStatus": "{current} / {total} pages",
+  "matchList.ownBadge": "You",
   "matchList.delete": "Delete",
   "matchList.confirmDelete": "Confirm",
   "matchList.cancelDelete": "Back",

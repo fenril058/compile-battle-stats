@@ -7,12 +7,16 @@ import React, {
 } from "react";
 import { useT } from "../i18n";
 import { formatCalendarDate } from "../lib/date";
-import type { Match } from "../types";
+import type { Match, StorageMode } from "../types";
 
 type MatchListProps = {
   matches: Match[];
   onRemove: (id: string) => void;
   isRegistrationAllowed: boolean;
+  // 共有ボードなので「自分が登録した行」だけ削除可能にする（Firestore rules と一致）。
+  mode: StorageMode;
+  // ログイン中ユーザーの uid（remote・未ログインや local では undefined）。
+  currentUserId?: string;
 };
 
 // --- 1. 定数を定義 ---
@@ -48,7 +52,7 @@ const formatDate = (
 
 // ★ Wrap in React.memo to prevent re-render when typing in Form
 export const MatchList: React.FC<MatchListProps> = React.memo(
-  ({ matches, onRemove, isRegistrationAllowed }) => {
+  ({ matches, onRemove, isRegistrationAllowed, mode, currentUserId }) => {
     const { t } = useT();
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -69,6 +73,22 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
     const handleDeleteClick = useCallback((id: string) => {
       setPendingDeleteId(id);
     }, []);
+
+    // 自分が所有する行か。local は認証が無く全データが単一ユーザーのものなので常に true。
+    // remote は Firestore rules と一致させ、ログイン済みかつ自分の userId の行だけ true
+    // （他人の行・userId 無しのレガシー行・未ログインは false → 削除不可）。
+    const isOwn = useCallback(
+      (m: Match): boolean =>
+        mode === "local" ? true : !!currentUserId && m.userId === currentUserId,
+      [mode, currentUserId],
+    );
+
+    // 「自分」バッジ・行ハイライトは共有ボードの remote のみ意味を持つ
+    // （local は全部自分の行なので付けても情報量ゼロ）。
+    const showOwnMark = useCallback(
+      (m: Match): boolean => mode === "remote" && isOwn(m),
+      [mode, isOwn],
+    );
 
     // 「確認」ボタン表示に切り替わったタイミングでのみフォーカスを移す。
     // ref callback 内で focus() すると再レンダーのたびに焦点を奪い返してしまう
@@ -169,14 +189,24 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
                 // 全件の中での連番を計算
                 const displayIndex =
                   matches.length - (currentPage - 1) * pageSize - i;
+                const own = showOwnMark(m);
                 return (
                   <tr
                     key={m.id}
                     className={`border-t border-zinc-800 text-center ${
                       i % 2 === 0 ? "bg-zinc-900" : "bg-zinc-950"
-                    }`}
+                    }${own ? " ring-1 ring-inset ring-blue-600/40" : ""}`}
                   >
-                    <td className="p-2">{displayIndex}</td>
+                    <td className="p-2">
+                      <span className="inline-flex items-center gap-1">
+                        {displayIndex}
+                        {own && (
+                          <span className="rounded bg-blue-600/20 px-1 text-[10px] text-blue-300">
+                            {t("matchList.ownBadge")}
+                          </span>
+                        )}
+                      </span>
+                    </td>
                     <td className="p-2">{formatDate(m.createdAt)}</td>
                     <td
                       className={`p-2 ${
@@ -204,7 +234,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
                     <td className="p-2">{m.ratio ? "◯" : ""}</td>
                     <td className="p-2">{formatCalendarDate(m.matchDate)}</td>
                     <td className="p-2 min-w-[80px]">
-                      {pendingDeleteId === m.id ? (
+                      {!isOwn(m) ? null : pendingDeleteId === m.id ? (
                         <span className="inline-flex gap-1">
                           <button
                             type="button"
