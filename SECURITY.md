@@ -13,7 +13,7 @@ Only the latest release series receives security fixes.
 
 Please **do not** open a public GitHub issue for security vulnerabilities.
 
-Report privately by emailing **fenril.nh@gmail.com** with:
+The preferred method is [GitHub Private Vulnerability Reporting](https://github.com/fenril058/compile-battle-stats/security/advisories/new). Alternatively, report by emailing **fenril.nh@gmail.com** with:
 
 - A description of the vulnerability and its potential impact
 - Steps to reproduce or proof-of-concept (if available)

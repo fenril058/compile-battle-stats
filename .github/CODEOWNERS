@@ -1,0 +1,4 @@
+# Changes to CI/CD and security-sensitive files require owner review.
+.github/workflows/ @fenril058
+.github/dependabot.yml @fenril058
+.github/CODEOWNERS @fenril058
