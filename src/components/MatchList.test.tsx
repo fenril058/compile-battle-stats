@@ -18,7 +18,7 @@ const expectButtonInBothPanels = (name: string) =>
 const expectTextInBothPanels = (text: string) =>
   expect(screen.getAllByText(text)).toHaveLength(PANELS);
 
-function makeMatches(count: number): Match[] {
+function makeMatches(count: number, userId?: string): Match[] {
   return Array.from({ length: count }, (_, i) => ({
     id: `match-${i}`,
     first: [P1, P2, P3],
@@ -27,15 +27,18 @@ function makeMatches(count: number): Match[] {
     ratio: false,
     createdAt: Date.now() - i * 1000,
     matchDate: null,
+    ...(userId !== undefined && { userId }),
   }));
 }
 
 describe("MatchList", () => {
   const mockOnRemove = vi.fn();
 
+  // 既存テストは local モード（認証なし・全行が自分の行）を前提にする。
   const defaultProps = {
     onRemove: mockOnRemove,
     isRegistrationAllowed: true,
+    mode: "local" as const,
   };
 
   beforeEach(() => {
@@ -132,6 +135,77 @@ describe("MatchList", () => {
       expect(screen.getAllByRole("button", { name: "戻る" })).toHaveLength(1);
       // 残り2行は削除ボタンのまま
       expect(screen.getAllByRole("button", { name: "削除" })).toHaveLength(2);
+    });
+  });
+
+  // --- 所有権 UI（remote・共有ボード） ---
+
+  describe("ownership (remote mode)", () => {
+    it("自分が登録した行には削除ボタンと「自分」バッジを出す", () => {
+      render(
+        <MatchList
+          {...defaultProps}
+          mode="remote"
+          currentUserId="me"
+          matches={makeMatches(1, "me")}
+        />,
+      );
+
+      expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
+      expect(screen.getByText("自分")).toBeInTheDocument();
+    });
+
+    it("他人の行には削除ボタンもバッジも出さない", () => {
+      render(
+        <MatchList
+          {...defaultProps}
+          mode="remote"
+          currentUserId="me"
+          matches={makeMatches(1, "someone-else")}
+        />,
+      );
+
+      expect(
+        screen.queryByRole("button", { name: "削除" }),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText("自分")).not.toBeInTheDocument();
+    });
+
+    it("userId を持たないレガシー行は削除できない", () => {
+      render(
+        <MatchList
+          {...defaultProps}
+          mode="remote"
+          currentUserId="me"
+          matches={makeMatches(1)}
+        />,
+      );
+
+      expect(
+        screen.queryByRole("button", { name: "削除" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("未ログイン（currentUserId なし）では誰の行も削除できない", () => {
+      render(
+        <MatchList
+          {...defaultProps}
+          mode="remote"
+          matches={makeMatches(1, "me")}
+        />,
+      );
+
+      expect(
+        screen.queryByRole("button", { name: "削除" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("local モードでは userId 無しでも自分の行として削除でき、バッジは出さない", () => {
+      render(<MatchList {...defaultProps} matches={makeMatches(1)} />);
+
+      expect(screen.getByRole("button", { name: "削除" })).toBeInTheDocument();
+      // local は全行が自分のものなのでバッジは付けない
+      expect(screen.queryByText("自分")).not.toBeInTheDocument();
     });
   });
 

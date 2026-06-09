@@ -67,6 +67,7 @@ export const ja = {
   "matchList.prevPage": "前のページ",
   "matchList.nextPage": "次のページ",
   "matchList.pageStatus": "{current} / {total} ページ",
+  "matchList.ownBadge": "自分",
   "matchList.delete": "削除",
   "matchList.confirmDelete": "確認",
   "matchList.cancelDelete": "戻る",

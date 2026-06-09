@@ -59,7 +59,15 @@ export function useFirestore<T extends WithId>(collectionName: string) {
         toast.success("試合を削除しました。");
       } catch (e) {
         console.error("[useFirestore] remove failed:", e);
-        toast.error("削除に失敗しました。");
+        // rules が所有者以外の削除を弾いた場合は理由を明示する（UI は本来
+        // 自分の行にしか削除ボタンを出さないが、競合等の保険として残す）。
+        // firebase/firestore を import せず code を duck-typing で判定する。
+        const code = (e as { code?: unknown })?.code;
+        toast.error(
+          code === "permission-denied"
+            ? "自分が登録した試合のみ削除できます。"
+            : "削除に失敗しました。",
+        );
       }
     },
     [adapter],
