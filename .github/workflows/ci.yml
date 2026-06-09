@@ -46,6 +46,8 @@ jobs:
         run: nix develop .#default --command zizmor --offline --persona=pedantic .github/workflows
 
       - name: Verify action SHA pins (pinact)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: nix develop .#default --command pinact run --check
 
       - name: Lint
