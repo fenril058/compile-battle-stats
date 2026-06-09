@@ -39,6 +39,17 @@ jobs:
       - name: Audit
         run: nix develop .#default --command npm audit --audit-level=high
 
+      - name: Lint workflows (ghalint)
+        run: nix develop .#default --command ghalint run
+
+      - name: Lint workflows (zizmor)
+        run: nix develop .#default --command zizmor --offline --persona=pedantic .github/workflows
+
+      - name: Verify action SHA pins (pinact)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: nix develop .#default --command pinact run --check
+
       - name: Lint
         run: nix develop .#default --command npm run check
 
