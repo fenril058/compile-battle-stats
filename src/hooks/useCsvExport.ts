@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import { toast } from "react-toastify";
 import { SEASONS_CONFIG } from "../config";
+import { formatCalendarDateForCsv } from "../lib/date";
 import type { Match, Ratios, SeasonKey } from "../types";
-import { formatCalendarDateForCsv } from "../utils/date";
 
 /**
  * エクスポートする CSV の先頭に挿入する、シーズンのレシオ表コメントを生成する。

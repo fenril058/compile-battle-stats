@@ -17,7 +17,7 @@ npm run test:watch   # Run tests in watch mode
 
 Run a single test file:
 ```bash
-vitest run src/utils/logic.test.ts
+vitest run src/lib/logic.test.ts
 ```
 
 This repo uses a Nix-provided dev shell, so `vitest`, `biome`, `tsc`, `vite`, and
@@ -37,7 +37,7 @@ config excludes `e2e/**`, so unit tests never pick up Playwright specs.
 `.env` points at **production** Firebase and leaks into Vitest (`import.meta.env`).
 To keep unit tests off prod, `.env.test` (committed, empty Firebase vars) overrides
 `.env` in `mode=test`, forcing `FIREBASE_CONFIG=null` (LocalStorage mode). As a
-backstop, `firebase.ts` **throws** if a real config is ever present under
+backstop, `src/storage/firebase.ts` **throws** if a real config is ever present under
 `mode=test`, so a misconfigured test can never connect to prod. Real
 `onSnapshot`/`writeBatch` integration belongs in the Firebase Emulator, not unit tests.
 
@@ -83,7 +83,7 @@ When adding a new season, add an entry to `SEASONS_CONFIG`. The rest of the app 
    - `matchup` → `MatrixData` (protocol vs protocol win-rate matrix)
 3. Results flow down to `StatsDashboard`, `Stat`, `Matrix` components.
 
-Pure logic lives in `src/utils/logic.ts`; the hooks are thin wrappers that memoize those calculations.
+Pure logic lives in `src/lib/logic.ts`; the hooks are thin wrappers that memoize those calculations.
 
 ### Match data model
 

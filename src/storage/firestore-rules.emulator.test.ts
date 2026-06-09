@@ -7,7 +7,7 @@ import {
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { afterAll, beforeAll, beforeEach, describe, it } from "vitest";
 // firestore.rules を文字列として読み込む（Vite の ?raw、node:fs 不要）
-import rulesSource from "../firestore.rules?raw";
+import rulesSource from "../../firestore.rules?raw";
 
 let testEnv: RulesTestEnvironment;
 

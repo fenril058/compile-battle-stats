@@ -7,13 +7,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
  */
 describe("firebase 本番接続トリップワイヤ", () => {
   afterEach(() => {
-    vi.doUnmock("./config/env");
+    vi.doUnmock("../config/env");
     vi.resetModules();
   });
 
   it("テスト中に本番設定が紛れ込むと import 時に throw する", async () => {
     vi.resetModules();
-    vi.doMock("./config/env", () => ({
+    vi.doMock("../config/env", () => ({
       FIREBASE_CONFIG: {
         apiKey: "k",
         authDomain: "a",
@@ -32,7 +32,7 @@ describe("firebase 本番接続トリップワイヤ", () => {
 
   it("設定が null（.env.test 相当）なら throw せず local モードになる", async () => {
     vi.resetModules();
-    vi.doMock("./config/env", () => ({ FIREBASE_CONFIG: null }));
+    vi.doMock("../config/env", () => ({ FIREBASE_CONFIG: null }));
 
     const mod = await import("./firebase");
     expect(mod.db).toBeNull();

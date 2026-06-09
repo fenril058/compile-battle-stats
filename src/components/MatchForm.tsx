@@ -4,8 +4,8 @@ import { toast } from "react-toastify";
 import type { ProtocolGroup } from "../config";
 import { useAuth } from "../hooks/useAuth";
 import { useT } from "../i18n";
+import { parseCalendarDate, todayInputValue } from "../lib/date";
 import type { Protocol, Trio, Winner } from "../types";
-import { parseCalendarDate, todayInputValue } from "../utils/date";
 import { ProtocolSelect } from "./ProtocolSelect";
 
 type MatchFormProps = {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
-import { db } from "../firebase";
+import { db } from "../storage/firebase";
 import { readLocal } from "../storage/helpers";
 import { LocalAdapter } from "../storage/LocalAdapter";
 import { RemoteAdapter } from "../storage/RemoteAdapter";

@@ -1,10 +1,8 @@
-// src/firebase.ts
-
 import { type Analytics, getAnalytics } from "firebase/analytics";
 import { type FirebaseApp, initializeApp } from "firebase/app";
 import { type Auth, getAuth } from "firebase/auth";
 import { type Firestore, getFirestore } from "firebase/firestore";
-import { FIREBASE_CONFIG } from "./config/env";
+import { FIREBASE_CONFIG } from "../config/env";
 
 let app: FirebaseApp | null = null;
 let analytics: Analytics | null = null;

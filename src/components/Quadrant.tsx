@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import { ABBR } from "../config";
 import { useT } from "../i18n";
+import { quadrantPoints } from "../lib/logic";
 import type { SideStats } from "../types";
-import { quadrantPoints } from "../utils/logic";
 
 type QuadrantProps = {
   single: SideStats;

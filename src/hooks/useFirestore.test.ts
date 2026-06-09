@@ -2,7 +2,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Firebase 未設定（db=null）= local モードを強制する
-vi.mock("../firebase", () => ({ db: null }));
+vi.mock("../storage/firebase", () => ({ db: null }));
 
 // firestore SDK は local モードでは呼ばれないが、import 解決のためにスタブ化
 vi.mock("firebase/firestore", () => ({

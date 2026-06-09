@@ -26,6 +26,7 @@ export default defineConfig({
         "src/**/*.d.ts",
         "src/setupTests.ts",
         "src/main.tsx", // アプリのブートストラップ（テスト対象外）
+        "src/storage/firebase.ts", // Firebase 初期化専用（init コードは実質テスト不能）
       ],
       thresholds: {
         // 全体の下限（新規 UI の追加で薄まり過ぎないための床）
@@ -35,7 +36,7 @@ export default defineConfig({
         lines: 81,
         // 高カバレッジ資産は個別に固定し、グローバル床に隠れたサイレント劣化を防ぐ。
         // 値は実測からわずかに下げた（ノイズ耐性のためのバッファ）。
-        "src/utils/logic.ts": {
+        "src/lib/logic.ts": {
           statements: 98,
           branches: 94,
           functions: 100,

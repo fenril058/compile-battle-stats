@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { UsageTimeline as UsageTimelineData } from "../utils/logic";
+import type { UsageTimeline as UsageTimelineData } from "../lib/logic";
 import { UsageTimeline } from "./UsageTimeline";
 
 const data: UsageTimelineData = {

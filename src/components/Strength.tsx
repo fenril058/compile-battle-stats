@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useT } from "../i18n";
-import type { StrengthModel } from "../utils/logic";
+import type { StrengthModel } from "../lib/logic";
 
 type StrengthProps = {
   model: StrengthModel;

@@ -1,7 +1,7 @@
 import React from "react";
 import { ABBR } from "../config";
 import { useT } from "../i18n";
-import type { ArchetypeMatchup } from "../utils/logic";
+import type { ArchetypeMatchup } from "../lib/logic";
 
 type ArchetypesProps = {
   data: ArchetypeMatchup;

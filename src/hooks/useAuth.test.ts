@@ -30,7 +30,7 @@ vi.mock("react-toastify", () => ({
 // auth が有効な状態を基本とする（vi.mock の factory 内で参照するため hoisted にする）
 const mockAuth = vi.hoisted(() => ({ name: "mock-auth" }));
 
-vi.mock("../firebase", () => ({
+vi.mock("../storage/firebase", () => ({
   auth: mockAuth,
   isFirebaseEnabled: true,
 }));

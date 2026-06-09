@@ -6,7 +6,7 @@ import {
   todayInputValue,
 } from "./date";
 
-describe("utils/date (暦日・UTC正準) #69", () => {
+describe("lib/date (暦日・UTC正準) #69", () => {
   describe("parseCalendarDate", () => {
     it("ハイフン区切りを UTC 真夜中として解釈する", () => {
       expect(parseCalendarDate("2024-12-25")).toBe(Date.UTC(2024, 11, 25));

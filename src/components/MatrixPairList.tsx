@@ -1,7 +1,7 @@
 import type React from "react";
 import { MIN_GAMES_FOR_MATRIX } from "../config";
 import { useT } from "../i18n";
-import type { MatchupPair } from "../utils/logic";
+import type { MatchupPair } from "../lib/logic";
 
 type MatrixPairListProps = {
   pairs: readonly MatchupPair[];
