@@ -71,6 +71,10 @@ describe("RemoteAdapter（emulator 統合・層②）", () => {
     const seen: Row[][] = [];
     const unsub = adapter.subscribe((items) => seen.push(items));
 
+    // onSnapshot の接続（初期空スナップショット）を待ってから書き込む。
+    // 書き込み先行だと listener が ready になる前に write が完了し、結果を見逃すことがある。
+    await vi.waitFor(() => expect(seen.length).toBeGreaterThan(0), waitOpts);
+
     await adapter.add(row("alpha"));
 
     await vi.waitFor(() => {
@@ -86,6 +90,8 @@ describe("RemoteAdapter（emulator 統合・層②）", () => {
     const adapter = new RemoteAdapter<Row>(authedDb(), "compile_season3");
     const seen: Row[][] = [];
     const unsub = adapter.subscribe((items) => seen.push(items));
+
+    await vi.waitFor(() => expect(seen.length).toBeGreaterThan(0), waitOpts);
 
     await adapter.addBatch([
       { ...row("a"), createdAt: 1 },
