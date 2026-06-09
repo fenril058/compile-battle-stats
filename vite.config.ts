@@ -26,6 +26,7 @@ export default defineConfig({
         "src/**/*.d.ts",
         "src/setupTests.ts",
         "src/main.tsx", // アプリのブートストラップ（テスト対象外）
+        "src/storage/firebase.ts", // Firebase 初期化専用（init コードは実質テスト不能）
       ],
       thresholds: {
         // 全体の下限（新規 UI の追加で薄まり過ぎないための床）
