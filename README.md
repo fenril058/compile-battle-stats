@@ -35,6 +35,20 @@ cp .env.example .env
 # .env を編集して Firebase の認証情報を記入
 ```
 
+### Firestore ルールのデプロイ（自分の Firebase プロジェクトで使う場合）
+
+このリポジトリには Firebase CLI のプロジェクト紐付け（`.firebaserc`）が含まれており、
+本家の `boardgame-compile` プロジェクトを指しています。**clone して自分の Firebase で
+動かす場合は、`.firebaserc` の `boardgame-compile` を自分のプロジェクト ID に書き換えて
+ください**（書き換えないと他人のプロジェクトを参照してしまい、デプロイは権限エラーになります）。
+
+```bash
+# 自分のプロジェクトに合わせて紐付け直す例
+firebase use <your-project-id> --alias default
+# Firestore セキュリティルールをデプロイ
+firebase deploy --only firestore:rules
+```
+
 ## 開発
 
 ```bash

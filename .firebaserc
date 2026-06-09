@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "boardgame-compile": "boardgame-compile"
+  },
+  "targets": {},
+  "etags": {}
+}
