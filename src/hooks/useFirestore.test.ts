@@ -25,6 +25,7 @@ vi.mock("react-toastify", () => ({
 }));
 
 import { toast } from "react-toastify";
+import { LocalAdapter } from "../storage/LocalAdapter";
 import { useFirestore } from "./useFirestore";
 
 type Row = { id: string; createdAt: number; name: string };
@@ -93,6 +94,41 @@ describe("useFirestore (local モード)", () => {
     const stored = JSON.parse(localStorage.getItem(KEY) ?? "[]");
     expect(stored.map((r: Row) => r.id)).toEqual(["keep"]);
     expect(toast.success).toHaveBeenCalled();
+  });
+
+  it("remove が permission-denied で失敗したら所有者向けの理由を出す", async () => {
+    // rules が所有者以外の削除を弾いたケース（remote 想定だが、duck-typing の
+    // 分岐は adapter の例外だけで決まるので local の足場でも検証できる）。
+    const spy = vi
+      .spyOn(LocalAdapter.prototype, "remove")
+      .mockRejectedValueOnce(
+        Object.assign(new Error("denied"), { code: "permission-denied" }),
+      );
+    const { result } = renderHook(() => useFirestore<Row>(KEY));
+
+    await act(async () => {
+      await result.current.remove("any");
+    });
+
+    expect(toast.error).toHaveBeenCalledWith(
+      "自分が登録した試合のみ削除できます。",
+    );
+    expect(toast.success).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it("remove が code 無しのエラーで失敗したら汎用メッセージを出す", async () => {
+    const spy = vi
+      .spyOn(LocalAdapter.prototype, "remove")
+      .mockRejectedValueOnce(new Error("boom"));
+    const { result } = renderHook(() => useFirestore<Row>(KEY));
+
+    await act(async () => {
+      await result.current.remove("any");
+    });
+
+    expect(toast.error).toHaveBeenCalledWith("削除に失敗しました。");
+    spy.mockRestore();
   });
 
   it("reloadLocal は localStorage を読み戻し info を出す", async () => {
