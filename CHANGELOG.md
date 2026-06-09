@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.2.1...compile-battle-stats-v2.3.0) (2026-06-09)
+
+
+### Features
+
+* Firestore を所有者ベースの書き込み制御にする ([#187](https://github.com/fenril058/compile-battle-stats/issues/187)) ([#188](https://github.com/fenril058/compile-battle-stats/issues/188)) ([64187c0](https://github.com/fenril058/compile-battle-stats/commit/64187c0a8fcacba7b55f0b082b7642d69bdc90fa))
+
 ## [2.2.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.2.0...compile-battle-stats-v2.2.1) (2026-06-07)
 
 
