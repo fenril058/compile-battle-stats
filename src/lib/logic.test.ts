@@ -6,6 +6,7 @@ import {
   detectArchetypes,
   fitStrengthModel,
   isRatioBattle,
+  isValidTrio,
   makeStats,
   matchup,
   matchupPairs,
@@ -900,6 +901,70 @@ describe("lib/logic", () => {
       const i = res.archetypes.findIndex((a) => a.protocols.includes("FIRE"));
       const j = res.archetypes.findIndex((a) => a.protocols.includes("LIFE"));
       expect(res.matrix[i][j]).toBeNull();
+    });
+
+    it("archetypeMatchup: 無効なトリオ（重複）を含む試合は除外される", () => {
+      const matches = [
+        ...Array.from({ length: 5 }, () =>
+          mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+        ),
+        // 先攻トリオに重複 → isValidTrio false → line 939 の continue が通る
+        mk(
+          ["FIRE", "FIRE", "METAL"] as unknown as Trio,
+          ["LIFE", "SPEED", "SPIRIT"],
+          "FIRST",
+        ),
+      ];
+      const res = archetypeMatchup(matches);
+      expect(res.archetypes).toHaveLength(2);
+    });
+
+    it("archetypeMatchup: 混合アーキタイプトリオで assign の多数決が機能する", () => {
+      // 5 試合の純粋クリーク + 1 試合の混合先攻トリオ
+      // 混合トリオ [FIRE, WATER, LIFE]: arch0 から 2、arch1 から 1
+      // assign は {arch0: 2, arch1: 1} を走査し、2回目の c(=1) > bestCount(=2) が false になる
+      const matches = [
+        ...Array.from({ length: 5 }, () =>
+          mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+        ),
+        mk(["FIRE", "WATER", "LIFE"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      ];
+      const res = archetypeMatchup(matches);
+      expect(res.archetypes).toHaveLength(2);
+    });
+
+    it("archetypeMatchup: 後攻勝ち試合も正しく集計される", () => {
+      // winner === "SECOND" のケースを含む（line 943 のternary 分岐）
+      const matches = [
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "SECOND"),
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "SECOND"),
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "SECOND"),
+      ];
+      const res = archetypeMatchup(matches);
+      const i = res.archetypes.findIndex((a) => a.protocols.includes("FIRE"));
+      const j = res.archetypes.findIndex((a) => a.protocols.includes("LIFE"));
+      // SECOND が 3 勝、FIRST が 2 勝 → LIFE 系が FIRE 系に 60% 勝率
+      expect(res.matrix[j][i]).toBe(60);
+    });
+  });
+
+  describe("isValidTrio", () => {
+    it("長さが 3 でないトリオは無効", () => {
+      expect(isValidTrio(["FIRE", "WATER"] as unknown as Trio)).toBe(false);
+    });
+
+    it("重複プロトコルを含むトリオは無効", () => {
+      expect(isValidTrio(["FIRE", "FIRE", "WATER"] as unknown as Trio)).toBe(
+        false,
+      );
+    });
+
+    it("長さ 3 かつ重複なしのトリオは有効", () => {
+      expect(isValidTrio(["FIRE", "WATER", "METAL"] as unknown as Trio)).toBe(
+        true,
+      );
     });
   });
 });
