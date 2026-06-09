@@ -36,7 +36,10 @@ jobs:
       - name: Verify devShell
         run: nix develop .#default --command true
 
-      - name: Audit
+      - name: Audit (production deps)
+        run: nix develop .#default --command npm audit --omit=dev --audit-level=moderate
+
+      - name: Audit (all deps)
         run: nix develop .#default --command npm audit --audit-level=high
 
       - name: Lint workflows (ghalint)
