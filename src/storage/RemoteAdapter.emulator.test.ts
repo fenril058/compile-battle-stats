@@ -40,11 +40,18 @@ const row = (name: string): Omit<Row, "id" | "createdAt"> => ({
 
 let testEnv: RulesTestEnvironment;
 
+// emulator の gRPC サーバー（netty）にレスポンスフレーミングのバグがあり、
+// 接続ごと落ちると SDK が commit 済みの write を再送して ALREADY_EXISTS で
+// 失敗することがある（#199 調査）。WebChannel（long polling）で gRPC を回避する。
+const longPolling = { experimentalForceLongPolling: true };
+
 // rules-unit-testing の認証済みコンテキスト（uid=u1）から Firestore を取り出して
 // RemoteAdapter に渡す。rules は create で userId == auth.uid を要求するため、
 // 行データの userId も "u1" に揃える（上の row ヘルパー）。
 const authedDb = (): Firestore =>
-  testEnv.authenticatedContext("u1").firestore() as unknown as Firestore;
+  testEnv
+    .authenticatedContext("u1")
+    .firestore(longPolling) as unknown as Firestore;
 
 beforeAll(async () => {
   testEnv = await initializeTestEnvironment({
@@ -71,6 +78,10 @@ describe("RemoteAdapter（emulator 統合・層②）", () => {
     const seen: Row[][] = [];
     const unsub = adapter.subscribe((items) => seen.push(items));
 
+    // onSnapshot の接続（初期空スナップショット）を待ってから書き込み、
+    // 「初期状態 → 書き込み反映」の順で snapshot が届くことを決定的にする。
+    await vi.waitFor(() => expect(seen.length).toBeGreaterThan(0), waitOpts);
+
     await adapter.add(row("alpha"));
 
     await vi.waitFor(() => {
@@ -86,6 +97,8 @@ describe("RemoteAdapter（emulator 統合・層②）", () => {
     const adapter = new RemoteAdapter<Row>(authedDb(), "compile_season3");
     const seen: Row[][] = [];
     const unsub = adapter.subscribe((items) => seen.push(items));
+
+    await vi.waitFor(() => expect(seen.length).toBeGreaterThan(0), waitOpts);
 
     await adapter.addBatch([
       { ...row("a"), createdAt: 1 },

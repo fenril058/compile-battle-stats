@@ -12,5 +12,9 @@ export default defineConfig({
     globals: true,
     testTimeout: 20000,
     hookTimeout: 30000,
+    // emulator は 1 プロジェクトを全テストファイルで共有し、clearFirestore() は
+    // プロジェクト全体を消す。ファイル並列だと他ファイルの書き込み・削除が
+    // 干渉して flaky になる（#199 調査）ため、ファイルは直列で実行する。
+    fileParallelism: false,
   },
 });
