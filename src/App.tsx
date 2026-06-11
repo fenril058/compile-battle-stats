@@ -95,7 +95,11 @@ export default function App() {
     synergy,
     usage,
     archetypes,
-  } = useMatchStats(matches, currentProtocols);
+  } = useMatchStats(
+    matches,
+    currentProtocols,
+    currentConfig.ratioProtocols as readonly Protocol[],
+  );
   const { exportToCsv } = useCsvExport(
     matches,
     seasonKey,

@@ -52,6 +52,7 @@ export type StatsView = {
 export const useMatchStats = (
   matches: Match[],
   protocols: readonly Protocol[],
+  ratioProtocols: readonly Protocol[] = V1_AUX_PROTOCOLS,
 ) => {
   const sortedMatches = useMemo(() => {
     return [...matches].sort((a, b) => {
@@ -178,13 +179,9 @@ export const useMatchStats = (
         pairs: matchupPairs(main2Aux2Matches),
       },
       ratio: {
-        data: matchup(ratioMatches, V1_AUX_PROTOCOLS),
-        residual: matchupResidual(
-          ratioMatches,
-          strengthModel,
-          V1_AUX_PROTOCOLS,
-        ),
-        protocols: V1_AUX_PROTOCOLS,
+        data: matchup(ratioMatches, ratioProtocols),
+        residual: matchupResidual(ratioMatches, strengthModel, ratioProtocols),
+        protocols: ratioProtocols,
         pairs: matchupPairs(ratioMatches),
       },
     }),
@@ -194,6 +191,7 @@ export const useMatchStats = (
       main2Aux2Matches,
       ratioMatches,
       protocols,
+      ratioProtocols,
       allReducedProtocols,
       allPairs,
       strengthModel,

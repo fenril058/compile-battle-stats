@@ -96,4 +96,49 @@ describe("useMatchStats", () => {
     expect(result.current.matrixViews.main2aux.pairs).toBeDefined();
     expect(result.current.matrixViews.ratio.pairs).toBeDefined();
   });
+
+  describe("matrixViews.ratio の軸は ratioProtocols に従う", () => {
+    const createRatioMatch = (id: string): Match =>
+      ({
+        id,
+        matchDate: 100,
+        createdAt: 100,
+        ratio: true,
+        first: ["DARKNESS", "FIRE", "PSYCHIC"],
+        second: ["DEATH", "GRAVITY", "WATER"],
+        winner: "FIRST",
+        userId: "test",
+      }) as Match;
+
+    it("ratioProtocols に PROTOCOL_SETS.V1 を渡すと、HATE/LOVE/APATHY を含まない軸になる", () => {
+      const v1Protocols = PROTOCOL_SETS.V1 as unknown as readonly Protocol[];
+      const matches = [createRatioMatch("1")];
+
+      const { result } = renderHook(() =>
+        useMatchStats(matches, testProtocols, v1Protocols),
+      );
+
+      const ratioView = result.current.matrixViews.ratio;
+      expect(ratioView.protocols).toEqual(v1Protocols);
+      expect(ratioView.protocols).not.toContain("HATE");
+      expect(ratioView.protocols).not.toContain("LOVE");
+      expect(ratioView.protocols).not.toContain("APATHY");
+    });
+
+    it("ratioProtocols に PROTOCOL_SETS.V1_AUX を渡すと従来どおり V1_AUX 全体の軸になる", () => {
+      const v1AuxProtocols =
+        PROTOCOL_SETS.V1_AUX as unknown as readonly Protocol[];
+      const matches = [createRatioMatch("1")];
+
+      const { result } = renderHook(() =>
+        useMatchStats(matches, testProtocols, v1AuxProtocols),
+      );
+
+      const ratioView = result.current.matrixViews.ratio;
+      expect(ratioView.protocols).toEqual(v1AuxProtocols);
+      expect(ratioView.protocols).toContain("HATE");
+      expect(ratioView.protocols).toContain("LOVE");
+      expect(ratioView.protocols).toContain("APATHY");
+    });
+  });
 });
