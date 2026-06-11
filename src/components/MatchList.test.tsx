@@ -314,8 +314,9 @@ describe("MatchList", () => {
       // page 2 へ移動
       fireEvent.click(screen.getAllByRole("button", { name: "2" })[0]);
 
-      // 表示件数を 20 に変更（30件 → 2ページ）
-      const selects = screen.getAllByRole("combobox");
+      // 表示件数を 20 に変更（30件 → 2ページ）。
+      // フィルタ用 select が先頭に増えたため、ラベルで表示件数セレクトを特定する。
+      const selects = screen.getAllByRole("combobox", { name: /表示件数/ });
       fireEvent.change(selects[0], { target: { value: "20" } });
 
       // "1 / 2 ページ" と表示される
@@ -410,6 +411,221 @@ describe("MatchList", () => {
     it("データなし時は ページ表示 に 'データなし' を出す", () => {
       render(<MatchList {...defaultProps} matches={[]} />);
       expectTextInBothPanels("データなし");
+    });
+  });
+
+  // --- フィルタ ---
+
+  describe("filter", () => {
+    // フィルタテスト用の matches:
+    // - match-0: first=[P1,P2,P3], second=[P4,P5,P6], ratio=false, matchDate=null
+    // - match-1: first=[P4,P5,P6], second=[P1,P2,P3], ratio=true, matchDate=null
+    // - match-2: first=[P1,P2,P3], second=[P4,P5,P6], ratio=false, matchDate=2024-03-15(UTC)
+    // - match-3: first=[P4,P5,P6], second=[P1,P2,P3], ratio=false, matchDate=2024-06-20(UTC)
+    const DATE_MAR = Date.UTC(2024, 2, 15); // 2024-03-15
+    const DATE_JUN = Date.UTC(2024, 5, 20); // 2024-06-20
+
+    function makeFilterMatches(): Match[] {
+      return [
+        {
+          id: "m0",
+          first: [P1, P2, P3],
+          second: [P4, P5, P6],
+          winner: "FIRST",
+          ratio: false,
+          createdAt: 1000,
+          matchDate: null,
+        },
+        {
+          id: "m1",
+          first: [P4, P5, P6],
+          second: [P1, P2, P3],
+          winner: "SECOND",
+          ratio: true,
+          createdAt: 900,
+          matchDate: null,
+        },
+        {
+          id: "m2",
+          first: [P1, P2, P3],
+          second: [P4, P5, P6],
+          winner: "FIRST",
+          ratio: false,
+          createdAt: 800,
+          matchDate: DATE_MAR,
+        },
+        {
+          id: "m3",
+          first: [P4, P5, P6],
+          second: [P1, P2, P3],
+          winner: "SECOND",
+          ratio: false,
+          createdAt: 700,
+          matchDate: DATE_JUN,
+        },
+      ];
+    }
+
+    it("プロトコル選択で first 側の試合が絞り込まれる", () => {
+      // P1 を含む試合: m0(first), m1(second), m2(first), m3(second) → 全4件ヒット
+      // ただし P1 は先攻側か後攻側か: first=[P1,P2,P3] のものと second=[P1,P2,P3] のもの
+      render(<MatchList {...defaultProps} matches={makeFilterMatches()} />);
+
+      const protocolSelect = screen.getByRole("combobox", {
+        name: "プロトコルで絞り込み",
+      });
+      // P1 を選択（first 側に含む m0, m2 と second 側に含む m1, m3 → 全4件）
+      fireEvent.change(protocolSelect, { target: { value: P1 } });
+
+      // 4件すべてヒット → データ行4行
+      const rows = screen.getAllByRole("row");
+      // ヘッダー1行 + データ4行 = 5行
+      expect(rows).toHaveLength(5);
+    });
+
+    it("プロトコル選択で first/second どちらでもヒットする", () => {
+      render(<MatchList {...defaultProps} matches={makeFilterMatches()} />);
+
+      const protocolSelect = screen.getByRole("combobox", {
+        name: "プロトコルで絞り込み",
+      });
+      // P4 を選択: first=[P4,P5,P6] の m1,m3 と second=[P4,P5,P6] の m0,m2 → 全4件
+      fireEvent.change(protocolSelect, { target: { value: P4 } });
+
+      const rows = screen.getAllByRole("row");
+      expect(rows).toHaveLength(5);
+    });
+
+    it("プロトコルフィルタで非該当を除外する(P1のみ、P4なし試合は除外される場合)", () => {
+      // P1 と P4 を両方含まない試合を作る
+      const extraMatch: Match = {
+        id: "extra",
+        first: [P2, P3, P5],
+        second: [P3, P5, P6],
+        winner: "FIRST",
+        ratio: false,
+        createdAt: 500,
+        matchDate: null,
+      };
+      const ms = [...makeFilterMatches(), extraMatch];
+      render(<MatchList {...defaultProps} matches={ms} />);
+
+      const protocolSelect = screen.getByRole("combobox", {
+        name: "プロトコルで絞り込み",
+      });
+      // P1 を選択: extra は P1 を含まないので除外される
+      fireEvent.change(protocolSelect, { target: { value: P1 } });
+
+      // m0,m1,m2,m3 の4件のみ残る
+      const rows = screen.getAllByRole("row");
+      expect(rows).toHaveLength(5);
+    });
+
+    it("種別フィルタ: レシオのみ で ratio=true の試合だけ残る", () => {
+      render(<MatchList {...defaultProps} matches={makeFilterMatches()} />);
+
+      const typeSelect = screen.getByRole("combobox", {
+        name: "種別で絞り込み",
+      });
+      fireEvent.change(typeSelect, { target: { value: "ratio" } });
+
+      // ratio=true は m1 のみ → データ行1行
+      const rows = screen.getAllByRole("row");
+      expect(rows).toHaveLength(2); // ヘッダー + 1行
+    });
+
+    it("種別フィルタ: 通常のみ で ratio=false の試合だけ残る", () => {
+      render(<MatchList {...defaultProps} matches={makeFilterMatches()} />);
+
+      const typeSelect = screen.getByRole("combobox", {
+        name: "種別で絞り込み",
+      });
+      fireEvent.change(typeSelect, { target: { value: "normal" } });
+
+      // ratio=false は m0, m2, m3 → データ行3行
+      const rows = screen.getAllByRole("row");
+      expect(rows).toHaveLength(4); // ヘッダー + 3行
+    });
+
+    it("日付フィルタ: from のみ設定で matchDate が null の行を除外する", () => {
+      render(<MatchList {...defaultProps} matches={makeFilterMatches()} />);
+
+      const dateFromInput = screen.getByLabelText("開始日");
+      fireEvent.change(dateFromInput, { target: { value: "2024-01-01" } });
+
+      // matchDate が null の m0, m1 は除外。m2(2024-03-15), m3(2024-06-20) のみ
+      const rows = screen.getAllByRole("row");
+      expect(rows).toHaveLength(3); // ヘッダー + 2行
+    });
+
+    it("日付フィルタ: from+to 範囲内の行のみ残る", () => {
+      render(<MatchList {...defaultProps} matches={makeFilterMatches()} />);
+
+      const dateFromInput = screen.getByLabelText("開始日");
+      const dateToInput = screen.getByLabelText("終了日");
+      fireEvent.change(dateFromInput, { target: { value: "2024-03-01" } });
+      fireEvent.change(dateToInput, { target: { value: "2024-05-01" } });
+
+      // 2024-03-01 〜 2024-05-01: m2(2024-03-15) のみ
+      const rows = screen.getAllByRole("row");
+      expect(rows).toHaveLength(2); // ヘッダー + 1行
+    });
+
+    it("日付フィルタ: matchDate が null の行は除外される", () => {
+      render(<MatchList {...defaultProps} matches={makeFilterMatches()} />);
+
+      const dateToInput = screen.getByLabelText("終了日");
+      fireEvent.change(dateToInput, { target: { value: "2024-12-31" } });
+
+      // to のみ設定: matchDate null の m0, m1 は除外。m2, m3 が残る
+      const rows = screen.getAllByRole("row");
+      expect(rows).toHaveLength(3); // ヘッダー + 2行
+    });
+
+    it("クリアボタンで全件に戻る", () => {
+      render(<MatchList {...defaultProps} matches={makeFilterMatches()} />);
+
+      const typeSelect = screen.getByRole("combobox", {
+        name: "種別で絞り込み",
+      });
+      fireEvent.change(typeSelect, { target: { value: "ratio" } });
+
+      // ratio=true は m1 のみ
+      expect(screen.getAllByRole("row")).toHaveLength(2);
+
+      // クリアボタンをクリック
+      fireEvent.click(screen.getByRole("button", { name: "クリア" }));
+
+      // 全4件に戻る
+      expect(screen.getAllByRole("row")).toHaveLength(5);
+    });
+
+    it("2ページ目にいる状態でフィルタを変えると1ページ目に戻る", () => {
+      // 25件 + フィルタ後の件数確認のためのデータ
+      const manyMatches: Match[] = Array.from({ length: 25 }, (_, i) => ({
+        id: `mm-${i}`,
+        first: [P1, P2, P3],
+        second: [P4, P5, P6],
+        winner: "FIRST" as const,
+        ratio: i % 2 === 0,
+        createdAt: 1000 - i,
+        matchDate: null,
+      }));
+
+      render(<MatchList {...defaultProps} matches={manyMatches} />);
+
+      // 2ページ目へ移動
+      fireEvent.click(screen.getAllByRole("button", { name: "2" })[0]);
+      expectTextInBothPanels("2 / 3 ページ");
+
+      // フィルタ変更 → 1ページ目に戻る
+      const typeSelect = screen.getByRole("combobox", {
+        name: "種別で絞り込み",
+      });
+      fireEvent.change(typeSelect, { target: { value: "ratio" } });
+
+      // 1ページ目に戻っているはず（ratio=true は 13件 → 2ページ構成）
+      expectTextInBothPanels("1 / 2 ページ");
     });
   });
 });
