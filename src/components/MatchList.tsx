@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import { useT } from "../i18n";
-import { formatCalendarDate } from "../lib/date";
+import { formatCalendarDate, parseCalendarDate } from "../lib/date";
 import type { Match, StorageMode } from "../types";
 
 type MatchListProps = {
@@ -50,6 +50,9 @@ const formatDate = (
   }).format(date);
 };
 
+// フィルタ種別の型
+type TypeFilter = "all" | "ratio" | "normal";
+
 // ★ Wrap in React.memo to prevent re-render when typing in Form
 export const MatchList: React.FC<MatchListProps> = React.memo(
   ({ matches, onRemove, isRegistrationAllowed, mode, currentUserId }) => {
@@ -59,20 +62,87 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
     const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
     const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
 
-    // 総ページ数を計算
-    const totalPages = Math.ceil(matches.length / pageSize);
+    // フィルタ状態
+    const [filterProtocol, setFilterProtocol] = useState<string>("");
+    const [filterType, setFilterType] = useState<TypeFilter>("all");
+    const [filterDateFrom, setFilterDateFrom] = useState<string>("");
+    const [filterDateTo, setFilterDateTo] = useState<string>("");
+
+    // 現在の matches に出現するプロトコル一覧（アルファベット順）
+    const availableProtocols = useMemo(() => {
+      const set = new Set<string>();
+      for (const m of matches) {
+        for (const p of m.first) set.add(p);
+        for (const p of m.second) set.add(p);
+      }
+      return [...set].sort();
+    }, [matches]);
+
+    // フィルタ適用後の matches
+    const filteredMatches = useMemo(() => {
+      const fromTs = parseCalendarDate(filterDateFrom);
+      const toTs = parseCalendarDate(filterDateTo);
+      const hasDateFilter = fromTs !== null || toTs !== null;
+
+      return matches.filter((m) => {
+        // プロトコルフィルタ。select の値は string なので、Trio を string の
+        // readonly 配列に広げて比較する（as never での縮小キャストは避ける）。
+        if (filterProtocol !== "") {
+          const first: readonly string[] = m.first;
+          const second: readonly string[] = m.second;
+          if (
+            !first.includes(filterProtocol) &&
+            !second.includes(filterProtocol)
+          ) {
+            return false;
+          }
+        }
+
+        // 種別フィルタ
+        if (filterType === "ratio" && !m.ratio) return false;
+        if (filterType === "normal" && m.ratio) return false;
+
+        // 対戦日フィルタ
+        if (hasDateFilter) {
+          if (m.matchDate == null) return false;
+          if (fromTs !== null && m.matchDate < fromTs) return false;
+          if (toTs !== null && m.matchDate > toTs) return false;
+        }
+
+        return true;
+      });
+    }, [matches, filterProtocol, filterType, filterDateFrom, filterDateTo]);
+
+    // フィルタが1つでも有効か
+    const isFiltered =
+      filterProtocol !== "" ||
+      filterType !== "all" ||
+      filterDateFrom !== "" ||
+      filterDateTo !== "";
+
+    // フィルタクリア
+    const handleClearFilter = useCallback(() => {
+      setFilterProtocol("");
+      setFilterType("all");
+      setFilterDateFrom("");
+      setFilterDateTo("");
+      setCurrentPage(1);
+    }, []);
+
+    // 総ページ数を計算（フィルタ後を基準）
+    const totalPages = Math.ceil(filteredMatches.length / pageSize);
 
     // シーズン切替・削除で件数が減ったとき currentPage > totalPages になりうる。
     // useEffect で state を書き戻すと1フレーム遅延するため、導出値でクランプする。
     const effectivePage = Math.min(currentPage, Math.max(1, totalPages));
 
-    // データをスライス
+    // データをスライス（フィルタ後を基準）
     const displayMatches = useMemo(() => {
       const start = (effectivePage - 1) * pageSize;
       const end = start + pageSize;
       // ページネーションに合わせてデータをスライス
-      return matches.slice(start, end); // Assumes matches are already sorted NEWEST first
-    }, [matches, effectivePage, pageSize]);
+      return filteredMatches.slice(start, end); // Assumes matches are already sorted NEWEST first
+    }, [filteredMatches, effectivePage, pageSize]);
 
     const handleDeleteClick = useCallback((id: string) => {
       setPendingDeleteId(id);
@@ -121,6 +191,24 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
       setCurrentPage(1);
     };
 
+    // フィルタ変更ハンドラ（フィルタ変更時は page=1 に戻す）
+    const handleProtocolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setFilterProtocol(e.target.value);
+      setCurrentPage(1);
+    };
+    const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setFilterType(e.target.value as TypeFilter);
+      setCurrentPage(1);
+    };
+    const handleDateFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFilterDateFrom(e.target.value);
+      setCurrentPage(1);
+    };
+    const handleDateToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFilterDateTo(e.target.value);
+      setCurrentPage(1);
+    };
+
     // ページネーションコントロールの配列を生成
     const pageNumbers = useMemo(() => {
       const range = [];
@@ -149,6 +237,81 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
           {t("matchList.title", { count: matches.length })}
         </h2>
 
+        {/* フィルタ UI */}
+        <div className="flex flex-wrap items-center gap-2 mb-2 text-xs text-zinc-300">
+          <span className="text-zinc-400">{t("matchList.filter.label")}:</span>
+
+          {/* プロトコルフィルタ */}
+          <select
+            value={filterProtocol}
+            onChange={handleProtocolChange}
+            aria-label={t("matchList.filter.protocolAria")}
+            className="bg-zinc-800 border border-zinc-700 rounded p-1 text-white text-xs"
+          >
+            <option value="">{t("matchList.filter.allProtocols")}</option>
+            {availableProtocols.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+
+          {/* 種別フィルタ */}
+          <select
+            value={filterType}
+            onChange={handleTypeChange}
+            aria-label={t("matchList.filter.typeAria")}
+            className="bg-zinc-800 border border-zinc-700 rounded p-1 text-white text-xs"
+          >
+            <option value="all">{t("matchList.filter.typeAll")}</option>
+            <option value="ratio">{t("matchList.filter.typeRatio")}</option>
+            <option value="normal">{t("matchList.filter.typeNormal")}</option>
+          </select>
+
+          {/* 対戦日フィルタ */}
+          <label className="flex items-center gap-1">
+            <span className="text-zinc-400">
+              {t("matchList.filter.dateFrom")}
+            </span>
+            <input
+              type="date"
+              value={filterDateFrom}
+              onChange={handleDateFromChange}
+              className="bg-zinc-800 border border-zinc-700 rounded p-1 text-white text-xs"
+            />
+          </label>
+          <label className="flex items-center gap-1">
+            <span className="text-zinc-400">
+              {t("matchList.filter.dateTo")}
+            </span>
+            <input
+              type="date"
+              value={filterDateTo}
+              onChange={handleDateToChange}
+              className="bg-zinc-800 border border-zinc-700 rounded p-1 text-white text-xs"
+            />
+          </label>
+
+          {/* フィルタ有効時: 件数表示 + クリアボタン */}
+          {isFiltered && (
+            <>
+              <span className="text-zinc-300">
+                {t("matchList.filter.result", {
+                  shown: filteredMatches.length,
+                  total: matches.length,
+                })}
+              </span>
+              <button
+                type="button"
+                onClick={handleClearFilter}
+                className="px-2 py-1 rounded bg-zinc-700 hover:bg-zinc-600 text-zinc-200 text-xs"
+              >
+                {t("matchList.filter.clear")}
+              </button>
+            </>
+          )}
+        </div>
+
         {/* ページネーションコントロール (上部) */}
         <PaginationControls
           currentPage={effectivePage}
@@ -157,7 +320,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
           pageNumbers={pageNumbers}
           handlePageChange={handlePageChange}
           handlePageSizeChange={handlePageSizeChange}
-          totalMatches={matches.length}
+          totalMatches={filteredMatches.length}
           label={t("matchList.paginationTop")}
         />
 
@@ -192,10 +355,9 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
             </thead>
             <tbody>
               {displayMatches.map((m, i) => {
-                // matches は App.tsx 最新順（createdAt 降順）にソートされている前提で、
-                // 全件の中での連番を計算
+                // フィルタ後の全件の中での連番を計算
                 const displayIndex =
-                  matches.length - (effectivePage - 1) * pageSize - i;
+                  filteredMatches.length - (effectivePage - 1) * pageSize - i;
                 const own = showOwnMark(m);
                 return (
                   <tr
@@ -300,7 +462,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
           pageNumbers={pageNumbers}
           handlePageChange={handlePageChange}
           handlePageSizeChange={handlePageSizeChange}
-          totalMatches={matches.length}
+          totalMatches={filteredMatches.length}
           label={t("matchList.paginationBottom")}
         />
       </div>

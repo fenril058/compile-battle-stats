@@ -65,6 +65,17 @@ export const en: TranslationDict = {
   "matchList.delete": "Delete",
   "matchList.confirmDelete": "Confirm",
   "matchList.cancelDelete": "Back",
+  "matchList.filter.label": "Filter",
+  "matchList.filter.protocolAria": "Filter by protocol",
+  "matchList.filter.allProtocols": "All protocols",
+  "matchList.filter.typeAria": "Filter by type",
+  "matchList.filter.typeAll": "All",
+  "matchList.filter.typeRatio": "Ratio only",
+  "matchList.filter.typeNormal": "Normal only",
+  "matchList.filter.dateFrom": "From date",
+  "matchList.filter.dateTo": "To date",
+  "matchList.filter.result": "Filtered: {shown} / {total}",
+  "matchList.filter.clear": "Clear",
 
   // StatsDashboard
   "statsDashboard.statView": "Stats view",

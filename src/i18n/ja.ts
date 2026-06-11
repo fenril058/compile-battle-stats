@@ -72,6 +72,17 @@ export const ja = {
   "matchList.delete": "削除",
   "matchList.confirmDelete": "確認",
   "matchList.cancelDelete": "戻る",
+  "matchList.filter.label": "絞り込み",
+  "matchList.filter.protocolAria": "プロトコルで絞り込み",
+  "matchList.filter.allProtocols": "すべてのプロトコル",
+  "matchList.filter.typeAria": "種別で絞り込み",
+  "matchList.filter.typeAll": "すべて",
+  "matchList.filter.typeRatio": "レシオのみ",
+  "matchList.filter.typeNormal": "通常のみ",
+  "matchList.filter.dateFrom": "開始日",
+  "matchList.filter.dateTo": "終了日",
+  "matchList.filter.result": "絞り込み: {shown} / {total}件",
+  "matchList.filter.clear": "クリア",
 
   // StatsDashboard
   "statsDashboard.statView": "統計ビュー",
