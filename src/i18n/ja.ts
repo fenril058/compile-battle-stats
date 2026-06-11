@@ -133,6 +133,8 @@ export const ja = {
 
   // DataToolbar
   "dataToolbar.importLabel": "CSVから試合データをインポート",
+  "dataToolbar.formatNote":
+    "形式: F1, F2, F3, S1, S2, S3, Winner, Date, Ratio, CreatedAt",
   "dataToolbar.selectFile": "ファイルを選択",
   "dataToolbar.reimportNote":
     "※ 本アプリがエクスポートした CSV ファイルを再インポートできます",

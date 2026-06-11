@@ -60,7 +60,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
           </div>
 
           <p className="text-xs text-zinc-400 mt-2">
-            形式: F1, F2, F3, S1, S2, S3, Winner, Date, Ratio, CreatedAt
+            {t("dataToolbar.formatNote")}
           </p>
           <p className="text-xs text-zinc-400 mt-1">
             {t("dataToolbar.reimportNote")}

@@ -126,6 +126,8 @@ export const en: TranslationDict = {
 
   // DataToolbar
   "dataToolbar.importLabel": "Import match data from CSV",
+  "dataToolbar.formatNote":
+    "Format: F1, F2, F3, S1, S2, S3, Winner, Date, Ratio, CreatedAt",
   "dataToolbar.selectFile": "Choose file",
   "dataToolbar.reimportNote":
     "* You can re-import a CSV file exported by this app",
