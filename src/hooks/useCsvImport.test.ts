@@ -24,7 +24,7 @@ const RATIO_PROTOCOLS = PROTOCOL_SETS.V1;
 type AddBatch = (payload: Omit<Match, "id">[]) => Promise<void>;
 
 /** useCsvImport を初期化し、handleImportCsv と addBatch スパイを返す */
-const setup = (userId?: string) => {
+const setup = (userId?: string, requireLogin = false) => {
   const addBatch = vi.fn<AddBatch>().mockResolvedValue(undefined);
   const { result } = renderHook(() =>
     useCsvImport(
@@ -34,6 +34,7 @@ const setup = (userId?: string) => {
       MAX_RATIO,
       RATIO_PROTOCOLS,
       userId,
+      requireLogin,
     ),
   );
   return { addBatch, handleImportCsv: result.current.handleImportCsv };
@@ -182,5 +183,16 @@ describe("useCsvImport", () => {
 
     expect(toast.error).not.toHaveBeenCalled();
     expect(addBatch).not.toHaveBeenCalled();
+  });
+
+  it("requireLogin: true のとき addBatch を呼ばず、エラートーストを出し、input をリセットする", () => {
+    const { addBatch, handleImportCsv } = setup(undefined, true);
+
+    const event = makeChangeEvent("FIRE,WATER,METAL,LIFE,SPIRIT,SPEED,FIRST,");
+    handleImportCsv(event);
+
+    expect(addBatch).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(event.target.value).toBe("");
   });
 });

@@ -1,6 +1,7 @@
 import type React from "react";
 import { useCallback } from "react";
 import { toast } from "react-toastify";
+import { useT } from "../i18n";
 import { parseMatchCsvRow } from "../lib/logic";
 import type { Match, Protocol, Ratios } from "../types";
 
@@ -58,9 +59,18 @@ export const useCsvImport = (
   // 一括登録するデータに付与する所有者 uid（remote モードで未ログインなら undefined）。
   // Firestore ルールが create 時に userId == auth.uid を要求するため、ここで付与する。
   userId?: string,
+  // remote モードで未ログインのとき true。インポートをログイン要求トーストで中断する。
+  requireLogin = false,
 ) => {
+  const { t } = useT();
   const handleImportCsv = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (requireLogin) {
+        toast.error(t("dataToolbar.toast.loginRequired"));
+        event.target.value = "";
+        return;
+      }
+
       if (!event.target.files || event.target.files.length === 0) return;
 
       const file = event.target.files[0];
@@ -145,6 +155,8 @@ export const useCsvImport = (
       maxRatio,
       ratioProtocols,
       userId,
+      requireLogin,
+      t,
     ],
   );
 

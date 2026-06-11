@@ -129,6 +129,7 @@ export const en: TranslationDict = {
   "dataToolbar.selectFile": "Choose file",
   "dataToolbar.reimportNote":
     "* You can re-import a CSV file exported by this app",
+  "dataToolbar.toast.loginRequired": "Login is required to import CSV.",
 
   // ErrorBoundary
   "errorBoundary.title": "Something went wrong",
