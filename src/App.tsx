@@ -92,6 +92,8 @@ export default function App() {
     matrixViews,
     sortedMatches,
     strengthModel,
+    strengthModelNormal,
+    strengthModelRatio,
     synergy,
     usage,
     archetypes,
@@ -218,6 +220,8 @@ export default function App() {
             minPair={MIN_GAMES_FOR_PAIR_STATS}
             minTrio={MIN_GAMES_FOR_TRIO_STATS}
             strengthModel={strengthModel}
+            strengthModelNormal={strengthModelNormal}
+            strengthModelRatio={strengthModelRatio}
             synergy={synergy}
             usage={usage}
             archetypes={archetypes}

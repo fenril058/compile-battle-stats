@@ -183,6 +183,12 @@ export const en: TranslationDict = {
   "strength.logitNote":
     "θ and β use the logit (log-odds) scale = ln(p/(1−p)), not win-rate %",
   "strength.row": "{n}: strength θ={theta}",
+  "strength.betaBySlice.heading":
+    "First-player edge by format (Normal / Ratio)",
+  "strength.betaBySlice.normal":
+    "Normal: first wins {rate}% (β = {beta}, {games} games)",
+  "strength.betaBySlice.ratio":
+    "Ratio: first wins {rate}% (β = {beta}, {games} games)",
   "strength.explain":
     "θ (theta) is each protocol's strength — but on a logit (log-odds) scale, not a win rate. 0 is average strength, positive is strong, negative is weak. A value like 0.3 is not a percentage.\n\nIt comes from a Bradley-Terry style model: all matches are solved jointly with logistic regression. The predicted win probability when three-vs-three decks meet is\n　P(first wins) = σ( β + (θf1+θf2+θf3) − (θs1+θs2+θs3) ),　σ(x)=1/(1+e^−x)\nwhere σ is the logistic function. The bigger the gap between the two teams' θ sums, the more lopsided the win rate.\n\nRough θ-gap → win rate (all else equal): raising θ by 0.3 gives σ(0.3)≈57%, by 1.0 gives σ(1.0)≈73%. Unlike a raw win rate, this is the pure contribution with partner/opponent strength (confounding) subtracted out.\n\nβ (beta) is the first-player advantage itself (also logit scale): with even decks the first player wins σ(β). With less data, θ and β shrink conservatively toward 0 (average).",
 

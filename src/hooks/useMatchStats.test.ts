@@ -97,6 +97,23 @@ describe("useMatchStats", () => {
     expect(result.current.matrixViews.ratio.pairs).toBeDefined();
   });
 
+  it("戻り値に strengthModelNormal / strengthModelRatio が含まれ ratio フラグでスライスされている", () => {
+    const matches = [
+      createMatch("1", 100, 100, false), // Normal
+      createMatch("2", 100, 100, false), // Normal
+      createMatch("3", 100, 100, true), // Ratio
+    ];
+
+    const { result } = renderHook(() => useMatchStats(matches, testProtocols));
+
+    // strengthModelNormal は通常戦のみ（2試合）
+    expect(result.current.strengthModelNormal.games).toBe(2);
+    // strengthModelRatio はレシオ戦のみ（1試合）
+    expect(result.current.strengthModelRatio.games).toBe(1);
+    // 全体 strengthModel は全試合（3試合）
+    expect(result.current.strengthModel.games).toBe(3);
+  });
+
   describe("matrixViews.ratio の軸は ratioProtocols に従う", () => {
     const createRatioMatch = (id: string): Match =>
       ({

@@ -36,6 +36,9 @@ interface StatsDashboardProps {
   minPair: number;
   minTrio: number;
   strengthModel: StrengthModel;
+  // スライス別 β（通常戦/レシオ戦）。未指定なら Strength 側で内訳を出さない。
+  strengthModelNormal?: StrengthModel;
+  strengthModelRatio?: StrengthModel;
   synergy: readonly SynergyPair[];
   usage: UsageTimeline;
   archetypes: ArchetypeMatchup;
@@ -74,6 +77,8 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   minPair,
   minTrio,
   strengthModel,
+  strengthModelNormal,
+  strengthModelRatio,
   synergy,
   usage,
   archetypes,
@@ -250,7 +255,11 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       {/* Strength section (Bradley-Terry θ / β) */}
       <section id="strength" className="scroll-mt-14">
         <h2 className="font-semibold mb-3">{t("strength.title")}</h2>
-        <Strength model={strengthModel} />
+        <Strength
+          model={strengthModel}
+          normalModel={strengthModelNormal}
+          ratioModel={strengthModelRatio}
+        />
         <Explainer bodyKey="strength.explain" />
       </section>
 

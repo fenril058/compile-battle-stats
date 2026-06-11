@@ -148,6 +148,16 @@ export const useMatchStats = (
     [matches],
   );
 
+  // 通常戦 / レシオ戦それぞれの先攻補正 β を個別推定。
+  const strengthModelNormal: StrengthModel = useMemo(
+    () => fitStrengthModel(normalMatches),
+    [normalMatches],
+  );
+  const strengthModelRatio: StrengthModel = useMemo(
+    () => fitStrengthModel(ratioMatchesForStats),
+    [ratioMatchesForStats],
+  );
+
   const matrixViews = useMemo(
     () => ({
       // 全試合・全プロトコルの相性表（30×30）。縮約と別表現の補助データ付き。
@@ -218,6 +228,8 @@ export const useMatchStats = (
     matrixViews,
     sortedMatches,
     strengthModel,
+    strengthModelNormal,
+    strengthModelRatio,
     synergy,
     usage,
     archetypes,
