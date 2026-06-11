@@ -3,6 +3,7 @@ import { PROTOCOL_SETS } from "../config";
 import {
   type ArchetypeMatchup,
   archetypeMatchup,
+  bootstrapTheta,
   fitStrengthModel,
   type MatchupPair,
   makeStats,
@@ -12,6 +13,7 @@ import {
   pairSynergy,
   type StrengthModel,
   type SynergyPair,
+  type ThetaBootstrap,
   type UsageTimeline,
   usageTimeline,
 } from "../lib/logic";
@@ -223,6 +225,12 @@ export const useMatchStats = (
     [matches],
   );
 
+  // θ の 95% ブートストラップ区間。
+  const thetaBootstrap: ThetaBootstrap = useMemo(
+    () => bootstrapTheta(matches),
+    [matches],
+  );
+
   return {
     statViews,
     matrixViews,
@@ -233,5 +241,6 @@ export const useMatchStats = (
     synergy,
     usage,
     archetypes,
+    thetaBootstrap,
   };
 };

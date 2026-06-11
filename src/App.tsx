@@ -97,6 +97,7 @@ export default function App() {
     synergy,
     usage,
     archetypes,
+    thetaBootstrap,
   } = useMatchStats(
     matches,
     currentProtocols,
@@ -230,6 +231,7 @@ export default function App() {
             synergy={synergy}
             usage={usage}
             archetypes={archetypes}
+            thetaBootstrap={thetaBootstrap}
           />
 
           {/* Data Management Section */}

@@ -114,6 +114,26 @@ describe("useMatchStats", () => {
     expect(result.current.strengthModel.games).toBe(3);
   });
 
+  it("戻り値に thetaBootstrap が含まれ intervals と samples を持つ", () => {
+    const matches = [
+      createMatch("1", 100, 100, false),
+      createMatch("2", 100, 100, false),
+    ];
+    const { result } = renderHook(() => useMatchStats(matches, testProtocols));
+    const tb = result.current.thetaBootstrap;
+    expect(tb).toBeDefined();
+    expect(typeof tb.samples).toBe("number");
+    expect(tb.samples).toBeGreaterThan(0);
+    expect(typeof tb.intervals).toBe("object");
+  });
+
+  it("試合が 0 件のとき thetaBootstrap は空の intervals と samples=0 を返す", () => {
+    const { result } = renderHook(() => useMatchStats([], testProtocols));
+    const tb = result.current.thetaBootstrap;
+    expect(tb.samples).toBe(0);
+    expect(tb.intervals).toEqual({});
+  });
+
   describe("matrixViews.ratio の軸は ratioProtocols に従う", () => {
     const createRatioMatch = (id: string): Match =>
       ({

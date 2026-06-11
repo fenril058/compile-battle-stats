@@ -3,6 +3,7 @@ import { PROTOCOL_SETS, RATIO_SETS } from "../config";
 import type { Match, Trio } from "../types";
 import {
   archetypeMatchup,
+  bootstrapTheta,
   detectArchetypes,
   fitStrengthModel,
   isRatioBattle,
@@ -1015,6 +1016,80 @@ describe("lib/logic", () => {
       expect(isValidTrio(["FIRE", "WATER", "METAL"] as unknown as Trio)).toBe(
         true,
       );
+    });
+  });
+
+  describe("bootstrapTheta", () => {
+    let idSeq = 0;
+    const mk = (
+      first: Trio,
+      second: Trio,
+      winner: "FIRST" | "SECOND",
+    ): Match => ({
+      id: `bs${idSeq++}`,
+      first,
+      second,
+      winner,
+      ratio: false,
+      createdAt: 0,
+    });
+
+    // FIRE が常に勝つ合成データ（fitStrengthModel のものと同形）
+    const aStrongest = (): Match[] => [
+      mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      mk(["LIFE", "SPEED", "SPIRIT"], ["FIRE", "WATER", "METAL"], "SECOND"),
+      mk(["FIRE", "LIFE", "SPEED"], ["WATER", "METAL", "SPIRIT"], "FIRST"),
+      mk(["WATER", "METAL", "SPIRIT"], ["FIRE", "LIFE", "SPEED"], "SECOND"),
+    ];
+
+    it("有効試合が 0 件なら空の intervals と samples=0 を返す", () => {
+      const result = bootstrapTheta([]);
+      expect(result).toEqual({ intervals: {}, samples: 0 });
+    });
+
+    it("同一 seed で 2 回呼ぶと結果が完全一致（決定性）", () => {
+      const matches = aStrongest();
+      const r1 = bootstrapTheta(matches, { samples: 20, seed: 99 });
+      const r2 = bootstrapTheta(matches, { samples: 20, seed: 99 });
+      expect(r1).toEqual(r2);
+    });
+
+    it("seed が異なると結果が変わる（乱数性の確認）", () => {
+      const matches = aStrongest();
+      const r1 = bootstrapTheta(matches, { samples: 20, seed: 1 });
+      const r2 = bootstrapTheta(matches, { samples: 20, seed: 2 });
+      // interval の low が少なくとも一つ異なるはず
+      const diff = Object.keys(r1.intervals).some(
+        (p) => r1.intervals[p]?.low !== r2.intervals[p]?.low,
+      );
+      expect(diff).toBe(true);
+    });
+
+    it("全勝プロトコル(FIRE)の区間が 0 より上に寄る", () => {
+      const result = bootstrapTheta(aStrongest(), { samples: 50, seed: 42 });
+      const iv = result.intervals.FIRE;
+      expect(iv).toBeDefined();
+      // low > 0: 区間全体が正側（強いと断定できる）
+      expect(iv?.low).toBeGreaterThan(0);
+    });
+
+    it("全敗プロトコル(SPIRIT)の区間が 0 より下に寄る", () => {
+      const result = bootstrapTheta(aStrongest(), { samples: 50, seed: 42 });
+      const iv = result.intervals.SPIRIT;
+      expect(iv).toBeDefined();
+      expect(iv?.high).toBeLessThan(0);
+    });
+
+    it("全プロトコルで low <= high", () => {
+      const result = bootstrapTheta(aStrongest(), { samples: 50, seed: 42 });
+      for (const [, iv] of Object.entries(result.intervals)) {
+        expect(iv.low).toBeLessThanOrEqual(iv.high);
+      }
+    });
+
+    it("samples フィールドが指定した回数と一致する", () => {
+      const result = bootstrapTheta(aStrongest(), { samples: 30, seed: 1 });
+      expect(result.samples).toBe(30);
     });
   });
 });

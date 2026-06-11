@@ -630,6 +630,106 @@ export const fitStrengthModel = (
   };
 };
 
+// --- Bradley-Terry θ のブートストラップ区間推定 ----------------------------
+
+export type ThetaInterval = { low: number; high: number };
+export type ThetaBootstrap = {
+  intervals: Record<string, ThetaInterval>;
+  samples: number;
+};
+
+/**
+ * mulberry32 — 32-bit シード付き決定的 PRNG（Math.random 禁止、テスト再現性のため）。
+ * 戻り値は [0, 1) の浮動小数点数。
+ */
+const mulberry32 = (seed: number): (() => number) => {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let z = s;
+    z = Math.imul(z ^ (z >>> 15), z | 1);
+    z ^= z + Math.imul(z ^ (z >>> 7), z | 61);
+    z = (z ^ (z >>> 14)) >>> 0;
+    return z / 0x100000000;
+  };
+};
+
+/**
+ * 試合のブートストラップ・リサンプリングで θ の 95% 信頼区間を推定する。
+ *
+ * 有効試合（isValidTrio 両側通過）を母集団に、同サイズの復元抽出を samples 回行い、
+ * 各回 fitStrengthModel を実行。各プロトコルの θ 標本から 2.5/97.5 パーセンタイル
+ * （最近傍順位法）を取り {low, high} とする。
+ *
+ * @param matches - 全試合一覧
+ * @param options.samples - リサンプル回数（既定 50）
+ * @param options.seed - PRNG シード（既定 42）
+ * @param options.fitOptions - fitStrengthModel に渡すオプション（既定 { maxIter: 300 }）
+ */
+export const bootstrapTheta = (
+  matches: Match[],
+  options?: {
+    samples?: number;
+    seed?: number;
+    fitOptions?: StrengthModelOptions;
+  },
+): ThetaBootstrap => {
+  const nSamples = options?.samples ?? 50;
+  const seed = options?.seed ?? 42;
+  const fitOptions: StrengthModelOptions = options?.fitOptions ?? {
+    maxIter: 300,
+  };
+
+  // 有効試合のみ抽出（母集団）
+  const valid: Match[] = [];
+  for (const mt of matches) {
+    if (isValidTrio(mt.first) && isValidTrio(mt.second)) {
+      valid.push(mt);
+    }
+  }
+
+  if (valid.length === 0) {
+    return { intervals: {}, samples: 0 };
+  }
+
+  const rng = mulberry32(seed);
+  const n = valid.length;
+
+  // プロトコルごとに θ 標本を収集する Map
+  const thetaSamples = new Map<string, number[]>();
+
+  // リサンプル用配列を一度確保して再利用（無駄な配列生成を避ける）
+  const resampled: Match[] = new Array(n);
+
+  for (let s = 0; s < nSamples; s += 1) {
+    // 復元抽出
+    for (let i = 0; i < n; i += 1) {
+      resampled[i] = valid[Math.floor(rng() * n)] as Match;
+    }
+
+    const model = fitStrengthModel(resampled, fitOptions);
+
+    for (const [p, theta] of Object.entries(model.theta)) {
+      if (!thetaSamples.has(p)) thetaSamples.set(p, []);
+      (thetaSamples.get(p) as number[]).push(theta);
+    }
+  }
+
+  // 2.5/97.5 パーセンタイル（最近傍順位法）
+  const intervals: Record<string, ThetaInterval> = {};
+  for (const [p, vals] of thetaSamples) {
+    if (vals.length === 0) continue;
+    const sorted = [...vals].sort((a, b) => a - b);
+    const m = sorted.length;
+    // 最近傍順位法: index = round((q / 100) * (m - 1))
+    const lo = sorted[Math.round(0.025 * (m - 1))] as number;
+    const hi = sorted[Math.round(0.975 * (m - 1))] as number;
+    intervals[p] = { low: lo, high: hi };
+  }
+
+  return { intervals, samples: nSamples };
+};
+
 // --- ペアシナジー残差 -------------------------------------------------------
 
 export type SynergyPair = {
