@@ -42,7 +42,7 @@ import type { Match, Protocol, Ratios, SeasonKey, Trio, Winner } from "./types";
 export default function App() {
   const { t } = useT();
   // CSV 一括登録に所有者 uid を渡すため（Firestore ルールが create で要求する）。
-  const { user } = useAuth();
+  const { user, isAuthEnabled } = useAuth();
   // === シーズン選択 ===
   // Object.keys の戻り値を SeasonKey[] にキャスト
   const SEASON_KEYS = Object.keys(SEASONS_CONFIG) as SeasonKey[];
@@ -110,6 +110,7 @@ export default function App() {
     maxRatio,
     currentConfig.ratioProtocols,
     user?.uid,
+    isAuthEnabled && !user,
   );
 
   // --- Callbacks ---

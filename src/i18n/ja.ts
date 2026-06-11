@@ -136,6 +136,7 @@ export const ja = {
   "dataToolbar.selectFile": "ファイルを選択",
   "dataToolbar.reimportNote":
     "※ 本アプリがエクスポートした CSV ファイルを再インポートできます",
+  "dataToolbar.toast.loginRequired": "CSVインポートにはログインが必要です。",
 
   // ErrorBoundary（Provider 外の class なので detectLang() で静的に引く）
   "errorBoundary.title": "エラーが発生しました",
