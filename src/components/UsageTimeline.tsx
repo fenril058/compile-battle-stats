@@ -49,7 +49,8 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
       let m = 0;
       for (const s of series) {
         for (const pt of s.points) {
-          if (pt > m) m = pt;
+          // null（欠測）はスキップ
+          if (pt !== null && pt > m) m = pt;
         }
       }
       // 上に 10% 余白を取った目標上限。目盛りが概ね 4〜6 本になる刻みを選ぶ。
@@ -208,45 +209,61 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
               const color =
                 SERIES_COLORS[si % SERIES_COLORS.length] ?? FALLBACK_COLOR;
 
-              // バケットが1個の場合はラインなしで点だけ描画
-              const pathD =
-                n >= 2
-                  ? s.points
-                      .map((pt, i) => {
-                        const x = toX(i, n);
-                        const y = toY(pt, maxY);
-                        return `${i === 0 ? "M" : "L"} ${x} ${y}`;
-                      })
-                      .join(" ")
-                  : null;
+              // null（欠測）で線を切る。非 null の連続区間ごとに別の path を生成する。
+              // バケットが 1 個の場合はラインなしで点だけ描画（pathSegments は空になる）。
+              const pathSegments: string[] = [];
+              if (n >= 2) {
+                let segCmds: string[] = [];
+                for (let i = 0; i < s.points.length; i += 1) {
+                  const pt = s.points[i];
+                  if (pt === null) {
+                    // 欠測：現在のセグメントを確定
+                    if (segCmds.length > 0) {
+                      pathSegments.push(segCmds.join(" "));
+                      segCmds = [];
+                    }
+                  } else {
+                    const x = toX(i, n);
+                    const y = toY(pt, maxY);
+                    segCmds.push(
+                      `${segCmds.length === 0 ? "M" : "L"} ${x} ${y}`,
+                    );
+                  }
+                }
+                if (segCmds.length > 0) pathSegments.push(segCmds.join(" "));
+              }
 
               return (
                 <g key={s.protocol}>
-                  {pathD && (
+                  {pathSegments.map((d) => (
                     <path
-                      d={pathD}
+                      key={d}
+                      d={d}
                       fill="none"
                       stroke={color}
                       strokeWidth={1.5}
                       strokeLinejoin="round"
                       strokeLinecap="round"
                     />
-                  )}
-                  {/* データ点マーカー */}
-                  {s.points.map((pt, i) => (
-                    <circle
-                      key={`${s.protocol}-${buckets[i].start}`}
-                      cx={toX(i, n)}
-                      cy={toY(pt, maxY)}
-                      r={3}
-                      fill={color}
-                      fillOpacity={0.9}
-                    >
-                      <title>
-                        {`${s.protocol}: ${pt.toFixed(1)}% (${buckets[i].label})`}
-                      </title>
-                    </circle>
                   ))}
+                  {/* データ点マーカー（null 点はスキップ） */}
+                  {s.points.map((pt, i) => {
+                    if (pt === null) return null;
+                    return (
+                      <circle
+                        key={`${s.protocol}-${buckets[i].start}`}
+                        cx={toX(i, n)}
+                        cy={toY(pt, maxY)}
+                        r={3}
+                        fill={color}
+                        fillOpacity={0.9}
+                      >
+                        <title>
+                          {`${s.protocol}: ${pt.toFixed(1)}% (${buckets[i].label})`}
+                        </title>
+                      </circle>
+                    );
+                  })}
                 </g>
               );
             })}
@@ -293,9 +310,14 @@ export const UsageTimeline: React.FC<UsageTimelineProps> = React.memo(
             {buckets.map((b, i) => (
               <tr key={b.start}>
                 <td>{b.label}</td>
-                {series.map((s) => (
-                  <td key={s.protocol}>{s.points[i]?.toFixed(1) ?? "0.0"}</td>
-                ))}
+                {series.map((s) => {
+                  const pt = s.points[i];
+                  return (
+                    <td key={s.protocol}>
+                      {pt === null || pt === undefined ? "-" : pt.toFixed(1)}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

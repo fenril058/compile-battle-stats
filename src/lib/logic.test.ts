@@ -576,7 +576,7 @@ describe("lib/logic", () => {
       expect(result.series.some((s) => s.protocol === "OTHER")).toBe(false);
     });
 
-    it("バケット内のピック率は 0..100 の範囲", () => {
+    it("バケット内のピック率は 0..100 の範囲（null はスキップ）", () => {
       const m1 = mkMatch(
         MON_2025_01_06,
         ["FIRE", "WATER", "METAL"],
@@ -590,8 +590,58 @@ describe("lib/logic", () => {
       const result = usageTimeline([m1, m2], { topN: 3 });
       for (const s of result.series) {
         for (const pt of s.points) {
+          if (pt === null) continue; // 欠測はスキップ
           expect(pt).toBeGreaterThanOrEqual(0);
           expect(pt).toBeLessThanOrEqual(100);
+        }
+      }
+    });
+
+    it("2週離れた試合(間に1空週)でbucketsが3週連続になり空週のpointsがnull", () => {
+      // 2025-01-06 (月) と 2025-01-20 (月) = 2週間後（間に 2025-01-13 が空週）
+      const MON_2025_01_20 = Date.UTC(2025, 0, 20);
+      const m1 = mkMatch(
+        MON_2025_01_06,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      const m2 = mkMatch(
+        MON_2025_01_20,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      const result = usageTimeline([m1, m2]);
+      // 3週分のバケットが連続して生成される
+      expect(result.buckets).toHaveLength(3);
+      expect(result.buckets[0].label).toBe("2025-01-06");
+      expect(result.buckets[1].label).toBe("2025-01-13");
+      expect(result.buckets[2].label).toBe("2025-01-20");
+      // 中間の空週（index=1）は null
+      for (const s of result.series) {
+        expect(s.points[1]).toBeNull();
+        // 試合のある週は null でない
+        expect(s.points[0]).not.toBeNull();
+        expect(s.points[2]).not.toBeNull();
+      }
+    });
+
+    it("連続週のみの場合はnullなしで従来と同じ結果", () => {
+      const m1 = mkMatch(
+        MON_2025_01_06,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      const m2 = mkMatch(
+        MON_2025_01_13,
+        ["FIRE", "WATER", "METAL"],
+        ["LIFE", "SPEED", "SPIRIT"],
+      );
+      const result = usageTimeline([m1, m2]);
+      expect(result.buckets).toHaveLength(2);
+      // 全 points が null でない（欠測なし）
+      for (const s of result.series) {
+        for (const pt of s.points) {
+          expect(pt).not.toBeNull();
         }
       }
     });
