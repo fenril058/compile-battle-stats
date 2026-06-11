@@ -68,9 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* 右側: 認証ボタン/ステータス */}
         <div className="flex items-center">
           {!isAuthEnabled ? ( // Firebaseが有効でない場合
-            <span className="text-red-500 text-xs">
-              Offline (Firebase Disabled)
-            </span>
+            <span className="text-red-500 text-xs">{t("header.offline")}</span>
           ) : user ? ( // ログイン済みの場合
             <div className="flex items-center gap-2">
               <span className="text-zinc-300 whitespace-nowrap">

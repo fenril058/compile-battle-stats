@@ -22,6 +22,7 @@ export const en: TranslationDict = {
   "header.languageSelect": "Language",
   "header.logout": "Log out",
   "header.loginWithGoogle": "Sign in with Google",
+  "header.offline": "Offline (Firebase disabled)",
 
   // MatchForm
   "matchForm.title": "Record a match",
@@ -132,6 +133,36 @@ export const en: TranslationDict = {
   "dataToolbar.reimportNote":
     "* You can re-import a CSV file exported by this app",
   "dataToolbar.toast.loginRequired": "Login is required to import CSV.",
+  "dataToolbar.toast.selectCsv": "Please select a CSV file.",
+  "dataToolbar.toast.importFailures":
+    "{count} row(s) failed (first example: {example}…) — check protocol names and format.",
+  "dataToolbar.toast.exportEmpty": "No data to export",
+  "dataToolbar.toast.exported": "CSV file exported successfully",
+
+  // Storage (useFirestore)
+  "storage.toast.syncFailed":
+    "Failed to sync remote data. Showing local cache.",
+  "storage.toast.added": "Match added.",
+  "storage.toast.addFailed": "Failed to register the match.",
+  "storage.toast.removed": "Match deleted.",
+  "storage.toast.removeDeniedOwnerOnly":
+    "You can only delete matches you registered.",
+  "storage.toast.removeFailed": "Failed to delete the match.",
+  "storage.toast.batchEmpty": "No data to register.",
+  "storage.toast.batchAdded": "{count} match(es) registered in bulk.",
+  "storage.toast.batchFailed": "Bulk registration failed.",
+  "storage.toast.reloadedLocal": "Local cache reloaded.",
+  "storage.toast.clearedLocal": "Local cache cleared.",
+  "storage.confirm.clearLocal":
+    "Are you sure you want to delete all local cache?",
+
+  // Auth (useAuth)
+  "auth.toast.loginFailed": "Sign-in failed.",
+  "auth.toast.adBlocker":
+    "Sign-in failed. An ad blocker may be blocking Google authentication. Please whitelist this site and try again.",
+  "auth.toast.loggedOut": "Signed out",
+  "auth.toast.logoutFailed": "Sign-out failed.",
+  "auth.toast.notEnabled": "Firebase authentication is not enabled.",
 
   // ErrorBoundary
   "errorBoundary.title": "Something went wrong",

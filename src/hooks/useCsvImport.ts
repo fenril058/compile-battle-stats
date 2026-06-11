@@ -78,7 +78,7 @@ export const useCsvImport = (
       const isCsv = mimeTypes.includes(file.type) || file.name.endsWith(".csv");
 
       if (!isCsv) {
-        toast.error("CSVファイルを選択してください。");
+        toast.error(t("dataToolbar.toast.selectCsv"));
         return;
       }
 
@@ -139,7 +139,10 @@ export const useCsvImport = (
 
         if (failCount > 0) {
           toast.warn(
-            `${failCount}件失敗（先頭例: ${firstFailLine.substring(0, 50)}…）プロトコル名や形式を確認してください。`,
+            t("dataToolbar.toast.importFailures", {
+              count: failCount,
+              example: firstFailLine.substring(0, 50),
+            }),
           );
         }
       };

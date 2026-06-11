@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { toast } from "react-toastify";
 import { SEASONS_CONFIG } from "../config";
+import { useT } from "../i18n";
 import { formatCalendarDateForCsv } from "../lib/date";
 import type { Match, Ratios, SeasonKey } from "../types";
 
@@ -35,9 +36,10 @@ export const useCsvExport = (
   maxRatio: number,
   ratioProtocols: ReadonlyArray<string>,
 ) => {
+  const { t } = useT();
   const exportToCsv = useCallback(() => {
     if (matches.length === 0) {
-      toast.info("エクスポートするデータがありません");
+      toast.info(t("dataToolbar.toast.exportEmpty"));
       return;
     }
 
@@ -103,8 +105,8 @@ export const useCsvExport = (
     a.click();
     document.body.removeChild(a);
 
-    toast.success("CSVファイルをエクスポートしました");
-  }, [matches, selectedSeason, ratios, maxRatio, ratioProtocols]);
+    toast.success(t("dataToolbar.toast.exported"));
+  }, [matches, selectedSeason, ratios, maxRatio, ratioProtocols, t]);
 
   return { exportToCsv };
 };

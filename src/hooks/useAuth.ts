@@ -9,6 +9,7 @@ import {
 } from "firebase/auth";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useT } from "../i18n";
 import { auth, isFirebaseEnabled } from "../storage/firebase"; // Firebaseインスタンスをインポート
 
 type AuthState = {
@@ -24,6 +25,7 @@ type AuthState = {
  */
 export const useAuth = (): AuthState => {
   const [user, setUser] = useState<User | null>(null);
+  const { t } = useT();
 
   // 認証状態の監視 + リダイレクト認証の結果受け取り（コンポーネントマウント時に一度だけ実行）
   useEffect(() => {
@@ -33,7 +35,7 @@ export const useAuth = (): AuthState => {
     // signInWithRedirect 後のリダイレクト結果を受け取る
     getRedirectResult(auth).catch((error) => {
       console.error("Redirect login failed:", error);
-      toast.error("ログインに失敗しました。");
+      toast.error(t("auth.toast.loginFailed"));
     });
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -41,11 +43,11 @@ export const useAuth = (): AuthState => {
     });
     // クリーンアップ関数
     return () => unsubscribe();
-  }, []);
+  }, [t]);
 
   const handleLogin = useCallback(async () => {
     if (!auth) {
-      toast.error("Firebase認証が有効ではありません。");
+      toast.error(t("auth.toast.notEnabled"));
       return;
     }
     try {
@@ -63,29 +65,26 @@ export const useAuth = (): AuthState => {
           await signInWithRedirect(auth, new GoogleAuthProvider());
         } catch (redirectError) {
           console.error("Redirect login failed:", redirectError);
-          toast.error("ログインに失敗しました。");
+          toast.error(t("auth.toast.loginFailed"));
         }
       } else if (code === "auth/network-request-failed") {
-        toast.error(
-          "ログインに失敗しました。広告ブロッカーがGoogleの認証をブロックしている可能性があります。このサイトをホワイトリストに追加してから再試行してください。",
-          { autoClose: 8000 },
-        );
+        toast.error(t("auth.toast.adBlocker"), { autoClose: 8000 });
       } else {
-        toast.error("ログインに失敗しました。");
+        toast.error(t("auth.toast.loginFailed"));
       }
     }
-  }, []);
+  }, [t]);
 
   const handleLogout = useCallback(async () => {
     if (!auth) return;
     try {
       await signOut(auth);
-      toast.info("ログアウトしました");
+      toast.info(t("auth.toast.loggedOut"));
     } catch (error) {
       console.error("Logout Failed:", error);
-      toast.error("ログアウトに失敗しました。");
+      toast.error(t("auth.toast.logoutFailed"));
     }
-  }, []);
+  }, [t]);
 
   return {
     user,
