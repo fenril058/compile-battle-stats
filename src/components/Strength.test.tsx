@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { StrengthModel } from "../lib/logic";
+import type { StrengthModel, ThetaBootstrap } from "../lib/logic";
 import { Strength } from "./Strength";
 
 const baseModel: StrengthModel = {
@@ -133,6 +133,57 @@ describe("Strength", () => {
       );
       expect(screen.getByText(/通常戦:/).textContent).toMatch(/β = \+0\.09/);
       expect(screen.getByText(/レシオ戦:/).textContent).toMatch(/β = −0\.05/);
+    });
+  });
+
+  describe("ブートストラップ区間", () => {
+    const makeBootstrap = (samples = 50): ThetaBootstrap => ({
+      samples,
+      intervals: {
+        FIRE: { low: 0.3, high: 1.2 },
+        WATER: { low: -0.1, high: 0.4 },
+        SPIRIT: { low: -1.5, high: -0.6 },
+      },
+    });
+
+    it("bootstrap なしなら注記が表示されない", () => {
+      render(<Strength model={baseModel} />);
+      expect(
+        screen.queryByText(/ブートストラップ区間/),
+      ).not.toBeInTheDocument();
+    });
+
+    it("bootstrap ありなら注記（samples 回リサンプル）が表示される", () => {
+      render(<Strength model={baseModel} bootstrap={makeBootstrap(50)} />);
+      expect(screen.getByText(/50回リサンプル/)).toBeInTheDocument();
+    });
+
+    it("bootstrap ありの行は aria-label に区間を含む", () => {
+      render(<Strength model={baseModel} bootstrap={makeBootstrap()} />);
+      // FIRE の行: strength.rowWithCi キーで aria-label が設定される
+      const fireItem = screen
+        .getAllByRole("listitem")
+        .find((el) => el.getAttribute("aria-label")?.includes("FIRE"));
+      expect(fireItem).toBeDefined();
+      expect(fireItem?.getAttribute("aria-label")).toMatch(/95%区間/);
+      expect(fireItem?.getAttribute("aria-label")).toMatch(/0\.30/);
+      expect(fireItem?.getAttribute("aria-label")).toMatch(/1\.20/);
+    });
+
+    it("bootstrap なしの行は従来の aria-label（区間なし）", () => {
+      render(<Strength model={baseModel} />);
+      const fireItem = screen
+        .getAllByRole("listitem")
+        .find((el) => el.getAttribute("aria-label")?.includes("FIRE"));
+      expect(fireItem).toBeDefined();
+      expect(fireItem?.getAttribute("aria-label")).not.toMatch(/95%区間/);
+    });
+
+    it("bootstrap ありでも θ リストが通常通り表示される", () => {
+      render(<Strength model={baseModel} bootstrap={makeBootstrap()} />);
+      const items = screen.getAllByRole("listitem");
+      expect(items).toHaveLength(3);
+      expect(within(items[0]).getByText("FIRE")).toBeInTheDocument();
     });
   });
 });

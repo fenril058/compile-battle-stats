@@ -202,6 +202,9 @@ export const ja = {
   "strength.logitNote":
     "θ・β の単位はロジット（対数オッズ）= ln(p/(1-p))、勝率% ではありません",
   "strength.row": "{n}: 強度 θ={theta}",
+  "strength.rowWithCi": "{n}: 強度 θ={theta}（95%区間 {low}〜{high}）",
+  "strength.bootstrapNote":
+    "細線は θ の95%ブートストラップ区間({samples}回リサンプル)。区間が0をまたぐ場合、強弱は断定できません。",
   "strength.betaBySlice.heading": "先攻有利の内訳（通常戦 / レシオ戦）",
   "strength.betaBySlice.normal":
     "通常戦: 先攻勝率 {rate}%（β = {beta}、{games}試合）",

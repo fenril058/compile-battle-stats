@@ -197,6 +197,9 @@ export const en: TranslationDict = {
   "strength.logitNote":
     "θ and β use the logit (log-odds) scale = ln(p/(1−p)), not win-rate %",
   "strength.row": "{n}: strength θ={theta}",
+  "strength.rowWithCi": "{n}: strength θ={theta} (95% CI {low}–{high})",
+  "strength.bootstrapNote":
+    "Thin lines show 95% bootstrap CI for θ ({samples} resamples). If the interval crosses 0, strength cannot be determined conclusively.",
   "strength.betaBySlice.heading":
     "First-player edge by format (Normal / Ratio)",
   "strength.betaBySlice.normal":

@@ -8,6 +8,7 @@ import type {
   ArchetypeMatchup,
   StrengthModel,
   SynergyPair,
+  ThetaBootstrap,
   UsageTimeline,
 } from "../lib/logic";
 import { Archetypes } from "./Archetypes";
@@ -42,6 +43,7 @@ interface StatsDashboardProps {
   synergy: readonly SynergyPair[];
   usage: UsageTimeline;
   archetypes: ArchetypeMatchup;
+  thetaBootstrap?: ThetaBootstrap;
 }
 
 const STAT_VIEW_KEYS = ["all", "v1aux", "main2aux", "mixed"] as const;
@@ -82,6 +84,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   synergy,
   usage,
   archetypes,
+  thetaBootstrap,
 }) => {
   const { t } = useT();
   const [activeStatViewKey, setActiveStatViewKey] =
@@ -259,6 +262,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
           model={strengthModel}
           normalModel={strengthModelNormal}
           ratioModel={strengthModelRatio}
+          bootstrap={thetaBootstrap}
         />
         <Explainer bodyKey="strength.explain" />
       </section>
