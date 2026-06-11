@@ -46,7 +46,9 @@ export class RemoteAdapter<T extends WithId> implements StorageAdapter<T> {
       this.colRef,
       (snapshot) => {
         const loaded = snapshot.docs.map((d) => {
-          const data = d.data();
+          // "estimate": latency compensation 中（addDoc 直後など）の pending serverTimestamp を
+          // null の代わりにローカル推定の Timestamp で受け取る。以降の toMillis 正規化がそのまま機能する。
+          const data = d.data({ serverTimestamps: "estimate" });
           // Firestore の createdAt は Timestamp の場合があるので number に正規化
           let createdAt = data.createdAt;
           if (

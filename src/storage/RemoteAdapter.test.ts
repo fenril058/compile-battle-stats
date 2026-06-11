@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // onSnapshot に渡される success / error コールバックの最小型
 type SnapNext = (snap: {
-  docs: { id: string; data: () => Record<string, unknown> }[];
+  docs: {
+    id: string;
+    data: (options?: { serverTimestamps?: string }) => Record<string, unknown>;
+  }[];
 }) => void;
 type SnapError = (error: unknown) => void;
 
@@ -82,6 +85,22 @@ describe("RemoteAdapter（firebase/firestore モック・層①）", () => {
     // localStorage にキャッシュされている
     const cached = JSON.parse(localStorage.getItem(KEY) ?? "[]");
     expect(cached).toEqual([{ name: "x", id: "d1", createdAt: 1000 }]);
+  });
+
+  it('subscribe の onSnapshot ハンドラは data({ serverTimestamps: "estimate" }) を呼ぶ（latency compensation 中の null 回避）', () => {
+    const adapter = new RemoteAdapter<Row>(db, KEY);
+    adapter.subscribe(vi.fn());
+
+    const dataFn = vi.fn(() => ({
+      name: "z",
+      createdAt: { toMillis: () => 2000 },
+    }));
+
+    fs.captured.next?.({
+      docs: [{ id: "d2", data: dataFn }],
+    });
+
+    expect(dataFn).toHaveBeenCalledWith({ serverTimestamps: "estimate" });
   });
 
   it("subscribe は購読開始時に既存キャッシュで即時描画する", () => {
