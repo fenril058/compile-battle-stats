@@ -1,22 +1,19 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// --- Firebase モック ---
+// --- Firebase 認証 SDK のモック関数 ---
+// useAuth は firebase/auth を直接 import せず、getFirebase() が返すハンドルの
+// authApi 経由で SDK 関数を受け取る。よってここでモック関数を用意し、
+// getFirebase の戻り値の authApi に注入する（firebase/auth 自体はモックしない）。
 const mockSignInWithPopup = vi.fn();
 const mockSignInWithRedirect = vi.fn();
 const mockSignOut = vi.fn();
 const mockGetRedirectResult = vi.fn().mockResolvedValue(null);
 const mockOnAuthStateChanged = vi.fn();
-
-vi.mock("firebase/auth", () => ({
-  // class として扱われるので function コンストラクタで定義する
-  GoogleAuthProvider: vi.fn(function GoogleAuthProvider(this: unknown) {}),
-  getRedirectResult: (...args: unknown[]) => mockGetRedirectResult(...args),
-  onAuthStateChanged: (...args: unknown[]) => mockOnAuthStateChanged(...args),
-  signInWithPopup: (...args: unknown[]) => mockSignInWithPopup(...args),
-  signInWithRedirect: (...args: unknown[]) => mockSignInWithRedirect(...args),
-  signOut: (...args: unknown[]) => mockSignOut(...args),
-}));
+// class として扱われるので function コンストラクタで定義する
+const mockGoogleAuthProvider = vi.fn(function GoogleAuthProvider(
+  this: unknown,
+) {});
 
 vi.mock("react-toastify", () => ({
   toast: {
@@ -30,12 +27,28 @@ vi.mock("react-toastify", () => ({
 // auth が有効な状態を基本とする（vi.mock の factory 内で参照するため hoisted にする）
 const mockAuth = vi.hoisted(() => ({ name: "mock-auth" }));
 
-vi.mock("../storage/firebase", () => ({
+// getFirebase() が返すハンドル。authApi にモック関数を束ねる。
+const makeHandle = () => ({
   auth: mockAuth,
+  authApi: {
+    GoogleAuthProvider: mockGoogleAuthProvider,
+    getRedirectResult: (...args: unknown[]) => mockGetRedirectResult(...args),
+    onAuthStateChanged: (...args: unknown[]) => mockOnAuthStateChanged(...args),
+    signInWithPopup: (...args: unknown[]) => mockSignInWithPopup(...args),
+    signInWithRedirect: (...args: unknown[]) => mockSignInWithRedirect(...args),
+    signOut: (...args: unknown[]) => mockSignOut(...args),
+  },
+});
+
+// 遅延初期化リファクタ後は auth を直接公開せず getFirebase() 経由で取得する。
+// isFirebaseEnabled=true かつ getFirebase がハンドルを返す状態を基本とする。
+vi.mock("../storage/firebase", () => ({
   isFirebaseEnabled: true,
+  getFirebase: vi.fn(),
 }));
 
 import { toast } from "react-toastify";
+import { getFirebase } from "../storage/firebase";
 import { useAuth } from "./useAuth";
 
 type AuthCallback = (user: unknown) => void;
@@ -62,6 +75,10 @@ const setupOnAuthStateChanged = (unsubscribe = vi.fn()) => {
 describe("useAuth", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // clearAllMocks は mockResolvedValue 実装も消すため、getFirebase を張り直す。
+    vi.mocked(getFirebase).mockResolvedValue(
+      makeHandle() as unknown as Awaited<ReturnType<typeof getFirebase>>,
+    );
     mockGetRedirectResult.mockResolvedValue(null);
     setupOnAuthStateChanged();
   });
@@ -80,13 +97,17 @@ describe("useAuth", () => {
     const fakeUser = { uid: "abc" };
     const { triggerAuth } = setupOnAuthStateChanged();
     const { result } = renderHook(() => useAuth());
+    // effect は getFirebase + 動的 import を await するため、購読登録を待つ
+    await waitFor(() => expect(mockOnAuthStateChanged).toHaveBeenCalled());
     triggerAuth(fakeUser);
     expect(result.current.user).toEqual(fakeUser);
   });
 
-  it("アンマウント時に onAuthStateChanged のサブスクリプションを解除する", () => {
+  it("アンマウント時に onAuthStateChanged のサブスクリプションを解除する", async () => {
     const { unsubscribe } = setupOnAuthStateChanged();
     const { unmount } = renderHook(() => useAuth());
+    // 購読登録が完了してから unmount する（async effect のため）
+    await waitFor(() => expect(mockOnAuthStateChanged).toHaveBeenCalled());
     unmount();
     expect(unsubscribe).toHaveBeenCalled();
   });

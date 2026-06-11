@@ -1,8 +1,13 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Firebase 未設定（db=null）= local モードを強制する
-vi.mock("../storage/firebase", () => ({ db: null }));
+// Firebase 未設定 = local モードを強制する。
+// 遅延初期化リファクタ後は db を直接公開せず、isFirebaseEnabled / getFirebase で
+// モードを決めるため、それらをモックする（disabled なので getFirebase は null）。
+vi.mock("../storage/firebase", () => ({
+  isFirebaseEnabled: false,
+  getFirebase: vi.fn().mockResolvedValue(null),
+}));
 
 // firestore SDK は local モードでは呼ばれないが、import 解決のためにスタブ化
 vi.mock("firebase/firestore", () => ({
