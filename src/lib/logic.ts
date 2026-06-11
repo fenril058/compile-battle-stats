@@ -318,7 +318,7 @@ export const quadrantPoints = (
 // --- Usage Timeline (週別ピック率の時系列) -----------------------------------
 
 export type UsageBucket = { label: string; start: number };
-export type UsageSeries = { protocol: string; points: number[] }; // 各 bucket のピック率(0..100)
+export type UsageSeries = { protocol: string; points: (number | null)[] }; // 各 bucket のピック率(0..100)。試合の無い週は null（欠測）
 export type UsageTimeline = { buckets: UsageBucket[]; series: UsageSeries[] };
 
 /**
@@ -392,13 +392,29 @@ export const usageTimeline = (
   // バケットを start 昇順でソート
   const sortedStarts = [...bucketMap.keys()].sort((a, b) => a - b);
 
-  const buckets: UsageBucket[] = sortedStarts.map((start) => {
+  // 最初の週から最後の週まで 7 日刻みで連続生成する（空週も含める）。
+  // 空週の points は null（欠測）とし、0（試合はあったがピックなし）と区別する。
+  const WEEK_MS = 604800000; // 7 * 24 * 60 * 60 * 1000
+  const firstStart = sortedStarts[0] as number;
+  const lastStart = sortedStarts[sortedStarts.length - 1] as number;
+
+  const allStarts: number[] = [];
+  for (let t = firstStart; t <= lastStart; t += WEEK_MS) {
+    allStarts.push(t);
+  }
+
+  const makeLabel = (start: number): string => {
     const d = new Date(start);
     const y = d.getUTCFullYear();
     const mo = String(d.getUTCMonth() + 1).padStart(2, "0");
     const da = String(d.getUTCDate()).padStart(2, "0");
-    return { label: `${y}-${mo}-${da}`, start };
-  });
+    return `${y}-${mo}-${da}`;
+  };
+
+  const buckets: UsageBucket[] = allStarts.map((start) => ({
+    label: makeLabel(start),
+    start,
+  }));
 
   // 全期間の総出現数で上位 topN プロトコルを決定（降順）。
   // 上位のみを系列化する。残りを束ねる「その他」系列は、値が大きく主役の
@@ -406,25 +422,31 @@ export const usageTimeline = (
   const sortedByTotal = [...totalCount.entries()].sort((a, b) => b[1] - a[1]);
   const topProtocols = sortedByTotal.slice(0, topN).map(([p]) => p);
 
-  // 各系列のポイント配列を構築
-  const seriesMap = new Map<string, number[]>();
+  // 各系列のポイント配列を構築（空週は null）
+  const seriesMap = new Map<string, (number | null)[]>();
   for (const p of topProtocols) seriesMap.set(p, []);
 
   // 事前に各系列の points 配列への参照を取得し、ループ内でアクセスする。
   // seriesMap.get() が undefined にならないことはここまでのコードで保証済みだが、
   // 非 null アサーション (!.) を避けるため参照を変数に取り出す。
-  const topSeriesPoints = topProtocols.map((p) => seriesMap.get(p) as number[]);
+  const topSeriesPoints = topProtocols.map(
+    (p) => seriesMap.get(p) as (number | null)[],
+  );
 
-  for (const start of sortedStarts) {
-    const b = bucketMap.get(start) as {
-      slots: Map<string, number>;
-      total: number;
-    };
-    const total = b.total;
+  for (const start of allStarts) {
+    const b = bucketMap.get(start);
 
-    for (let i = 0; i < topProtocols.length; i += 1) {
-      const count = b.slots.get(topProtocols[i] as string) ?? 0;
-      topSeriesPoints[i]?.push(Math.round((count / total) * 1000) / 10);
+    if (b === undefined) {
+      // 試合の無い週（空週）：欠測として null を push
+      for (let i = 0; i < topProtocols.length; i += 1) {
+        topSeriesPoints[i]?.push(null);
+      }
+    } else {
+      const total = b.total;
+      for (let i = 0; i < topProtocols.length; i += 1) {
+        const count = b.slots.get(topProtocols[i] as string) ?? 0;
+        topSeriesPoints[i]?.push(Math.round((count / total) * 1000) / 10);
+      }
     }
   }
 

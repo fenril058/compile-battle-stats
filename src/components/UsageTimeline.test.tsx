@@ -57,4 +57,31 @@ describe("UsageTimeline", () => {
     // 旧実装の粗い 25 目盛りは出ない
     expect(screen.queryByText("25")).not.toBeInTheDocument();
   });
+
+  it("null（欠測）を含むデータでクラッシュせず、線が分割されること", () => {
+    // 3 バケット、中間が null（空週）
+    const gapData: UsageTimelineData = {
+      buckets: [
+        { label: "2025-01-06", start: 1 },
+        { label: "2025-01-13", start: 2 },
+        { label: "2025-01-20", start: 3 },
+      ],
+      series: [
+        { protocol: "FIRE", points: [50, null, 40] },
+        { protocol: "WATER", points: [30, null, 20] },
+      ],
+    };
+    const { container } = render(
+      <UsageTimeline data={gapData} title="使用率推移" />,
+    );
+    // クラッシュしない（SVG が描画される）
+    expect(screen.getByRole("img")).toBeInTheDocument();
+    // null を挟んだため各系列の path が 2 本（前半・後半）に分かれる
+    const paths = container.querySelectorAll("path");
+    // 少なくとも FIRE の 2 本 + WATER の 2 本 = 4 本
+    expect(paths.length).toBeGreaterThanOrEqual(4);
+    // sr-only テーブルの空週セルは "-" 表示
+    const table = screen.getByRole("table");
+    expect(within(table).getAllByText("-").length).toBeGreaterThan(0);
+  });
 });
