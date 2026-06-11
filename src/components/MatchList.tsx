@@ -62,13 +62,17 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
     // 総ページ数を計算
     const totalPages = Math.ceil(matches.length / pageSize);
 
+    // シーズン切替・削除で件数が減ったとき currentPage > totalPages になりうる。
+    // useEffect で state を書き戻すと1フレーム遅延するため、導出値でクランプする。
+    const effectivePage = Math.min(currentPage, Math.max(1, totalPages));
+
     // データをスライス
     const displayMatches = useMemo(() => {
-      const start = (currentPage - 1) * pageSize;
+      const start = (effectivePage - 1) * pageSize;
       const end = start + pageSize;
       // ページネーションに合わせてデータをスライス
       return matches.slice(start, end); // Assumes matches are already sorted NEWEST first
-    }, [matches, currentPage, pageSize]);
+    }, [matches, effectivePage, pageSize]);
 
     const handleDeleteClick = useCallback((id: string) => {
       setPendingDeleteId(id);
@@ -122,7 +126,10 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
       const range = [];
       // ページネーションUIの表示を制限 (例: 現在ページとその前後2ページまで)
       const maxPagesToShow = 5;
-      let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+      let startPage = Math.max(
+        1,
+        effectivePage - Math.floor(maxPagesToShow / 2),
+      );
       const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
       // 最終ページが近づいた場合の調整
@@ -134,7 +141,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
         range.push(i);
       }
       return range;
-    }, [currentPage, totalPages]);
+    }, [effectivePage, totalPages]);
 
     return (
       <div className="bg-zinc-900 p-3 rounded-2xl overflow-x-auto mb-6">
@@ -144,7 +151,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
 
         {/* ページネーションコントロール (上部) */}
         <PaginationControls
-          currentPage={currentPage}
+          currentPage={effectivePage}
           totalPages={totalPages}
           pageSize={pageSize}
           pageNumbers={pageNumbers}
@@ -188,7 +195,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
                 // matches は App.tsx 最新順（createdAt 降順）にソートされている前提で、
                 // 全件の中での連番を計算
                 const displayIndex =
-                  matches.length - (currentPage - 1) * pageSize - i;
+                  matches.length - (effectivePage - 1) * pageSize - i;
                 const own = showOwnMark(m);
                 return (
                   <tr
@@ -287,7 +294,7 @@ export const MatchList: React.FC<MatchListProps> = React.memo(
         </div>
         {/* ページネーションコントロール (下部) */}
         <PaginationControls
-          currentPage={currentPage}
+          currentPage={effectivePage}
           totalPages={totalPages}
           pageSize={pageSize}
           pageNumbers={pageNumbers}
