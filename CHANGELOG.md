@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.4.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.3.0...compile-battle-stats-v2.4.0) (2026-06-11)
+
+
+### Features
+
+* CSV インポートをプレビュー→確定の2段階フローにする ([#226](https://github.com/fenril058/compile-battle-stats/issues/226)) ([056b396](https://github.com/fenril058/compile-battle-stats/commit/056b396128791fba9da0d65c315bbbb26e16312b))
+* usageTimeline の空週を欠測(null)として補完し時系列の間隔を正しくする ([#224](https://github.com/fenril058/compile-battle-stats/issues/224)) ([cf37a71](https://github.com/fenril058/compile-battle-stats/commit/cf37a71cc8d94170231d35f6fc93056a16e5a596))
+* フック内のトーストと confirm 文言を i18n 化する ([#221](https://github.com/fenril058/compile-battle-stats/issues/221)) ([27295bf](https://github.com/fenril058/compile-battle-stats/commit/27295bfde9d664a8702d6fcbb091e8ef41628961))
+* 先攻補正 β を通常戦/レシオ戦で分離推定して表示する ([#225](https://github.com/fenril058/compile-battle-stats/issues/225)) ([bc82a4e](https://github.com/fenril058/compile-battle-stats/commit/bc82a4e569865b7f44773ddc6f9cadfc64aed37d))
+* 散布図の高さを点数に応じて動的化しラベルの上端はみ出しを防ぐ ([#220](https://github.com/fenril058/compile-battle-stats/issues/220)) ([7ca589b](https://github.com/fenril058/compile-battle-stats/commit/7ca589b842b56e2eaf2b0a285eb83f14d5ae8695))
+
+
+### Bug Fixes
+
+* DataToolbar の CSV 形式説明を i18n 化する ([#207](https://github.com/fenril058/compile-battle-stats/issues/207)) ([48be219](https://github.com/fenril058/compile-battle-stats/commit/48be219d4adcc7287fbaa697a832ee024d29d45e))
+* onSnapshot の serverTimestamp pending 中も createdAt を推定値で受ける ([#205](https://github.com/fenril058/compile-battle-stats/issues/205)) ([c9d0fc2](https://github.com/fenril058/compile-battle-stats/commit/c9d0fc2d3125c0e2defa95a3a2077e8c0706ecb8))
+* remote 未ログイン時の CSV インポートをログイン要求トーストで中断する ([#206](https://github.com/fenril058/compile-battle-stats/issues/206)) ([b896be2](https://github.com/fenril058/compile-battle-stats/commit/b896be286f39bafcbc3fb84cc569d65182d1a42b))
+* レシオ相性表の軸をシーズン設定の ratioProtocols から導出する ([#223](https://github.com/fenril058/compile-battle-stats/issues/223)) ([d85aea3](https://github.com/fenril058/compile-battle-stats/commit/d85aea33cc683fd7255bb010dd3249caf8e9e7d5))
+* 件数減少時に MatchList の現在ページをクランプして空ページ表示を防ぐ ([#204](https://github.com/fenril058/compile-battle-stats/issues/204)) ([13f3ce6](https://github.com/fenril058/compile-battle-stats/commit/13f3ce6cb4368c67e97782e4e5331c1dc2007c44))
+
 ## [2.3.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.2.1...compile-battle-stats-v2.3.0) (2026-06-09)
 
 
