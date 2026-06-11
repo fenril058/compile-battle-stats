@@ -367,6 +367,36 @@ describe("MatchList", () => {
     });
   });
 
+  // --- ページクランプ（件数減少時の空ページ防止） ---
+
+  describe("page clamp on match count decrease", () => {
+    it("3ページ目表示中に matches が5件に減ったとき5件が表示され空テーブルにならない", () => {
+      // 25件・pageSize=10 → 3ページ
+      const { rerender } = render(
+        <MatchList {...defaultProps} matches={makeMatches(25)} />,
+      );
+
+      // 3ページ目へ移動（5件が表示される）
+      fireEvent.click(screen.getAllByRole("button", { name: "3" })[0]);
+
+      // matches を5件に削減して rerender
+      rerender(<MatchList {...defaultProps} matches={makeMatches(5)} />);
+
+      // 空テーブルメッセージは出ない
+      expect(
+        screen.queryByText("試合が登録されていません。"),
+      ).not.toBeInTheDocument();
+
+      // データ行（ヘッダー行除く）が5行あること
+      const rows = screen.getAllByRole("row");
+      // rows[0] はヘッダー行、rows[1]〜rows[5] がデータ行
+      expect(rows).toHaveLength(6);
+
+      // ページ表示が "1 / 1 ページ" になっている（空ページでない）
+      expectTextInBothPanels("1 / 1 ページ");
+    });
+  });
+
   // --- 空状態 ---
 
   describe("empty state", () => {
