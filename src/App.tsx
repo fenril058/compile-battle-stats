@@ -107,7 +107,12 @@ export default function App() {
     maxRatio,
     currentConfig.ratioProtocols,
   );
-  const { handleImportCsv } = useCsvImport(
+  const {
+    handleImportCsv,
+    preview: importPreview,
+    confirmImport,
+    cancelImport,
+  } = useCsvImport(
     addMatchItemBatch,
     currentProtocols,
     currentRatios,
@@ -239,6 +244,9 @@ export default function App() {
               onExport={exportToCsv}
               onImport={handleImportCsv}
               isRegistrationAllowed={isRegistrationAllowed}
+              preview={importPreview}
+              onConfirmImport={confirmImport}
+              onCancelImport={cancelImport}
             />
           </section>
           <Footer />

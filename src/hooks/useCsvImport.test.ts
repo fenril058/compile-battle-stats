@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PROTOCOL_SETS, RATIO_SETS } from "../config";
@@ -23,7 +23,7 @@ const RATIO_PROTOCOLS = PROTOCOL_SETS.V1;
 
 type AddBatch = (payload: Omit<Match, "id">[]) => Promise<void>;
 
-/** useCsvImport を初期化し、handleImportCsv と addBatch スパイを返す */
+/** useCsvImport を初期化し、result を返す */
 const setup = (userId?: string, requireLogin = false) => {
   const addBatch = vi.fn<AddBatch>().mockResolvedValue(undefined);
   const { result } = renderHook(() =>
@@ -37,7 +37,7 @@ const setup = (userId?: string, requireLogin = false) => {
       requireLogin,
     ),
   );
-  return { addBatch, handleImportCsv: result.current.handleImportCsv };
+  return { addBatch, result };
 };
 
 /** CSV文字列から File を生成し、change イベント風オブジェクトに包む */
@@ -56,23 +56,26 @@ describe("useCsvImport", () => {
     vi.clearAllMocks();
   });
 
-  it("CSV以外のファイルは拒否し、batch を呼ばない", async () => {
-    const { addBatch, handleImportCsv } = setup();
+  it("CSV以外のファイルは拒否し、preview を設定しない", async () => {
+    const { addBatch, result } = setup();
 
     // application/json + .json 拡張子は拒否される
     const file = new File(["a,b,c"], "import.json", {
       type: "application/json",
     });
-    handleImportCsv({
-      target: { files: [file], value: "" },
-    } as unknown as React.ChangeEvent<HTMLInputElement>);
+    act(() => {
+      result.current.handleImportCsv({
+        target: { files: [file], value: "" },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    });
 
     expect(toast.error).toHaveBeenCalledTimes(1);
     expect(addBatch).not.toHaveBeenCalled();
+    expect(result.current.preview).toBeNull();
   });
 
-  it("拡張子が .csv なら MIME タイプが不正でも許容される", async () => {
-    const { addBatch, handleImportCsv } = setup();
+  it("拡張子が .csv なら MIME タイプが不正でも許容され、preview に payloads が入る", async () => {
+    const { addBatch, result } = setup();
 
     // 空の MIME タイプだが、ファイル名が .csv なので許容
     const file = new File(
@@ -80,16 +83,21 @@ describe("useCsvImport", () => {
       "import.csv",
       { type: "" },
     );
-    handleImportCsv({
-      target: { files: [file], value: "" },
-    } as unknown as React.ChangeEvent<HTMLInputElement>);
+    act(() => {
+      result.current.handleImportCsv({
+        target: { files: [file], value: "" },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    });
 
-    await waitFor(() => expect(addBatch).toHaveBeenCalledTimes(1));
-    expect(addBatch.mock.calls[0][0]).toHaveLength(1);
+    await waitFor(() => expect(result.current.preview).not.toBeNull());
+
+    expect(addBatch).not.toHaveBeenCalled();
+    expect(result.current.preview?.payloads).toHaveLength(1);
+    expect(result.current.preview?.failures).toHaveLength(0);
   });
 
-  it("コメント行(#)・空行をスキップし、有効行のみ batch する", async () => {
-    const { addBatch, handleImportCsv } = setup();
+  it("コメント行(#)・空行をスキップし、有効行が preview.payloads に入る", async () => {
+    const { addBatch, result } = setup();
 
     const csv = [
       "# Compile Battle Stats — Season 1",
@@ -101,98 +109,191 @@ describe("useCsvImport", () => {
       "DARKNESS,PSYCHIC,LIGHT,DEATH,GRAVITY,PLAGUE,SECOND,",
     ].join("\n");
 
-    handleImportCsv(makeChangeEvent(csv));
+    act(() => {
+      result.current.handleImportCsv(makeChangeEvent(csv));
+    });
 
-    await waitFor(() => expect(addBatch).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(result.current.preview).not.toBeNull());
 
-    const payloads = addBatch.mock.calls[0][0];
+    expect(addBatch).not.toHaveBeenCalled();
+    const payloads = result.current.preview?.payloads ?? [];
     expect(payloads).toHaveLength(2);
     expect(payloads[0].first).toEqual(["FIRE", "WATER", "METAL"]);
     expect(payloads[0].winner).toBe("FIRST");
     expect(payloads[1].winner).toBe("SECOND");
-    // 失敗行が無いので warn は呼ばれない
-    expect(toast.warn).not.toHaveBeenCalled();
+    expect(result.current.preview?.failures).toHaveLength(0);
   });
 
-  it("userId を渡すと一括登録の各行に所有者として付与する", async () => {
-    const { addBatch, handleImportCsv } = setup("owner-123");
+  it("userId を渡すと preview.payloads の各行に所有者が付与される", async () => {
+    const { addBatch, result } = setup("owner-123");
 
-    handleImportCsv(
-      makeChangeEvent(
-        "fire,water,metal,life,spirit,speed,first,\n" +
-          "fire,water,metal,life,spirit,speed,second,",
-      ),
-    );
+    act(() => {
+      result.current.handleImportCsv(
+        makeChangeEvent(
+          "fire,water,metal,life,spirit,speed,first,\n" +
+            "fire,water,metal,life,spirit,speed,second,",
+        ),
+      );
+    });
 
-    await waitFor(() => expect(addBatch).toHaveBeenCalledTimes(1));
-    const payloads = addBatch.mock.calls[0][0];
+    await waitFor(() => expect(result.current.preview).not.toBeNull());
+
+    expect(addBatch).not.toHaveBeenCalled();
+    const payloads = result.current.preview?.payloads ?? [];
     expect(payloads).toHaveLength(2);
     expect(payloads.every((p) => p.userId === "owner-123")).toBe(true);
   });
 
-  it("小文字入力も大文字化して取り込める", async () => {
-    const { addBatch, handleImportCsv } = setup();
+  it("小文字入力も大文字化して preview.payloads に取り込める", async () => {
+    const { addBatch, result } = setup();
 
-    handleImportCsv(
-      makeChangeEvent("fire,water,metal,life,spirit,speed,first,"),
-    );
+    act(() => {
+      result.current.handleImportCsv(
+        makeChangeEvent("fire,water,metal,life,spirit,speed,first,"),
+      );
+    });
 
-    await waitFor(() => expect(addBatch).toHaveBeenCalledTimes(1));
-    expect(addBatch.mock.calls[0][0][0].first).toEqual([
+    await waitFor(() => expect(result.current.preview).not.toBeNull());
+
+    expect(addBatch).not.toHaveBeenCalled();
+    expect(result.current.preview?.payloads[0].first).toEqual([
       "FIRE",
       "WATER",
       "METAL",
     ]);
   });
 
-  it("有効行と無効行が混在する場合、有効行のみ batch し失敗を通知する", async () => {
-    const { addBatch, handleImportCsv } = setup();
+  it("有効行と無効行が混在する場合、preview に payloads と failures が両方入る", async () => {
+    const { addBatch, result } = setup();
 
+    const invalidLine1 = "FIRE,WATER,INVALID,LIFE,SPIRIT,SPEED,FIRST,";
+    const invalidLine2 = "FIRE,WATER,METAL,LIFE,SPIRIT,SPEED,DRAW,";
     const csv = [
       "FIRE,WATER,METAL,LIFE,SPIRIT,SPEED,FIRST,", // 有効
-      "FIRE,WATER,INVALID,LIFE,SPIRIT,SPEED,FIRST,", // 不正プロトコル
-      "FIRE,WATER,METAL,LIFE,SPIRIT,SPEED,DRAW,", // 不正な勝者
+      invalidLine1, // 不正プロトコル
+      invalidLine2, // 不正な勝者
     ].join("\n");
 
-    handleImportCsv(makeChangeEvent(csv));
+    act(() => {
+      result.current.handleImportCsv(makeChangeEvent(csv));
+    });
 
-    await waitFor(() => expect(addBatch).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(result.current.preview).not.toBeNull());
 
-    expect(addBatch.mock.calls[0][0]).toHaveLength(1);
-    // 個別 error は出ず、失敗件数と先頭例をまとめた warn が1件だけ出る
+    expect(addBatch).not.toHaveBeenCalled();
+    expect(result.current.preview?.payloads).toHaveLength(1);
+    expect(result.current.preview?.failures).toHaveLength(2);
+    expect(result.current.preview?.failures[0]).toBe(invalidLine1);
+    expect(result.current.preview?.failures[1]).toBe(invalidLine2);
+    // トーストは出ない（プレビューで表示するため）
+    expect(toast.warn).not.toHaveBeenCalled();
     expect(toast.error).not.toHaveBeenCalled();
-    expect(toast.warn).toHaveBeenCalledTimes(1);
-    expect(toast.warn).toHaveBeenCalledWith(expect.stringContaining("2件失敗"));
   });
 
-  it("有効行が1つも無ければ batch を呼ばない", async () => {
-    const { addBatch, handleImportCsv } = setup();
+  it("全行失敗の場合でも preview が設定され、payloads は空・failures には行が入る", async () => {
+    const { addBatch, result } = setup();
 
-    handleImportCsv(makeChangeEvent("BROKEN,ROW\nALSO,BROKEN"));
+    act(() => {
+      result.current.handleImportCsv(
+        makeChangeEvent("BROKEN,ROW\nALSO,BROKEN"),
+      );
+    });
 
-    await waitFor(() => expect(toast.warn).toHaveBeenCalled());
+    await waitFor(() => expect(result.current.preview).not.toBeNull());
+
     expect(addBatch).not.toHaveBeenCalled();
+    expect(result.current.preview?.payloads).toHaveLength(0);
+    expect(result.current.preview?.failures).toHaveLength(2);
   });
 
   it("ファイル未選択なら何もしない", () => {
-    const { addBatch, handleImportCsv } = setup();
+    const { addBatch, result } = setup();
 
-    handleImportCsv({
-      target: { files: [], value: "" },
-    } as unknown as React.ChangeEvent<HTMLInputElement>);
+    act(() => {
+      result.current.handleImportCsv({
+        target: { files: [], value: "" },
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
+    });
 
     expect(toast.error).not.toHaveBeenCalled();
     expect(addBatch).not.toHaveBeenCalled();
+    expect(result.current.preview).toBeNull();
   });
 
-  it("requireLogin: true のとき addBatch を呼ばず、エラートーストを出し、input をリセットする", () => {
-    const { addBatch, handleImportCsv } = setup(undefined, true);
+  it("requireLogin: true のとき preview を設定せず、エラートーストを出し、input をリセットする", () => {
+    const { addBatch, result } = setup(undefined, true);
 
     const event = makeChangeEvent("FIRE,WATER,METAL,LIFE,SPIRIT,SPEED,FIRST,");
-    handleImportCsv(event);
+    act(() => {
+      result.current.handleImportCsv(event);
+    });
 
     expect(addBatch).not.toHaveBeenCalled();
     expect(toast.error).toHaveBeenCalledTimes(1);
     expect(event.target.value).toBe("");
+    expect(result.current.preview).toBeNull();
+  });
+
+  describe("confirmImport", () => {
+    it("addBatch が payloads(userId/createdAt 含む) 付きで呼ばれ、preview がクリアされる", async () => {
+      const { addBatch, result } = setup("user-abc");
+
+      // プレビューをセット
+      act(() => {
+        result.current.handleImportCsv(
+          makeChangeEvent("fire,water,metal,life,spirit,speed,first,"),
+        );
+      });
+      await waitFor(() => expect(result.current.preview).not.toBeNull());
+
+      // 確定
+      await act(async () => {
+        await result.current.confirmImport();
+      });
+
+      expect(addBatch).toHaveBeenCalledTimes(1);
+      const payloads = addBatch.mock.calls[0][0];
+      expect(payloads).toHaveLength(1);
+      expect(payloads[0].userId).toBe("user-abc");
+      expect(typeof payloads[0].createdAt).toBe("number");
+      // プレビューがクリアされる
+      expect(result.current.preview).toBeNull();
+    });
+
+    it("payloads が 0 件のとき addBatch を呼ばない", async () => {
+      const { addBatch, result } = setup();
+
+      // 全行失敗のプレビューをセット
+      act(() => {
+        result.current.handleImportCsv(makeChangeEvent("BROKEN,ROW"));
+      });
+      await waitFor(() => expect(result.current.preview).not.toBeNull());
+      expect(result.current.preview?.payloads).toHaveLength(0);
+
+      await act(async () => {
+        await result.current.confirmImport();
+      });
+
+      expect(addBatch).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("cancelImport", () => {
+    it("preview がクリアされる", async () => {
+      const { result } = setup();
+
+      act(() => {
+        result.current.handleImportCsv(
+          makeChangeEvent("fire,water,metal,life,spirit,speed,first,"),
+        );
+      });
+      await waitFor(() => expect(result.current.preview).not.toBeNull());
+
+      act(() => {
+        result.current.cancelImport();
+      });
+
+      expect(result.current.preview).toBeNull();
+    });
   });
 });

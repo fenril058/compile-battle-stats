@@ -141,10 +141,12 @@ export const ja = {
     "※ 本アプリがエクスポートした CSV ファイルを再インポートできます",
   "dataToolbar.toast.loginRequired": "CSVインポートにはログインが必要です。",
   "dataToolbar.toast.selectCsv": "CSVファイルを選択してください。",
-  "dataToolbar.toast.importFailures":
-    "{count}件失敗（先頭例: {example}…）プロトコル名や形式を確認してください。",
   "dataToolbar.toast.exportEmpty": "エクスポートするデータがありません",
   "dataToolbar.toast.exported": "CSVファイルをエクスポートしました",
+  "dataToolbar.preview.summary": "{ok}件を登録できます（{fail}件は形式エラー）",
+  "dataToolbar.preview.failedExamples": "失敗行の例:",
+  "dataToolbar.preview.confirm": "登録する",
+  "dataToolbar.preview.cancel": "キャンセル",
 
   // Storage (useFirestore)
   "storage.toast.syncFailed":
