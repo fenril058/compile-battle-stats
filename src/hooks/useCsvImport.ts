@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "react-toastify";
 import { useT } from "../i18n";
 import { parseMatchCsvRow } from "../lib/logic";
@@ -7,6 +7,11 @@ import type { Match, Protocol, Ratios } from "../types";
 
 // useFirestoreから渡される add 関数用の型定義
 type AddMatchItemBatch = (payload: Omit<Match, "id">[]) => Promise<void>;
+
+export type ImportPreview = {
+  payloads: Omit<Match, "id">[];
+  failures: string[];
+};
 
 // RFC 4180 対応の簡易 CSV パーサー
 // ダブルクオートで囲まれたフィールド内のカンマを許容、クオート除去を行う
@@ -43,12 +48,12 @@ const parseCsvLine = (line: string): string[] => {
 
 /**
  * CSVインポート機能を提供するカスタムフック。
- * ファイル選択時の処理、CSVのパース、マッチデータのバリデーションと登録を行います。
+ * ファイル選択時はプレビューを保存し、confirmImport で確定登録する2段階フロー。
  * @param addMatchItem - 試合データを保存するための非同期関数 (useFirestoreから取得)
  * @param currentProtocols - 現在のシーズンで有効なプロトコルのリスト
  * @param currentRatios - 現在のシーズンでのレシオ
  * @param maxRatio - 現在のシーズンでのレシオ値の上限
- * @returns handleImportCsv 関数 (React.ChangeEvent<HTMLInputElement>を受け取る)
+ * @returns handleImportCsv / preview / confirmImport / cancelImport
  */
 export const useCsvImport = (
   addMatchItemBatch: AddMatchItemBatch,
@@ -63,6 +68,8 @@ export const useCsvImport = (
   requireLogin = false,
 ) => {
   const { t } = useT();
+  const [preview, setPreview] = useState<ImportPreview | null>(null);
+
   const handleImportCsv = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (requireLogin) {
@@ -84,13 +91,12 @@ export const useCsvImport = (
 
       // ファイルリーダーで内容を読み込み
       const reader = new FileReader();
-      reader.onload = async (e) => {
+      reader.onload = (e) => {
         const text = e.target?.result as string;
         const lines = text.trim().split("\n");
 
         const payloadsToImport: Omit<Match, "id">[] = [];
-        let failCount = 0;
-        let firstFailLine = "";
+        const failureLines: string[] = [];
 
         // 行頭が '#' の行と空行をスキップ
         const dataLines = lines.filter((line) => {
@@ -98,6 +104,9 @@ export const useCsvImport = (
           const trimmedLine = line.trimStart();
           return trimmedLine.length > 0 && !trimmedLine.startsWith("#");
         });
+
+        // データ行が1行も無い場合は何もしない
+        if (dataLines.length === 0) return;
 
         // CSVを解析し、マッチデータを追加
         for (const line of dataLines) {
@@ -123,28 +132,16 @@ export const useCsvImport = (
               }
             }
 
-            // Batch処理するための配列に追加 (createdAt / 所有者 userId も含める)
+            // プレビュー用配列に追加 (createdAt / 所有者 userId も含める)
             payloadsToImport.push({ ...payload, createdAt, userId });
           } else {
-            failCount++;
-            if (failCount === 1) firstFailLine = line;
+            failureLines.push(line);
             console.warn("CSV Row Parse Failed:", line);
           }
         }
 
-        // ▼ 【変更】 ループが終わった後に、まとめて保存を実行
-        if (payloadsToImport.length > 0) {
-          await addMatchItemBatch(payloadsToImport);
-        }
-
-        if (failCount > 0) {
-          toast.warn(
-            t("dataToolbar.toast.importFailures", {
-              count: failCount,
-              example: firstFailLine.substring(0, 50),
-            }),
-          );
-        }
+        // addBatch せずにプレビューを state に保存する
+        setPreview({ payloads: payloadsToImport, failures: failureLines });
       };
 
       reader.readAsText(file);
@@ -152,7 +149,6 @@ export const useCsvImport = (
       event.target.value = "";
     },
     [
-      addMatchItemBatch,
       currentProtocols,
       ratios,
       maxRatio,
@@ -163,5 +159,17 @@ export const useCsvImport = (
     ],
   );
 
-  return { handleImportCsv };
+  /** プレビューを確定して一括登録する */
+  const confirmImport = useCallback(async () => {
+    if (!preview || preview.payloads.length === 0) return;
+    await addMatchItemBatch(preview.payloads);
+    setPreview(null);
+  }, [preview, addMatchItemBatch]);
+
+  /** プレビューをキャンセルしてクリアする */
+  const cancelImport = useCallback(() => {
+    setPreview(null);
+  }, []);
+
+  return { handleImportCsv, preview, confirmImport, cancelImport };
 };

@@ -134,10 +134,13 @@ export const en: TranslationDict = {
     "* You can re-import a CSV file exported by this app",
   "dataToolbar.toast.loginRequired": "Login is required to import CSV.",
   "dataToolbar.toast.selectCsv": "Please select a CSV file.",
-  "dataToolbar.toast.importFailures":
-    "{count} row(s) failed (first example: {example}…) — check protocol names and format.",
   "dataToolbar.toast.exportEmpty": "No data to export",
   "dataToolbar.toast.exported": "CSV file exported successfully",
+  "dataToolbar.preview.summary":
+    "{ok} row(s) ready to register ({fail} format error(s))",
+  "dataToolbar.preview.failedExamples": "Failed row examples:",
+  "dataToolbar.preview.confirm": "Register",
+  "dataToolbar.preview.cancel": "Cancel",
 
   // Storage (useFirestore)
   "storage.toast.syncFailed":
