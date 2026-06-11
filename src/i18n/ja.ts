@@ -29,6 +29,7 @@ export const ja = {
   "header.languageSelect": "言語",
   "header.logout": "ログアウト",
   "header.loginWithGoogle": "Googleでログイン",
+  "header.offline": "オフライン（Firebase 無効）",
 
   // MatchForm
   "matchForm.title": "試合結果の入力",
@@ -139,6 +140,35 @@ export const ja = {
   "dataToolbar.reimportNote":
     "※ 本アプリがエクスポートした CSV ファイルを再インポートできます",
   "dataToolbar.toast.loginRequired": "CSVインポートにはログインが必要です。",
+  "dataToolbar.toast.selectCsv": "CSVファイルを選択してください。",
+  "dataToolbar.toast.importFailures":
+    "{count}件失敗（先頭例: {example}…）プロトコル名や形式を確認してください。",
+  "dataToolbar.toast.exportEmpty": "エクスポートするデータがありません",
+  "dataToolbar.toast.exported": "CSVファイルをエクスポートしました",
+
+  // Storage (useFirestore)
+  "storage.toast.syncFailed":
+    "リモートデータの同期に失敗しました。ローカルキャッシュを表示します。",
+  "storage.toast.added": "試合を追加しました。",
+  "storage.toast.addFailed": "登録に失敗しました。",
+  "storage.toast.removed": "試合を削除しました。",
+  "storage.toast.removeDeniedOwnerOnly": "自分が登録した試合のみ削除できます。",
+  "storage.toast.removeFailed": "削除に失敗しました。",
+  "storage.toast.batchEmpty": "登録するデータがありません。",
+  "storage.toast.batchAdded": "{count}件の試合を一括登録しました。",
+  "storage.toast.batchFailed": "一括登録に失敗しました。",
+  "storage.toast.reloadedLocal": "ローカルキャッシュを再読込しました。",
+  "storage.toast.clearedLocal": "ローカルキャッシュをクリアしました。",
+  "storage.confirm.clearLocal":
+    "本当にローカルキャッシュをすべて削除しますか？",
+
+  // Auth (useAuth)
+  "auth.toast.loginFailed": "ログインに失敗しました。",
+  "auth.toast.adBlocker":
+    "ログインに失敗しました。広告ブロッカーがGoogleの認証をブロックしている可能性があります。このサイトをホワイトリストに追加してから再試行してください。",
+  "auth.toast.loggedOut": "ログアウトしました",
+  "auth.toast.logoutFailed": "ログアウトに失敗しました。",
+  "auth.toast.notEnabled": "Firebase認証が有効ではありません。",
 
   // ErrorBoundary（Provider 外の class なので detectLang() で静的に引く）
   "errorBoundary.title": "エラーが発生しました",

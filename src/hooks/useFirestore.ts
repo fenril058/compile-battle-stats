@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
+import { useT } from "../i18n";
 import { db } from "../storage/firebase";
 import { readLocal } from "../storage/helpers";
 import { LocalAdapter } from "../storage/LocalAdapter";
@@ -16,6 +17,7 @@ export function useFirestore<T extends WithId>(collectionName: string) {
   const localKey = collectionName;
   const [items, setItems] = useState<T[]>([]);
   const mode: StorageMode = db ? "remote" : "local";
+  const { t } = useT();
 
   // db の有無でアダプタを選ぶ。collectionName が変わらない限り同一インスタンス。
   const adapter = useMemo<StorageAdapter<T>>(
@@ -31,32 +33,30 @@ export function useFirestore<T extends WithId>(collectionName: string) {
     const unsubscribe = adapter.subscribe(
       (next) => setItems(next),
       () => {
-        toast.error(
-          "リモートデータの同期に失敗しました。ローカルキャッシュを表示します。",
-        );
+        toast.error(t("storage.toast.syncFailed"));
       },
     );
     return unsubscribe;
-  }, [adapter]);
+  }, [adapter, t]);
 
   const add = useCallback(
     async (item: Omit<T, "id" | "createdAt">) => {
       try {
         await adapter.add(item);
-        toast.success("試合を追加しました。");
+        toast.success(t("storage.toast.added"));
       } catch (e) {
         console.error("[useFirestore] add failed:", e);
-        toast.error("登録に失敗しました。");
+        toast.error(t("storage.toast.addFailed"));
       }
     },
-    [adapter],
+    [adapter, t],
   );
 
   const remove = useCallback(
     async (idToRemove: string) => {
       try {
         await adapter.remove(idToRemove);
-        toast.success("試合を削除しました。");
+        toast.success(t("storage.toast.removed"));
       } catch (e) {
         console.error("[useFirestore] remove failed:", e);
         // rules が所有者以外の削除を弾いた場合は理由を明示する（UI は本来
@@ -65,44 +65,46 @@ export function useFirestore<T extends WithId>(collectionName: string) {
         const code = (e as { code?: unknown })?.code;
         toast.error(
           code === "permission-denied"
-            ? "自分が登録した試合のみ削除できます。"
-            : "削除に失敗しました。",
+            ? t("storage.toast.removeDeniedOwnerOnly")
+            : t("storage.toast.removeFailed"),
         );
       }
     },
-    [adapter],
+    [adapter, t],
   );
 
   const addBatch = useCallback(
     async (itemsWithoutId: Omit<T, "id">[]) => {
       if (itemsWithoutId.length === 0) {
-        toast.info("登録するデータがありません。");
+        toast.info(t("storage.toast.batchEmpty"));
         return;
       }
       try {
         await adapter.addBatch(itemsWithoutId);
-        toast.success(`${itemsWithoutId.length}件の試合を一括登録しました。`);
+        toast.success(
+          t("storage.toast.batchAdded", { count: itemsWithoutId.length }),
+        );
       } catch (e) {
         console.error("[useFirestore] addBatch failed:", e);
-        toast.error("一括登録に失敗しました。");
+        toast.error(t("storage.toast.batchFailed"));
       }
     },
-    [adapter],
+    [adapter, t],
   );
 
   // ローカルキャッシュを明示的に読み戻す（手動同期）
   const reloadLocal = useCallback(() => {
     setItems(readLocal<T>(localKey));
-    toast.info("ローカルキャッシュを再読込しました。");
-  }, [localKey]);
+    toast.info(t("storage.toast.reloadedLocal"));
+  }, [localKey, t]);
 
   // ローカルキャッシュをすべてクリア
   const clearLocal = useCallback(() => {
-    if (!confirm("本当にローカルキャッシュをすべて削除しますか？")) return;
+    if (!confirm(t("storage.confirm.clearLocal"))) return;
     setItems([]);
     localStorage.removeItem(localKey);
-    toast.success("ローカルキャッシュをクリアしました。");
-  }, [localKey]);
+    toast.success(t("storage.toast.clearedLocal"));
+  }, [localKey, t]);
 
   return {
     mode,
