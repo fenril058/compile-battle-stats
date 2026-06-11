@@ -3,6 +3,40 @@ import { describe, expect, it } from "vitest";
 import type { SideStats } from "../types";
 import { Quadrant } from "./Quadrant";
 
+// V2 シーズンの全 30 プロトコル。実際の config と合わせる。
+const V2_PROTOCOLS = [
+  "DARKNESS",
+  "FIRE",
+  "PSYCHIC",
+  "DEATH",
+  "GRAVITY",
+  "WATER",
+  "LIFE",
+  "PLAGUE",
+  "LIGHT",
+  "SPEED",
+  "SPIRIT",
+  "METAL",
+  "HATE",
+  "LOVE",
+  "APATHY",
+  "LUCK",
+  "WAR",
+  "COURAGE",
+  "TIME",
+  "CLARITY",
+  "FEAR",
+  "CORRUPTION",
+  "SMOKE",
+  "CHAOS",
+  "MIRROR",
+  "ICE",
+  "PEACE",
+  "DIVERSITY",
+  "UNITY",
+  "ASSIMILATION",
+] as const;
+
 const single: SideStats = {
   FIRE: { g: 6, w: 3 }, // pickRate 60, 勝率 50
   WATER: { g: 4, w: 1 }, // pickRate 40, 勝率 25
@@ -55,6 +89,40 @@ describe("Quadrant", () => {
     expect(screen.getByText("FIR")).toBeInTheDocument();
     expect(screen.getByText("WAT")).toBeInTheDocument();
     expect(screen.getByText("MET")).toBeInTheDocument();
+  });
+
+  it("30 プロトコル相当の密集データで、すべてのラベル y 座標が 0 以上になる", () => {
+    // 全点が同じ勝率（50%）・同じゲーム数でカスケードが最悪ケースになる。
+    // 動的高さが機能していれば、後方パスで押し上げても y<0 にならない。
+    const all30: SideStats = Object.fromEntries(
+      V2_PROTOCOLS.map((name) => [name, { g: 6, w: 3 }]),
+    );
+    const { container } = render(<Quadrant single={all30} title="散布図" />);
+
+    // ラベル（省略名）を持つ <text> 要素の y をすべて確認する
+    const textEls = container.querySelectorAll("text");
+    const labelEls = Array.from(textEls).filter(
+      (el) => el.getAttribute("font-size") === "8",
+    );
+    expect(labelEls.length).toBe(30);
+    for (const el of labelEls) {
+      expect(Number(el.getAttribute("y"))).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it("30 プロトコル相当の密集データで viewBox の高さが基準値（320）より大きくなる", () => {
+    // 点数が多い場合にプロット高さが動的に拡大され、SVG が縦に伸びることを確認する。
+    const all30: SideStats = Object.fromEntries(
+      V2_PROTOCOLS.map((name) => [name, { g: 6, w: 3 }]),
+    );
+    const { container } = render(<Quadrant single={all30} title="散布図" />);
+
+    const svg = container.querySelector("svg");
+    expect(svg).not.toBeNull();
+    const viewBox = svg?.getAttribute("viewBox") ?? "";
+    const [, , , height] = viewBox.split(" ").map(Number);
+    // 基準の SVG 高さ（MARGIN.top=20 + BASE_PLOT_H=252 + MARGIN.bottom=48 = 320）より大きい
+    expect(height).toBeGreaterThan(320);
   });
 
   it("低ピック率の密集クラスタでは縦方向に分離し、ラベルは各点の真横に配置する", () => {
