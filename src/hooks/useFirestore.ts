@@ -1,61 +1,97 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { useT } from "../i18n";
-import { db } from "../storage/firebase";
+import { getFirebase, isFirebaseEnabled } from "../storage/firebase";
 import { readLocal } from "../storage/helpers";
 import { LocalAdapter } from "../storage/LocalAdapter";
-import { RemoteAdapter } from "../storage/RemoteAdapter";
 import type { StorageAdapter, WithId } from "../storage/types";
 import type { StorageMode } from "../types";
 
 /**
  * データアクセス層。ストレージの実体（Firestore / localStorage）は `StorageAdapter`
  * に隠蔽し、このフックは「購読 → state 反映」「操作 → トースト通知」だけを担う。
- * そのため firebase/firestore は直接 import しない（remote の実体は RemoteAdapter）。
+ *
+ * firebase/firestore は直接 import しない。remote の実体（RemoteAdapter）は
+ * firebase/firestore を静的 import しているため、それを静的に取り込むと local
+ * モードでも firebase チャンクが初回ロードされてしまう。よって remote のときだけ
+ * `getFirebase()` 解決後に RemoteAdapter を動的 import して生成する。
  */
 export function useFirestore<T extends WithId>(collectionName: string) {
   const localKey = collectionName;
   const [items, setItems] = useState<T[]>([]);
-  const mode: StorageMode = db ? "remote" : "local";
+  const mode: StorageMode = isFirebaseEnabled ? "remote" : "local";
   const { t } = useT();
 
-  // db の有無でアダプタを選ぶ。collectionName が変わらない限り同一インスタンス。
-  const adapter = useMemo<StorageAdapter<T>>(
+  // アダプタは Promise として保持する。remote では firebase の初期化と
+  // RemoteAdapter モジュールの動的 import を待つ必要があるため。
+  // collectionName が変わらない限り同一 Promise（＝同一インスタンス）。
+  // init 失敗で LocalAdapter にフォールバックしたら一度だけ同期失敗を通知したい。
+  // memo 内で t を使うと言語切替で再購読が走るため、フラグだけ立てて effect で通知する。
+  const [initFailed, setInitFailed] = useState(false);
+
+  const adapterPromise = useMemo<Promise<StorageAdapter<T>>>(
     () =>
-      db
-        ? new RemoteAdapter<T>(db, collectionName)
-        : new LocalAdapter<T>(collectionName),
+      isFirebaseEnabled
+        ? getFirebase().then(async (fb) => {
+            if (!fb) {
+              // init 失敗時は LocalAdapter にフォールバックする。
+              setInitFailed(true);
+              return new LocalAdapter<T>(collectionName);
+            }
+            const { RemoteAdapter } = await import("../storage/RemoteAdapter");
+            return new RemoteAdapter<T>(fb.db, collectionName);
+          })
+        : Promise.resolve(new LocalAdapter<T>(collectionName)),
     [collectionName],
   );
 
-  // 購読：アダプタが現在値（および以降の変更）を push し、state へ反映する。
+  // init 失敗のフォールバック通知（一度だけ）
   useEffect(() => {
-    const unsubscribe = adapter.subscribe(
-      (next) => setItems(next),
-      () => {
-        toast.error(t("storage.toast.syncFailed"));
-      },
-    );
-    return unsubscribe;
-  }, [adapter, t]);
+    if (initFailed) toast.error(t("storage.toast.syncFailed"));
+  }, [initFailed, t]);
+
+  // 購読：アダプタが現在値（および以降の変更）を push し、state へ反映する。
+  // adapterPromise の解決を待つ間、RemoteAdapter.subscribe は cache-first なので
+  // 実用上の空白は短いが、念のため effect 冒頭でローカルキャッシュを即時反映する。
+  useEffect(() => {
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
+    setItems(readLocal<T>(localKey));
+
+    adapterPromise.then((adapter) => {
+      if (cancelled) return;
+      unsubscribe = adapter.subscribe(
+        (next) => setItems(next),
+        () => {
+          toast.error(t("storage.toast.syncFailed"));
+        },
+      );
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, [adapterPromise, localKey, t]);
 
   const add = useCallback(
     async (item: Omit<T, "id" | "createdAt">) => {
       try {
-        await adapter.add(item);
+        await (await adapterPromise).add(item);
         toast.success(t("storage.toast.added"));
       } catch (e) {
         console.error("[useFirestore] add failed:", e);
         toast.error(t("storage.toast.addFailed"));
       }
     },
-    [adapter, t],
+    [adapterPromise, t],
   );
 
   const remove = useCallback(
     async (idToRemove: string) => {
       try {
-        await adapter.remove(idToRemove);
+        await (await adapterPromise).remove(idToRemove);
         toast.success(t("storage.toast.removed"));
       } catch (e) {
         console.error("[useFirestore] remove failed:", e);
@@ -70,7 +106,7 @@ export function useFirestore<T extends WithId>(collectionName: string) {
         );
       }
     },
-    [adapter, t],
+    [adapterPromise, t],
   );
 
   const addBatch = useCallback(
@@ -80,7 +116,7 @@ export function useFirestore<T extends WithId>(collectionName: string) {
         return;
       }
       try {
-        await adapter.addBatch(itemsWithoutId);
+        await (await adapterPromise).addBatch(itemsWithoutId);
         toast.success(
           t("storage.toast.batchAdded", { count: itemsWithoutId.length }),
         );
@@ -89,7 +125,7 @@ export function useFirestore<T extends WithId>(collectionName: string) {
         toast.error(t("storage.toast.batchFailed"));
       }
     },
-    [adapter, t],
+    [adapterPromise, t],
   );
 
   // ローカルキャッシュを明示的に読み戻す（手動同期）
