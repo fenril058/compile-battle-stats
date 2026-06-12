@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.5.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.4.0...compile-battle-stats-v2.5.0) (2026-06-12)
+
+
+### Features
+
+* θ の95%ブートストラップ区間を推定して強度表示に重ねる ([#229](https://github.com/fenril058/compile-battle-stats/issues/229)) ([aea255f](https://github.com/fenril058/compile-battle-stats/commit/aea255faeae4edee10081c26ca5bb57abb7ce055))
+* 戦績一覧にプロトコル・種別・対戦日のフィルタを追加する ([#228](https://github.com/fenril058/compile-battle-stats/issues/228)) ([f1ab470](https://github.com/fenril058/compile-battle-stats/commit/f1ab470b27679685be6f2f6138ed0f62d417647c))
+
+
+### Performance Improvements
+
+* local モードでは firebase チャンクを読み込まない（遅延初期化） ([#230](https://github.com/fenril058/compile-battle-stats/issues/230)) ([ca58651](https://github.com/fenril058/compile-battle-stats/commit/ca58651df7b1ab1dbf681077eac75c8d366e2a05))
+
 ## [2.4.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.3.0...compile-battle-stats-v2.4.0) (2026-06-11)
 
 
