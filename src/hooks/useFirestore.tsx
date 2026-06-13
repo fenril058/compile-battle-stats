@@ -90,9 +90,44 @@ export function useFirestore<T extends WithId>(collectionName: string) {
 
   const remove = useCallback(
     async (idToRemove: string) => {
+      const item = items.find((x) => x.id === idToRemove);
+
+      const restore = async () => {
+        if (!item) return;
+        try {
+          const { id: _omit, ...rest } = item;
+          await (await adapterPromise).addBatch([rest as Omit<T, "id">]);
+          toast.info(t("storage.toast.restored"));
+        } catch (e) {
+          console.error("[useFirestore] restore failed:", e);
+          toast.error(t("storage.toast.restoreFailed"));
+        }
+      };
+
       try {
         await (await adapterPromise).remove(idToRemove);
-        toast.success(t("storage.toast.removed"));
+
+        if (item) {
+          const undoLabel = t("storage.toast.undo");
+          const removedMsg = t("storage.toast.removed");
+          toast.success(({ closeToast }) => (
+            <span>
+              {removedMsg}
+              <button
+                type="button"
+                onClick={() => {
+                  closeToast();
+                  void restore();
+                }}
+                className="ml-3 underline cursor-pointer bg-transparent border-0 p-0 text-inherit text-[length:inherit]"
+              >
+                {undoLabel}
+              </button>
+            </span>
+          ));
+        } else {
+          toast.success(t("storage.toast.removed"));
+        }
       } catch (e) {
         console.error("[useFirestore] remove failed:", e);
         // rules が所有者以外の削除を弾いた場合は理由を明示する（UI は本来
@@ -106,7 +141,7 @@ export function useFirestore<T extends WithId>(collectionName: string) {
         );
       }
     },
-    [adapterPromise, t],
+    [adapterPromise, items, t],
   );
 
   const addBatch = useCallback(

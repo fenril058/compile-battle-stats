@@ -1,4 +1,10 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  waitFor,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Firebase 未設定 = local モードを強制する。
@@ -192,5 +198,82 @@ describe("useFirestore (local モード)", () => {
     expect(result.current.items).toHaveLength(0);
     expect(localStorage.getItem(KEY)).toBeNull();
     confirmSpy.mockRestore();
+  });
+
+  it("remove 成功後、toast.success が「元に戻す」ボタンを含むコンテンツ（関数）で呼ばれる", async () => {
+    seed([
+      { id: "keep", createdAt: 1, name: "keep" },
+      { id: "drop", createdAt: 2, name: "drop" },
+    ]);
+    const { result } = renderHook(() => useFirestore<Row>(KEY));
+    await waitFor(() => expect(result.current.items).toHaveLength(2));
+
+    await act(async () => {
+      await result.current.remove("drop");
+    });
+
+    // toast.success が関数（render prop）で呼ばれていることを確認する
+    expect(toast.success).toHaveBeenCalled();
+    const arg = (toast.success as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(typeof arg).toBe("function");
+
+    // render prop を実際にレンダリングして「元に戻す」ボタンが含まれることを確認する
+    const closeToast = vi.fn();
+    const { getByRole } = render(arg({ closeToast }));
+    const undoButton = getByRole("button", { name: "元に戻す" });
+    expect(undoButton).toBeTruthy();
+  });
+
+  it("undo ボタンを押すと adapter.addBatch が id を除いた payload で呼ばれる", async () => {
+    const targetRow: Row = { id: "drop", createdAt: 99, name: "target" };
+    seed([{ id: "keep", createdAt: 1, name: "keep" }, targetRow]);
+    const { result } = renderHook(() => useFirestore<Row>(KEY));
+    await waitFor(() => expect(result.current.items).toHaveLength(2));
+
+    const addBatchSpy = vi.spyOn(LocalAdapter.prototype, "addBatch");
+
+    await act(async () => {
+      await result.current.remove("drop");
+    });
+
+    // toast.success の render prop を取り出してレンダリングし、undo ボタンを押す
+    const arg = (toast.success as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    const closeToast = vi.fn();
+    const { getByRole } = render(arg({ closeToast }));
+    const undoButton = getByRole("button", { name: "元に戻す" });
+
+    await act(async () => {
+      fireEvent.click(undoButton);
+    });
+
+    // addBatch が id を除いた元のアイテムで呼ばれることを確認する
+    const { id: _omit, ...expectedPayload } = targetRow;
+    expect(addBatchSpy).toHaveBeenCalledWith([expectedPayload]);
+    // undo ボタンを押したらトーストが閉じられることを確認する
+    expect(closeToast).toHaveBeenCalled();
+    addBatchSpy.mockRestore();
+  });
+
+  it("restore 成功で toast.info が restored メッセージで呼ばれる", async () => {
+    const targetRow: Row = { id: "drop", createdAt: 99, name: "target" };
+    seed([targetRow]);
+    const { result } = renderHook(() => useFirestore<Row>(KEY));
+    await waitFor(() => expect(result.current.items).toHaveLength(1));
+
+    await act(async () => {
+      await result.current.remove("drop");
+    });
+
+    // render prop からボタンを取り出してクリックする
+    const arg = (toast.success as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    const closeToast = vi.fn();
+    const { getByRole } = render(arg({ closeToast }));
+
+    await act(async () => {
+      fireEvent.click(getByRole("button", { name: "元に戻す" }));
+    });
+
+    // restore 成功時に toast.info が呼ばれることを確認する
+    expect(toast.info).toHaveBeenCalledWith("削除を取り消しました。");
   });
 });

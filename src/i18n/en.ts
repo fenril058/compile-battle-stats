@@ -159,6 +159,9 @@ export const en: TranslationDict = {
   "storage.toast.added": "Match added.",
   "storage.toast.addFailed": "Failed to register the match.",
   "storage.toast.removed": "Match deleted.",
+  "storage.toast.undo": "Undo",
+  "storage.toast.restored": "Deletion undone.",
+  "storage.toast.restoreFailed": "Could not undo the deletion.",
   "storage.toast.removeDeniedOwnerOnly":
     "You can only delete matches you registered.",
   "storage.toast.removeFailed": "Failed to delete the match.",
