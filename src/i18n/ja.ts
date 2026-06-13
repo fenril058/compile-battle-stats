@@ -225,6 +225,20 @@ export const ja = {
     "ペアシナジーは2枚の噛み合いを残差で測ります。\n　残差 = 実測勝率 − モデル期待勝率（パーセントポイント）\nモデル期待勝率は、そのペアを含む各試合の予測勝率 σ( ±β + Σθ_自 − Σθ_相手 ) を平均したものです（強度θだけで決まる勝率）。\n\n正（緑）なら個々の強さから期待される以上に噛み合っている、負（赤）なら足を引っ張り合っているペアです。単なるペア勝率と違い「強いプロトコル同士だから勝てている分」を取り除いてあるので、本当の相乗効果が見えます。",
   "synergy.more": "他 {count} 件（中位・残差が小さいペア）",
 
+  // Trio recommendation (θ + シナジー)
+  "trio.title": "推奨トリオ",
+  "trio.scopeLabel": "対象:",
+  "trio.scope.all": "全体",
+  "trio.scope.ratio": "レシオ",
+  "trio.breakdown": "素 {base}% / シナジー {synergy}pp",
+  "trio.pairData": "データ {pairs}/3",
+  "trio.row":
+    "{label}: 推定勝率 {score}%、素 {base}%、シナジー {synergy}pp、ペアデータ {pairs}/3",
+  "trio.note":
+    "θ（強度）とペアシナジーから推定した期待勝率の高い構成。実戦数が少ない構成も含むため参考値。",
+  "trio.explain":
+    "素の強さ σ(Σθ) に、観測されたペアの相乗効果（シナジー残差の平均）を加えた推定勝率で構成を順位付けします。レシオ対象スコープではレシオ表の合計が上限以内の構成だけを対象にします。ペアデータが少ない（0〜1/3）構成は不確かなので過信しないでください。",
+
   // Archetype (共起クラスタ)
   "archetype.title": "アーキタイプ相性",
   "archetype.note":
@@ -259,6 +273,7 @@ export const ja = {
   "nav.stat": "勝率",
   "nav.strength": "強度",
   "nav.synergy": "シナジー",
+  "nav.trio": "推奨",
   "nav.quadrant": "散布図",
   "nav.usage": "推移",
   "nav.matrix": "相性表",

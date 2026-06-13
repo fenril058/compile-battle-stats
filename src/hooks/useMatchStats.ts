@@ -11,13 +11,21 @@ import {
   matchupPairs,
   matchupResidual,
   pairSynergy,
+  recommendTrios,
   type StrengthModel,
   type SynergyPair,
   type ThetaBootstrap,
+  type TrioRecommendation,
   type UsageTimeline,
   usageTimeline,
 } from "../lib/logic";
-import type { Match, MatrixData, Protocol, StatsResult } from "../types";
+import type {
+  Match,
+  MatrixData,
+  Protocol,
+  Ratios,
+  StatsResult,
+} from "../types";
 
 // Module-level sets for O(1) protocol lookup.
 // Protocol 型が V2 まで広がったので、PROTOCOL_SETS の値はそのまま Protocol[] として扱える（#73）。
@@ -55,6 +63,8 @@ export const useMatchStats = (
   matches: Match[],
   protocols: readonly Protocol[],
   ratioProtocols: readonly Protocol[] = V1_AUX_PROTOCOLS,
+  ratios?: Ratios,
+  maxRatio?: number,
 ) => {
   const sortedMatches = useMemo(() => {
     return [...matches].sort((a, b) => {
@@ -231,6 +241,27 @@ export const useMatchStats = (
     [matches],
   );
 
+  // θ + ペアシナジーから推奨トリオ構成（全体 / レシオ対象）。
+  const trioRecommendations: {
+    all: TrioRecommendation[];
+    ratio: TrioRecommendation[];
+  } = useMemo(
+    () => ({
+      all: recommendTrios(matches, strengthModel, { protocols }),
+      ratio:
+        ratios && maxRatio !== undefined
+          ? recommendTrios(matches, strengthModel, {
+              protocols,
+              scope: "ratio",
+              ratios,
+              maxRatio,
+              ratioProtocols,
+            })
+          : [],
+    }),
+    [matches, strengthModel, protocols, ratios, maxRatio, ratioProtocols],
+  );
+
   return {
     statViews,
     matrixViews,
@@ -242,5 +273,6 @@ export const useMatchStats = (
     usage,
     archetypes,
     thetaBootstrap,
+    trioRecommendations,
   };
 };

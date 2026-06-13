@@ -222,6 +222,20 @@ export const en: TranslationDict = {
     "Pair synergy measures how two protocols mesh, as a residual:\n　residual = actual win rate − model-expected win rate (percentage points)\nThe expected win rate averages each containing match's predicted σ( ±β + Σθ_self − Σθ_opp ) — the win rate explained by individual strength θ alone.\n\nPositive (green) means they mesh beyond their individual strength; negative (red) means they get in each other's way. Unlike a raw pair win rate, the \"two strong protocols winning anyway\" part is removed, revealing true synergy.",
   "synergy.more": "{count} more (middle tier, small residual)",
 
+  // Trio recommendation (θ + synergy)
+  "trio.title": "Recommended Trios",
+  "trio.scopeLabel": "Scope:",
+  "trio.scope.all": "All",
+  "trio.scope.ratio": "Ratio",
+  "trio.breakdown": "base {base}% / synergy {synergy}pp",
+  "trio.pairData": "data {pairs}/3",
+  "trio.row":
+    "{label}: estimated win rate {score}%, base {base}%, synergy {synergy}pp, pair data {pairs}/3",
+  "trio.note":
+    "High estimated win-rate compositions inferred from θ (strength) and pair synergy. Includes lightly-played compositions, so treat as a reference.",
+  "trio.explain":
+    "Compositions are ranked by an estimated win rate: base strength σ(Σθ) plus the observed pair synergy (average of synergy residuals). The Ratio scope only considers compositions whose ratio-table total is within the cap. Compositions with little pair data (0–1/3) are uncertain, so don't over-trust them.",
+
   // Archetype (co-occurrence clusters)
   "archetype.title": "Archetype Matchups",
   "archetype.note":
@@ -256,6 +270,7 @@ export const en: TranslationDict = {
   "nav.stat": "Stats",
   "nav.strength": "Strength",
   "nav.synergy": "Synergy",
+  "nav.trio": "Picks",
   "nav.quadrant": "Scatter",
   "nav.usage": "Trends",
   "nav.matrix": "Matrix",

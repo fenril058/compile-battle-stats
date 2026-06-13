@@ -18,6 +18,7 @@ import {
   protocolCooccurrence,
   quadrantPoints,
   ratioSum,
+  recommendTrios,
   rows,
   usageTimeline,
   wilsonInterval,
@@ -826,6 +827,160 @@ describe("lib/logic", () => {
       expect((fw as { expected: number }).expected).toBeGreaterThan(50);
       // 実測100%のうち多くを FIRE の強さで説明 → 残差は θ=0 時(50)より小さい
       expect((fw as { residual: number }).residual).toBeLessThan(50);
+    });
+  });
+
+  describe("recommendTrios", () => {
+    let idSeq = 0;
+    const mk = (
+      first: Trio,
+      second: Trio,
+      winner: "FIRST" | "SECOND",
+    ): Match => ({
+      id: `rt${idSeq++}`,
+      first,
+      second,
+      winner,
+      ratio: false,
+      createdAt: 0,
+    });
+
+    const protocols = [
+      "FIRE",
+      "WATER",
+      "METAL",
+      "LIFE",
+      "SPEED",
+      "SPIRIT",
+    ] as const;
+
+    const zeroModel = {
+      theta: {
+        FIRE: 0,
+        WATER: 0,
+        METAL: 0,
+        LIFE: 0,
+        SPEED: 0,
+        SPIRIT: 0,
+      },
+      firstAdvantage: 0,
+      games: 5,
+      iterations: 1,
+      converged: true,
+    };
+
+    // FIRE·WATER が常勝のデータ（5戦で minGames 到達）。
+    const fireWaterWins = (): Match[] =>
+      Array.from({ length: 5 }, () =>
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      );
+
+    it("model.games===0 なら空配列を返す", () => {
+      const empty = { ...zeroModel, theta: {}, games: 0 };
+      expect(recommendTrios(fireWaterWins(), empty, { protocols })).toEqual([]);
+    });
+
+    it("プロトコルが3未満なら空配列", () => {
+      expect(
+        recommendTrios(fireWaterWins(), zeroModel, {
+          protocols: ["FIRE", "WATER"],
+        }),
+      ).toEqual([]);
+    });
+
+    it("決定的（同入力で同結果）", () => {
+      const a = recommendTrios(fireWaterWins(), zeroModel, { protocols });
+      const b = recommendTrios(fireWaterWins(), zeroModel, { protocols });
+      expect(a).toEqual(b);
+    });
+
+    it("score 降順でソートされ、範囲は 0..100", () => {
+      const recs = recommendTrios(fireWaterWins(), zeroModel, { protocols });
+      expect(recs.length).toBeGreaterThan(0);
+      for (let i = 1; i < recs.length; i += 1) {
+        expect(recs[i - 1].score).toBeGreaterThanOrEqual(recs[i].score);
+      }
+      for (const r of recs) {
+        expect(r.score).toBeGreaterThanOrEqual(0);
+        expect(r.score).toBeLessThanOrEqual(100);
+        expect(r.base).toBeGreaterThanOrEqual(0);
+        expect(r.base).toBeLessThanOrEqual(100);
+        // θ=0 モデルなので base は 50
+        expect(r.base).toBe(50);
+      }
+    });
+
+    it("採用ペア残差を base に加算する（FIRE·WATER 構成が上位）", () => {
+      // θ=0 → base=50。FIRE·WATER は残差 +50 → 採用1ペアで synergy=+50, score=100。
+      const recs = recommendTrios(fireWaterWins(), zeroModel, { protocols });
+      const top = recs[0];
+      expect(top.protocols).toContain("FIRE");
+      expect(top.protocols).toContain("WATER");
+      expect(top.pairsWithData).toBeGreaterThanOrEqual(1);
+      expect(top.synergy).toBeGreaterThan(0);
+      expect(top.score).toBe(100);
+    });
+
+    it("pairsWithData は残差データの有無を反映する", () => {
+      // 残差データが全く無い（minGames 未到達）なら全構成 pairsWithData=0。
+      const fewGames = Array.from({ length: 2 }, () =>
+        mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+      );
+      const recs = recommendTrios(fewGames, zeroModel, { protocols });
+      for (const r of recs) {
+        expect(r.pairsWithData).toBe(0);
+        expect(r.synergy).toBe(0);
+        expect(r.score).toBe(r.base);
+      }
+    });
+
+    it("scope='ratio' は ratioProtocols 外や合計超過の構成を除外する", () => {
+      const ratios = {
+        FIRE: 5,
+        WATER: 3,
+        METAL: 4,
+        LIFE: 2,
+        SPEED: 1,
+        SPIRIT: 1,
+      };
+      const ratioProtocols = ["WATER", "LIFE", "SPEED", "SPIRIT"]; // FIRE/METAL は対象外
+      const recs = recommendTrios(fireWaterWins(), zeroModel, {
+        protocols,
+        scope: "ratio",
+        ratios,
+        maxRatio: 6,
+        ratioProtocols,
+      });
+      for (const r of recs) {
+        // ratioProtocols 外（FIRE/METAL）を含まない
+        expect(r.protocols).not.toContain("FIRE");
+        expect(r.protocols).not.toContain("METAL");
+        // 合計 <= maxRatio
+        const sum = r.protocols.reduce(
+          (a, p) => a + (ratios[p as keyof typeof ratios] ?? 0),
+          0,
+        );
+        expect(sum).toBeLessThanOrEqual(6);
+      }
+      // WATER·LIFE·SPEED (3+2+1=6) は対象に含まれる
+      expect(recs.some((r) => r.label === "LIFE · SPEED · WATER")).toBe(true);
+    });
+
+    it("scope='ratio' で ratios/maxRatio/ratioProtocols 未指定なら空配列", () => {
+      expect(
+        recommendTrios(fireWaterWins(), zeroModel, {
+          protocols,
+          scope: "ratio",
+        }),
+      ).toEqual([]);
+    });
+
+    it("topN で件数を制限する", () => {
+      const recs = recommendTrios(fireWaterWins(), zeroModel, {
+        protocols,
+        topN: 3,
+      });
+      expect(recs.length).toBe(3);
     });
   });
 

@@ -804,6 +804,143 @@ export const pairSynergy = (
   return out;
 };
 
+// --- 推奨トリオ（θ + ペアシナジーから期待勝率の高い構成を提案）-------------
+
+export type TrioRecommendation = {
+  protocols: [string, string, string]; // sorted（アルファベット昇順）
+  label: string; // "A · B · C"（protocols を " · " 連結）
+  score: number; // 推定勝率 0..100（小数1桁）
+  base: number; // σ(Σθ)*100。モデル素の強さ 0..100（小数1桁）
+  synergy: number; // pp 補正（採用ペア残差の平均、無ければ0）小数1桁
+  pairsWithData: number; // 0..3（残差を採用できたペア数）
+  thetaSum: number; // Σθ（logit, 参考値）小数2桁
+};
+
+/**
+ * 強度モデル θ（全試合推定）とペアシナジー残差から、期待勝率の高いトリオ構成を
+ * 上位 topN 件提案する。
+ *
+ *   素の強さ base = σ(θ_p + θ_q + θ_r) * 100  （相手は平均=θ和0・先後中立、β は入れない）
+ *   シナジー synergy = 採用できたペア残差（pp）の平均（無ければ 0）
+ *   推定勝率 score = clamp(base + synergy, 0, 100)
+ *
+ * scope="ratio" のときは ratioProtocols 集合に3つ全部が含まれ、かつ
+ * ratioSum <= maxRatio の構成だけを対象にする。
+ *
+ * ソート: score 降順 → pairsWithData 降順 → label 昇順（決定的）。
+ */
+export const recommendTrios = (
+  matches: Match[],
+  model: StrengthModel,
+  options: {
+    protocols: readonly string[];
+    scope?: "all" | "ratio";
+    ratios?: Ratios;
+    maxRatio?: number;
+    ratioProtocols?: readonly string[];
+    topN?: number;
+    minPairGames?: number;
+  },
+): TrioRecommendation[] => {
+  const {
+    protocols,
+    scope = "all",
+    ratios,
+    maxRatio,
+    ratioProtocols,
+    topN = 12,
+    minPairGames = MIN_GAMES_FOR_PAIR_STATS,
+  } = options;
+
+  if (model.games === 0 || protocols.length < 3) return [];
+
+  // ratio スコープに必要な情報が無ければ提案できない。
+  if (
+    scope === "ratio" &&
+    (ratios === undefined ||
+      maxRatio === undefined ||
+      ratioProtocols === undefined)
+  ) {
+    return [];
+  }
+
+  // ペア残差マップ（"A · B" sorted → residual）。minGames 未満は既に除外済み。
+  const residualOf = new Map<string, number>();
+  for (const p of pairSynergy(matches, model, minPairGames)) {
+    residualOf.set(p.n, p.residual);
+  }
+
+  const th = (p: string) => model.theta[p] ?? 0;
+  const ratioSet =
+    scope === "ratio" && ratioProtocols
+      ? new Set<string>(ratioProtocols)
+      : null;
+
+  const out: TrioRecommendation[] = [];
+  const n = protocols.length;
+  for (let i = 0; i < n; i += 1) {
+    for (let j = i + 1; j < n; j += 1) {
+      for (let k = j + 1; k < n; k += 1) {
+        const p = protocols[i];
+        const q = protocols[j];
+        const r = protocols[k];
+
+        if (scope === "ratio" && ratioSet) {
+          if (!ratioSet.has(p) || !ratioSet.has(q) || !ratioSet.has(r)) {
+            continue;
+          }
+          if (
+            ratioSum([p, q, r] as Trio, ratios as Ratios) > (maxRatio as number)
+          ) {
+            continue;
+          }
+        }
+
+        const sorted = [p, q, r].sort() as [string, string, string];
+        const thetaSum = th(p) + th(q) + th(r);
+        const base = sigmoid(thetaSum) * 100;
+
+        const pairKeys = [
+          [sorted[0], sorted[1]].join(" · "),
+          [sorted[0], sorted[2]].join(" · "),
+          [sorted[1], sorted[2]].join(" · "),
+        ];
+        let sum = 0;
+        let pairsWithData = 0;
+        for (const key of pairKeys) {
+          const res = residualOf.get(key);
+          if (res !== undefined) {
+            sum += res;
+            pairsWithData += 1;
+          }
+        }
+        const synergyRaw = pairsWithData > 0 ? sum / pairsWithData : 0;
+        const scoreRaw = Math.min(100, Math.max(0, base + synergyRaw));
+
+        out.push({
+          protocols: sorted,
+          label: sorted.join(" · "),
+          score: Math.round(scoreRaw * 10) / 10,
+          base: Math.round(base * 10) / 10,
+          synergy: Math.round(synergyRaw * 10) / 10,
+          pairsWithData,
+          thetaSum: Math.round(thetaSum * 100) / 100,
+        });
+      }
+    }
+  }
+
+  out.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    if (b.pairsWithData !== a.pairsWithData) {
+      return b.pairsWithData - a.pairsWithData;
+    }
+    return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
+  });
+
+  return out.slice(0, topN);
+};
+
 // --- 相性表の残差（実測勝率 − モデル期待勝率）-------------------------------
 
 /**

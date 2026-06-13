@@ -9,6 +9,7 @@ const SECTIONS: SectionEntry[] = [
   { id: "stat", labelKey: "nav.stat" },
   { id: "strength", labelKey: "nav.strength" },
   { id: "synergy", labelKey: "nav.synergy" },
+  { id: "trio", labelKey: "nav.trio" },
   { id: "quadrant", labelKey: "nav.quadrant" },
   { id: "usage", labelKey: "nav.usage" },
   { id: "matrix", labelKey: "nav.matrix" },

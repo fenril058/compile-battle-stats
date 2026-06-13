@@ -9,6 +9,7 @@ import type {
   StrengthModel,
   SynergyPair,
   ThetaBootstrap,
+  TrioRecommendation,
   UsageTimeline,
 } from "../lib/logic";
 import { Archetypes } from "./Archetypes";
@@ -19,6 +20,7 @@ import { Quadrant } from "./Quadrant";
 import { Stat } from "./Stat";
 import { Strength } from "./Strength";
 import { Synergy } from "./Synergy";
+import { TrioRecommend } from "./TrioRecommend";
 import { UsageTimeline as UsageTimelineChart } from "./UsageTimeline";
 
 interface StatsDashboardProps {
@@ -44,6 +46,12 @@ interface StatsDashboardProps {
   usage: UsageTimeline;
   archetypes: ArchetypeMatchup;
   thetaBootstrap?: ThetaBootstrap;
+  // θ + シナジーから推奨するトリオ構成（全体 / レシオ対象）。
+  // テストの makeProps を壊さないよう optional + 既定 {all:[],ratio:[]}。
+  trioRecommendations?: {
+    all: readonly TrioRecommendation[];
+    ratio: readonly TrioRecommendation[];
+  };
 }
 
 const STAT_VIEW_KEYS = ["all", "v1aux", "main2aux", "mixed"] as const;
@@ -85,6 +93,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
   usage,
   archetypes,
   thetaBootstrap,
+  trioRecommendations,
 }) => {
   const { t } = useT();
   const [activeStatViewKey, setActiveStatViewKey] =
@@ -272,6 +281,15 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
         <h2 className="font-semibold mb-3">{t("synergy.title")}</h2>
         <Synergy pairs={synergy} />
         <Explainer bodyKey="synergy.explain" />
+      </section>
+
+      {/* Trio recommendation section (θ + synergy) */}
+      <section id="trio" className="scroll-mt-14">
+        <h2 className="font-semibold mb-3">{t("trio.title")}</h2>
+        <TrioRecommend
+          recommendations={trioRecommendations ?? { all: [], ratio: [] }}
+        />
+        <Explainer bodyKey="trio.explain" />
       </section>
 
       {/* Quadrant section */}

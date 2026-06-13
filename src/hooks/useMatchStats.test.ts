@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { PROTOCOL_SETS } from "../config";
+import { PROTOCOL_SETS, RATIO_SETS } from "../config";
 import type { Match, Protocol } from "../types";
 import { useMatchStats } from "./useMatchStats";
 
@@ -176,6 +176,49 @@ describe("useMatchStats", () => {
       expect(ratioView.protocols).toContain("HATE");
       expect(ratioView.protocols).toContain("LOVE");
       expect(ratioView.protocols).toContain("APATHY");
+    });
+  });
+
+  describe("trioRecommendations", () => {
+    const createMatch = (id: string, ratio: boolean): Match =>
+      ({
+        id,
+        matchDate: 100,
+        createdAt: 100,
+        ratio,
+        first: ["APATHY", "DARKNESS", "GRAVITY"],
+        second: ["HATE", "LIFE", "METAL"],
+        winner: "FIRST",
+        userId: "test",
+      }) as Match;
+
+    it("戻り値に trioRecommendations.all / .ratio を含む", () => {
+      const matches = Array.from({ length: 5 }, (_, i) =>
+        createMatch(String(i), false),
+      );
+      const { result } = renderHook(() =>
+        useMatchStats(matches, testProtocols),
+      );
+      const tr = result.current.trioRecommendations;
+      expect(tr).toBeDefined();
+      expect(Array.isArray(tr.all)).toBe(true);
+      expect(Array.isArray(tr.ratio)).toBe(true);
+      // ratios/maxRatio 未指定なので ratio は空
+      expect(tr.ratio).toEqual([]);
+      // 全試合があるので all は提案を返す
+      expect(tr.all.length).toBeGreaterThan(0);
+    });
+
+    it("ratios と maxRatio を渡すと ratio 提案を計算する", () => {
+      const ratios = RATIO_SETS.S1;
+      const matches = Array.from({ length: 5 }, (_, i) =>
+        createMatch(String(i), true),
+      );
+      const { result } = renderHook(() =>
+        useMatchStats(matches, testProtocols, testProtocols, ratios, 8),
+      );
+      const tr = result.current.trioRecommendations;
+      expect(Array.isArray(tr.ratio)).toBe(true);
     });
   });
 });
