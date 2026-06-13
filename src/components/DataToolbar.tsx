@@ -45,7 +45,7 @@ export const DataToolbar: React.FC<DataToolbarProps> = ({
 
       {/* Import Section */}
       {isRegistrationAllowed && (
-        <div className="flex flex-col items-center justify-center p-4 border border-zinc-700 rounded-lg bg-zinc-900/30 w-full max-w-md">
+        <div className="flex flex-col items-center justify-center p-4 border border-zinc-700 rounded-lg bg-zinc-900 w-full max-w-md">
           <label
             htmlFor="csv-import-file"
             className="font-semibold mb-3 text-zinc-300"

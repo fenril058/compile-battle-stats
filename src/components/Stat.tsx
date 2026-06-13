@@ -211,11 +211,11 @@ const StatSection: React.FC<StatSectionProps> = ({
               </span>
             </div>
           )}
-          <p className="text-[10px] text-zinc-500 mb-1 text-center">
+          <p className="text-[10px] text-zinc-400 mb-1 text-center">
             {t("stat.sortNote")}
           </p>
           <div
-            className="flex items-center gap-1 text-[9px] text-zinc-600 mb-0.5"
+            className="flex items-center gap-1 text-[9px] text-zinc-400 mb-0.5"
             aria-hidden="true"
           >
             <span className="w-4" />
