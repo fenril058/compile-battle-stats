@@ -17,6 +17,9 @@ type TrioRecommendProps = {
   };
 };
 
+const SCORE_HIGH = 60;
+const SCORE_LOW = 40;
+
 // 残差/勝率の符号付き文字列（pp 表示用）。
 const signed = (v: number): string => `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
 
@@ -60,9 +63,9 @@ export const TrioRecommend: React.FC<TrioRecommendProps> = React.memo(
             <ul aria-label={t("trio.title")} className="space-y-0.5">
               {list.map((rec, i) => {
                 const dot =
-                  rec.score > 60
+                  rec.score > SCORE_HIGH
                     ? "bg-green-400"
-                    : rec.score < 40
+                    : rec.score < SCORE_LOW
                       ? "bg-red-400"
                       : "bg-zinc-400";
                 return (
