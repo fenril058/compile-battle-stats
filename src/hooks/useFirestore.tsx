@@ -90,7 +90,6 @@ export function useFirestore<T extends WithId>(collectionName: string) {
 
   const remove = useCallback(
     async (idToRemove: string) => {
-      // undo 用に削除前に対象アイテムを退避する
       const item = items.find((x) => x.id === idToRemove);
 
       const restore = async () => {
@@ -109,7 +108,6 @@ export function useFirestore<T extends WithId>(collectionName: string) {
         await (await adapterPromise).remove(idToRemove);
 
         if (item) {
-          // 「元に戻す」アクション付きトーストを表示する
           const undoLabel = t("storage.toast.undo");
           const removedMsg = t("storage.toast.removed");
           toast.success(({ closeToast }) => (
@@ -118,26 +116,16 @@ export function useFirestore<T extends WithId>(collectionName: string) {
               <button
                 type="button"
                 onClick={() => {
-                  closeToast?.();
+                  closeToast();
                   void restore();
                 }}
-                style={{
-                  marginLeft: "0.75rem",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                  color: "inherit",
-                  fontSize: "inherit",
-                }}
+                className="ml-3 underline cursor-pointer bg-transparent border-0 p-0 text-inherit text-[length:inherit]"
               >
                 {undoLabel}
               </button>
             </span>
           ));
         } else {
-          // item が見つからない場合（競合等）は通常の成功トーストにフォールバック
           toast.success(t("storage.toast.removed"));
         }
       } catch (e) {
