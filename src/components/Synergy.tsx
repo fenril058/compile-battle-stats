@@ -77,7 +77,7 @@ export const Synergy: React.FC<SynergyProps> = React.memo(({ pairs }) => {
 
   return (
     <div>
-      <p className="text-[10px] text-zinc-500 mb-2">{t("synergy.note")}</p>
+      <p className="text-[10px] text-zinc-400 mb-2">{t("synergy.note")}</p>
       <ul aria-label={t("synergy.title")} className="space-y-0.5">
         {topPairs.map(renderItem)}
       </ul>

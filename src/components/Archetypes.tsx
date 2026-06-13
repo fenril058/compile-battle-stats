@@ -26,7 +26,7 @@ export const Archetypes: React.FC<ArchetypesProps> = React.memo(({ data }) => {
 
   return (
     <div>
-      <p className="text-[10px] text-zinc-500 mb-2">{t("archetype.note")}</p>
+      <p className="text-[10px] text-zinc-400 mb-2">{t("archetype.note")}</p>
 
       {/* 凡例: アーキタイプ ID → 構成プロトコル(ABBR) */}
       <ul className="text-xs text-zinc-300 mb-3 space-y-0.5 max-h-40 overflow-y-auto">

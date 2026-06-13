@@ -328,7 +328,7 @@ export const Quadrant: React.FC<QuadrantProps> = React.memo(
             )}
           </g>
         </svg>
-        <p className="text-[10px] text-zinc-500 mt-1">
+        <p className="text-[10px] text-zinc-400 mt-1">
           {t("quadrant.sizeNote")}
         </p>
 

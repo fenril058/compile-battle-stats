@@ -397,7 +397,7 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
                 protocols={matrixProtocols}
                 theta={strengthModel.theta}
               />
-              <p className="text-[10px] text-zinc-500 -mt-4 mb-2 text-center">
+              <p className="text-[10px] text-zinc-400 -mt-4 mb-2 text-center">
                 {t("statsDashboard.residualNote")}
               </p>
               <Explainer bodyKey="statsDashboard.residualExplain" />
