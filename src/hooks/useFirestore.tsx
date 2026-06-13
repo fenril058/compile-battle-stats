@@ -90,9 +90,56 @@ export function useFirestore<T extends WithId>(collectionName: string) {
 
   const remove = useCallback(
     async (idToRemove: string) => {
+      // undo 用に削除前に対象アイテムを退避する
+      const item = items.find((x) => x.id === idToRemove);
+
+      const restore = async () => {
+        if (!item) return;
+        try {
+          const { id: _omit, ...rest } = item;
+          await (await adapterPromise).addBatch([rest as Omit<T, "id">]);
+          toast.info(t("storage.toast.restored"));
+        } catch (e) {
+          console.error("[useFirestore] restore failed:", e);
+          toast.error(t("storage.toast.restoreFailed"));
+        }
+      };
+
       try {
         await (await adapterPromise).remove(idToRemove);
-        toast.success(t("storage.toast.removed"));
+
+        if (item) {
+          // 「元に戻す」アクション付きトーストを表示する
+          const undoLabel = t("storage.toast.undo");
+          const removedMsg = t("storage.toast.removed");
+          toast.success(({ closeToast }) => (
+            <span>
+              {removedMsg}
+              <button
+                type="button"
+                onClick={() => {
+                  closeToast?.();
+                  void restore();
+                }}
+                style={{
+                  marginLeft: "0.75rem",
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  color: "inherit",
+                  fontSize: "inherit",
+                }}
+              >
+                {undoLabel}
+              </button>
+            </span>
+          ));
+        } else {
+          // item が見つからない場合（競合等）は通常の成功トーストにフォールバック
+          toast.success(t("storage.toast.removed"));
+        }
       } catch (e) {
         console.error("[useFirestore] remove failed:", e);
         // rules が所有者以外の削除を弾いた場合は理由を明示する（UI は本来
@@ -106,7 +153,7 @@ export function useFirestore<T extends WithId>(collectionName: string) {
         );
       }
     },
-    [adapterPromise, t],
+    [adapterPromise, items, t],
   );
 
   const addBatch = useCallback(
