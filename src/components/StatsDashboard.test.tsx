@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MatrixView, StatsView } from "../hooks/useMatchStats";
 import type { UsageTimeline } from "../lib/logic";
@@ -215,11 +215,14 @@ describe("StatsDashboard", () => {
   });
 
   it("散布図の対象トグル（全体/通常戦/レシオ）で aria-pressed が切り替わる", () => {
-    render(<StatsDashboard {...makeProps()} />);
-    // これらはタブ(role=tab)ではなく散布図トグルの button として一意
-    const allBtn = screen.getByRole("button", { name: "全体" });
-    const normalBtn = screen.getByRole("button", { name: "通常戦" });
-    const ratioBtn = screen.getByRole("button", { name: "レシオ" });
+    const { container } = render(<StatsDashboard {...makeProps()} />);
+    // 「全体」「レシオ」は推奨トリオのスコープトグルとも重複するため、
+    // 散布図セクション内に限定して取得する。
+    const quadrant = container.querySelector("#quadrant") as HTMLElement;
+    const q = within(quadrant);
+    const allBtn = q.getByRole("button", { name: "全体" });
+    const normalBtn = q.getByRole("button", { name: "通常戦" });
+    const ratioBtn = q.getByRole("button", { name: "レシオ" });
     expect(allBtn).toHaveAttribute("aria-pressed", "true");
     expect(normalBtn).toHaveAttribute("aria-pressed", "false");
     fireEvent.click(normalBtn);

@@ -98,10 +98,13 @@ export default function App() {
     usage,
     archetypes,
     thetaBootstrap,
+    trioRecommendations,
   } = useMatchStats(
     matches,
     currentProtocols,
     currentConfig.ratioProtocols as readonly Protocol[],
+    currentRatios,
+    maxRatio,
   );
   const { exportToCsv } = useCsvExport(
     matches,
@@ -232,6 +235,7 @@ export default function App() {
             usage={usage}
             archetypes={archetypes}
             thetaBootstrap={thetaBootstrap}
+            trioRecommendations={trioRecommendations}
           />
 
           {/* Data Management Section */}
