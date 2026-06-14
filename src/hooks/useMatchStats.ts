@@ -250,7 +250,7 @@ export const useMatchStats = (
       all: recommendTrios(matches, strengthModel, { protocols }),
       ratio:
         ratios && maxRatio !== undefined
-          ? recommendTrios(matches, strengthModel, {
+          ? recommendTrios(ratioMatchesForStats, strengthModelRatio, {
               protocols,
               scope: "ratio",
               ratios,
@@ -259,7 +259,16 @@ export const useMatchStats = (
             })
           : [],
     }),
-    [matches, strengthModel, protocols, ratios, maxRatio, ratioProtocols],
+    [
+      matches,
+      ratioMatchesForStats,
+      strengthModel,
+      strengthModelRatio,
+      protocols,
+      ratios,
+      maxRatio,
+      ratioProtocols,
+    ],
   );
 
   return {
