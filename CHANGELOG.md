@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.5.0...compile-battle-stats-v2.5.1) (2026-06-14)
+
+
+### Performance Improvements
+
+* cache-nix-action で Nix ストアをキャッシュして CI を高速化する ([#237](https://github.com/fenril058/compile-battle-stats/issues/237)) ([83aa1d6](https://github.com/fenril058/compile-battle-stats/commit/83aa1d69736d5ff01a59eef14ba8a676e0b1274e))
+
 ## [2.5.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.4.0...compile-battle-stats-v2.5.0) (2026-06-12)
 
 
