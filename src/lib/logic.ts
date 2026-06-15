@@ -2,6 +2,7 @@ import {
   ALL_PROTOCOLS,
   MIN_GAMES_FOR_MATRIX,
   MIN_GAMES_FOR_PAIR_STATS,
+  MIN_GAMES_FOR_PROTOCOL_RECOMMEND,
 } from "../config";
 import type {
   Match,
@@ -840,6 +841,7 @@ export const recommendTrios = (
     ratioProtocols?: readonly string[];
     topN?: number;
     minPairGames?: number;
+    minProtocolGames?: number;
   },
 ): TrioRecommendation[] => {
   const {
@@ -850,6 +852,7 @@ export const recommendTrios = (
     ratioProtocols,
     topN = 12,
     minPairGames = MIN_GAMES_FOR_PAIR_STATS,
+    minProtocolGames = MIN_GAMES_FOR_PROTOCOL_RECOMMEND,
   } = options;
 
   if (model.games === 0 || protocols.length < 3) return [];
@@ -862,6 +865,16 @@ export const recommendTrios = (
       ratioProtocols === undefined)
   ) {
     return [];
+  }
+
+  // プロトコルのスロット出場数（makeStats.single と同じカウント方法）。
+  // minProtocolGames 未満のプロトコルは θ が 0 縮退しスコアをフリーライドするため除外する。
+  const protocolSlots: Record<string, number> = {};
+  for (const mt of matches) {
+    if (!isValidTrio(mt.first) || !isValidTrio(mt.second)) continue;
+    for (const p of [...mt.first, ...mt.second]) {
+      protocolSlots[p] = (protocolSlots[p] ?? 0) + 1;
+    }
   }
 
   // ペア残差マップ（"A · B" sorted → residual）。minGames 未満は既に除外済み。
@@ -884,6 +897,14 @@ export const recommendTrios = (
         const p = protocols[i];
         const q = protocols[j];
         const r = protocols[k];
+
+        if (
+          (protocolSlots[p] ?? 0) < minProtocolGames ||
+          (protocolSlots[q] ?? 0) < minProtocolGames ||
+          (protocolSlots[r] ?? 0) < minProtocolGames
+        ) {
+          continue;
+        }
 
         if (scope === "ratio" && ratioSet) {
           if (!ratioSet.has(p) || !ratioSet.has(q) || !ratioSet.has(r)) {
