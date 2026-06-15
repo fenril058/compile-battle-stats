@@ -165,6 +165,14 @@ export const useMatchStats = (
     () => fitStrengthModel(ratioMatches),
     [ratioMatches],
   );
+  const strengthModelV1Aux: StrengthModel = useMemo(
+    () => fitStrengthModel(v1AuxMatches),
+    [v1AuxMatches],
+  );
+  const strengthModelMain2: StrengthModel = useMemo(
+    () => fitStrengthModel(main2Aux2Matches),
+    [main2Aux2Matches],
+  );
 
   const matrixViews = useMemo(
     () => ({
@@ -237,35 +245,50 @@ export const useMatchStats = (
     [matches],
   );
 
-  // θ + ペアシナジーから推奨トリオ構成（全体 / レシオ対象）。
+  // θ + ペアシナジーから推奨トリオ構成（全体 / Main1全体 / Main1レシオ / Main2）。
   const trioRecommendations: {
     all: TrioRecommendation[];
-    ratio: TrioRecommendation[];
-  } = useMemo(
-    () => ({
+    main1: TrioRecommendation[];
+    main1ratio: TrioRecommendation[];
+    main2: TrioRecommendation[];
+    hasMain2Protocols: boolean;
+  } = useMemo(() => {
+    // 今シーズンの protocols と MAIN2_AUX2 の積集合。V1 シーズンでは空になる。
+    const seasonMain2 = protocols.filter((p) => MAIN2_AUX2_SET.has(p));
+    return {
       all: recommendTrios(matches, strengthModel, { protocols }),
-      ratio:
+      main1: recommendTrios(v1AuxMatches, strengthModelV1Aux, {
+        protocols: V1_AUX_PROTOCOLS,
+      }),
+      main1ratio:
         ratios && maxRatio !== undefined
           ? recommendTrios(ratioMatches, strengthModelRatio, {
-              protocols,
+              protocols: V1_AUX_PROTOCOLS as readonly Protocol[],
               scope: "ratio",
               ratios,
               maxRatio,
               ratioProtocols,
             })
           : [],
-    }),
-    [
-      matches,
-      ratioMatches,
-      strengthModel,
-      strengthModelRatio,
-      protocols,
-      ratios,
-      maxRatio,
-      ratioProtocols,
-    ],
-  );
+      main2: recommendTrios(main2Aux2Matches, strengthModelMain2, {
+        protocols: seasonMain2,
+      }),
+      hasMain2Protocols: seasonMain2.length >= 3,
+    };
+  }, [
+    matches,
+    v1AuxMatches,
+    ratioMatches,
+    main2Aux2Matches,
+    strengthModel,
+    strengthModelV1Aux,
+    strengthModelRatio,
+    strengthModelMain2,
+    protocols,
+    ratios,
+    maxRatio,
+    ratioProtocols,
+  ]);
 
   return {
     statViews,

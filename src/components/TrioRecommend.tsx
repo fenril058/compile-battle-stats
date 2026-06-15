@@ -3,18 +3,23 @@ import { useT } from "../i18n";
 import type { TranslationKey } from "../i18n/ja";
 import type { TrioRecommendation } from "../lib/logic";
 
-const SCOPES = ["all", "ratio"] as const;
-type Scope = (typeof SCOPES)[number];
+const ALL_SCOPES = ["all", "main1", "main1ratio", "main2"] as const;
+type Scope = (typeof ALL_SCOPES)[number];
 const SCOPE_LABELS: Record<Scope, TranslationKey> = {
   all: "trio.scope.all",
-  ratio: "trio.scope.ratio",
+  main1: "trio.scope.main1",
+  main1ratio: "trio.scope.main1ratio",
+  main2: "trio.scope.main2",
 };
 
 type TrioRecommendProps = {
   recommendations: {
     all: readonly TrioRecommendation[];
-    ratio: readonly TrioRecommendation[];
+    main1: readonly TrioRecommendation[];
+    main1ratio: readonly TrioRecommendation[];
+    main2: readonly TrioRecommendation[];
   };
+  hasMain2Protocols?: boolean;
 };
 
 const SCORE_HIGH = 60;
@@ -24,9 +29,13 @@ const SCORE_LOW = 40;
 const signed = (v: number): string => `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
 
 export const TrioRecommend: React.FC<TrioRecommendProps> = React.memo(
-  ({ recommendations }) => {
+  ({ recommendations, hasMain2Protocols = false }) => {
     const { t } = useT();
     const [scope, setScope] = useState<Scope>("all");
+
+    const visibleScopes = ALL_SCOPES.filter(
+      (s) => s !== "main2" || hasMain2Protocols,
+    );
 
     const list = recommendations[scope];
 
@@ -36,7 +45,7 @@ export const TrioRecommend: React.FC<TrioRecommendProps> = React.memo(
           <legend className="text-xs text-zinc-400 mr-1 p-0 float-left">
             {t("trio.scopeLabel")}
           </legend>
-          {SCOPES.map((s) => (
+          {visibleScopes.map((s) => (
             <button
               key={s}
               type="button"

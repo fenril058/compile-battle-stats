@@ -46,11 +46,14 @@ interface StatsDashboardProps {
   usage: UsageTimeline;
   archetypes: ArchetypeMatchup;
   thetaBootstrap?: ThetaBootstrap;
-  // θ + シナジーから推奨するトリオ構成（全体 / レシオ対象）。
-  // テストの makeProps を壊さないよう optional + 既定 {all:[],ratio:[]}。
+  // θ + シナジーから推奨するトリオ構成（全体 / Main1全体 / Main1レシオ / Main2）。
+  // テストの makeProps を壊さないよう optional。
   trioRecommendations?: {
     all: readonly TrioRecommendation[];
-    ratio: readonly TrioRecommendation[];
+    main1: readonly TrioRecommendation[];
+    main1ratio: readonly TrioRecommendation[];
+    main2: readonly TrioRecommendation[];
+    hasMain2Protocols: boolean;
   };
 }
 
@@ -287,7 +290,15 @@ export const StatsDashboard: React.FC<StatsDashboardProps> = ({
       <section id="trio" className="scroll-mt-14">
         <h2 className="font-semibold mb-3">{t("trio.title")}</h2>
         <TrioRecommend
-          recommendations={trioRecommendations ?? { all: [], ratio: [] }}
+          recommendations={
+            trioRecommendations ?? {
+              all: [],
+              main1: [],
+              main1ratio: [],
+              main2: [],
+            }
+          }
+          hasMain2Protocols={trioRecommendations?.hasMain2Protocols ?? false}
         />
         <Explainer bodyKey="trio.explain" />
       </section>

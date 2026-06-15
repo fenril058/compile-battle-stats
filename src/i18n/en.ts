@@ -226,7 +226,9 @@ export const en: TranslationDict = {
   "trio.title": "Recommended Trios",
   "trio.scopeLabel": "Scope:",
   "trio.scope.all": "All",
-  "trio.scope.ratio": "Ratio",
+  "trio.scope.main1": "Main 1",
+  "trio.scope.main1ratio": "Main 1 Ratio",
+  "trio.scope.main2": "Main 2",
   "trio.breakdown": "base {base}% / synergy {synergy}pp",
   "trio.pairData": "data {pairs}/3",
   "trio.row":
