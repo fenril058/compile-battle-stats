@@ -80,10 +80,6 @@ export const useMatchStats = (
     () => matches.filter((m) => !m.ratio),
     [matches],
   );
-  const ratioMatchesForStats = useMemo(
-    () => matches.filter((m) => m.ratio),
-    [matches],
-  );
 
   // プロトコルセット別フィルタ（Stat / Matrix 共用）
   const v1AuxMatches = useMemo(
@@ -124,7 +120,7 @@ export const useMatchStats = (
     () => ({
       all: {
         normal: makeStats(normalMatches),
-        ratio: makeStats(ratioMatchesForStats),
+        ratio: makeStats(ratioMatches),
         all: makeStats(matches),
       },
       v1aux: {
@@ -146,7 +142,7 @@ export const useMatchStats = (
     [
       matches,
       normalMatches,
-      ratioMatchesForStats,
+      ratioMatches,
       v1AuxMatches,
       main2Aux2Matches,
       mixedMatches,
@@ -166,8 +162,8 @@ export const useMatchStats = (
     [normalMatches],
   );
   const strengthModelRatio: StrengthModel = useMemo(
-    () => fitStrengthModel(ratioMatchesForStats),
-    [ratioMatchesForStats],
+    () => fitStrengthModel(ratioMatches),
+    [ratioMatches],
   );
 
   const matrixViews = useMemo(
@@ -250,7 +246,7 @@ export const useMatchStats = (
       all: recommendTrios(matches, strengthModel, { protocols }),
       ratio:
         ratios && maxRatio !== undefined
-          ? recommendTrios(matches, strengthModel, {
+          ? recommendTrios(ratioMatches, strengthModelRatio, {
               protocols,
               scope: "ratio",
               ratios,
@@ -259,7 +255,16 @@ export const useMatchStats = (
             })
           : [],
     }),
-    [matches, strengthModel, protocols, ratios, maxRatio, ratioProtocols],
+    [
+      matches,
+      ratioMatches,
+      strengthModel,
+      strengthModelRatio,
+      protocols,
+      ratios,
+      maxRatio,
+      ratioProtocols,
+    ],
   );
 
   return {
