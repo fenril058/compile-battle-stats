@@ -263,7 +263,7 @@ export const useMatchStats = (
       main1ratio:
         ratios && maxRatio !== undefined
           ? recommendTrios(ratioMatches, strengthModelRatio, {
-              protocols: V1_AUX_PROTOCOLS as readonly Protocol[],
+              protocols: V1_AUX_PROTOCOLS,
               scope: "ratio",
               ratios,
               maxRatio,
