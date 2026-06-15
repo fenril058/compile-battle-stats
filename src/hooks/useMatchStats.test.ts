@@ -192,7 +192,7 @@ describe("useMatchStats", () => {
         userId: "test",
       }) as Match;
 
-    it("戻り値に trioRecommendations.all / .ratio を含む", () => {
+    it("戻り値に trioRecommendations.all / .main1 / .main1ratio / .main2 を含む", () => {
       const matches = Array.from({ length: 5 }, (_, i) =>
         createMatch(String(i), false),
       );
@@ -202,14 +202,15 @@ describe("useMatchStats", () => {
       const tr = result.current.trioRecommendations;
       expect(tr).toBeDefined();
       expect(Array.isArray(tr.all)).toBe(true);
-      expect(Array.isArray(tr.ratio)).toBe(true);
-      // ratios/maxRatio 未指定なので ratio は空
-      expect(tr.ratio).toEqual([]);
+      expect(Array.isArray(tr.main1)).toBe(true);
+      expect(Array.isArray(tr.main1ratio)).toBe(true);
+      // ratios/maxRatio 未指定なので main1ratio は空
+      expect(tr.main1ratio).toEqual([]);
       // 全試合があるので all は提案を返す
       expect(tr.all.length).toBeGreaterThan(0);
     });
 
-    it("ratios と maxRatio を渡すと ratio 提案を計算する", () => {
+    it("ratios と maxRatio を渡すと main1ratio 提案を計算する", () => {
       const ratios = RATIO_SETS.S1;
       const matches = Array.from({ length: 5 }, (_, i) =>
         createMatch(String(i), true),
@@ -218,7 +219,7 @@ describe("useMatchStats", () => {
         useMatchStats(matches, testProtocols, testProtocols, ratios, 8),
       );
       const tr = result.current.trioRecommendations;
-      expect(Array.isArray(tr.ratio)).toBe(true);
+      expect(Array.isArray(tr.main1ratio)).toBe(true);
     });
   });
 });

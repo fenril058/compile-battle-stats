@@ -229,7 +229,9 @@ export const ja = {
   "trio.title": "推奨トリオ",
   "trio.scopeLabel": "対象:",
   "trio.scope.all": "全体",
-  "trio.scope.ratio": "レシオ",
+  "trio.scope.main1": "Main1全体",
+  "trio.scope.main1ratio": "Main1レシオ",
+  "trio.scope.main2": "Main2",
   "trio.breakdown": "素 {base}% / シナジー {synergy}pp",
   "trio.pairData": "データ {pairs}/3",
   "trio.row":
