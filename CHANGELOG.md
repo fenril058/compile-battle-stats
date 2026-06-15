@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.5.2](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.5.1...compile-battle-stats-v2.5.2) (2026-06-15)
+
+
+### Bug Fixes
+
+* ratio推奨トリオをレシオ戦専用モデルに切り替える ([#247](https://github.com/fenril058/compile-battle-stats/issues/247)) ([16b5d5d](https://github.com/fenril058/compile-battle-stats/commit/16b5d5d425196f576dd5457e78cc34caac602858))
+* 出場数不足プロトコルを推奨トリオ候補から除外する ([#248](https://github.com/fenril058/compile-battle-stats/issues/248)) ([eef0880](https://github.com/fenril058/compile-battle-stats/commit/eef088006a3432a57b40ed58b57d3218865c534a))
+
 ## [2.5.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.5.0...compile-battle-stats-v2.5.1) (2026-06-14)
 
 
