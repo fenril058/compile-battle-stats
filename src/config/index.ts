@@ -221,3 +221,5 @@ export const SEASONS_CONFIG = {
 export const MIN_GAMES_FOR_PAIR_STATS = 5;
 export const MIN_GAMES_FOR_TRIO_STATS = 3;
 export const MIN_GAMES_FOR_MATRIX = 3;
+// 推奨トリオ候補に含めるプロトコルの最小スロット出場数（この未満は θ が 0 縮退しフリーライドするため除外）
+export const MIN_GAMES_FOR_PROTOCOL_RECOMMEND = 3;

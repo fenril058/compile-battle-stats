@@ -923,15 +923,41 @@ describe("lib/logic", () => {
 
     it("pairsWithData は残差データの有無を反映する", () => {
       // 残差データが全く無い（minGames 未到達）なら全構成 pairsWithData=0。
+      // minProtocolGames:1 でプロトコルフィルタを無効化し、ペアデータフィルタのみ検証する。
       const fewGames = Array.from({ length: 2 }, () =>
         mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
       );
-      const recs = recommendTrios(fewGames, zeroModel, { protocols });
+      const recs = recommendTrios(fewGames, zeroModel, {
+        protocols,
+        minProtocolGames: 1,
+      });
+      expect(recs.length).toBeGreaterThan(0);
       for (const r of recs) {
         expect(r.pairsWithData).toBe(0);
         expect(r.synergy).toBe(0);
         expect(r.score).toBe(r.base);
       }
+    });
+
+    it("minProtocolGames 未満のプロトコルを候補から除外する", () => {
+      // FIRE·WATER·METAL が先攻、LIFE·SPEED·SPIRIT が後攻で5試合。
+      // SPIRIT を含むトリオは除外されるべきケースを作るため、
+      // SPIRIT のみ出場 1 スロット（別試合で1回だけ登場）にする。
+      const matches = [
+        ...Array.from({ length: 5 }, () =>
+          mk(["FIRE", "WATER", "METAL"], ["LIFE", "SPEED", "SPIRIT"], "FIRST"),
+        ),
+        // SPIRIT の代わりに DARKNESS を入れた試合を1試合追加し、
+        // SPIRIT のスロット数を固定するためにここでは追加しない。
+        // → SPIRIT は 5試合×1スロット(second側)=5 なので minProtocolGames=3 を超えてしまう。
+        // 代わりに全く出場しないプロトコルを使いたいが、protocols に含まれていないと候補にならない。
+        // そのため minProtocolGames=10 で全候補を除外されることを確認する。
+      ];
+      const recs = recommendTrios(matches, zeroModel, {
+        protocols,
+        minProtocolGames: 10, // 最大でも5スロットなので全プロトコルが除外される
+      });
+      expect(recs).toEqual([]);
     });
 
     it("scope='ratio' は ratioProtocols 外や合計超過の構成を除外する", () => {
