@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.6.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.5.2...compile-battle-stats-v2.6.0) (2026-06-15)
+
+
+### Features
+
+* 推奨トリオを Main1全体/Main1レシオ/Main2/全体 の4スコープに分割 ([#251](https://github.com/fenril058/compile-battle-stats/issues/251)) ([14ef5ae](https://github.com/fenril058/compile-battle-stats/commit/14ef5ae64868b84fdb435737a4d0f9aa567917c4))
+
+
+### Bug Fixes
+
+* TrioRecommend の stale scope と不要な型キャストを修正 ([#253](https://github.com/fenril058/compile-battle-stats/issues/253)) ([5007e42](https://github.com/fenril058/compile-battle-stats/commit/5007e42aa675558ebc869991e42e5f1d0e3ed1b6))
+
 ## [2.5.2](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.5.1...compile-battle-stats-v2.5.2) (2026-06-15)
 
 
