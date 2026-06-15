@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useT } from "../i18n";
 import type { TranslationKey } from "../i18n/ja";
 import type { TrioRecommendation } from "../lib/logic";
@@ -36,6 +36,10 @@ export const TrioRecommend: React.FC<TrioRecommendProps> = React.memo(
     const visibleScopes = ALL_SCOPES.filter(
       (s) => s !== "main2" || hasMain2Protocols,
     );
+
+    useEffect(() => {
+      if (scope === "main2" && !hasMain2Protocols) setScope("all");
+    }, [hasMain2Protocols, scope]);
 
     const list = recommendations[scope];
 

@@ -82,6 +82,26 @@ describe("TrioRecommend", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("Main2選択後に hasMain2Protocols が false になると全体スコープにリセットされる", () => {
+    const { rerender } = render(
+      <TrioRecommend recommendations={recommendations} hasMain2Protocols />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Main2" }));
+
+    rerender(
+      <TrioRecommend
+        recommendations={recommendations}
+        hasMain2Protocols={false}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: "Main2" }),
+    ).not.toBeInTheDocument();
+    // 全体スコープに戻り2件表示
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+  });
+
   it("空配列のスコープでは『データなし』を表示する", () => {
     render(
       <TrioRecommend
