@@ -56,7 +56,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json}": [
-      "biome check --write"
+      "biome check --write --no-errors-on-unmatched"
     ],
     "*": [
       "secretlint"
