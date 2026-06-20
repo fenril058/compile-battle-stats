@@ -73,9 +73,9 @@ describe("Matrix", () => {
         />,
       );
 
-      // +30 → 最大強度の緑（intensity=1, alpha=0.90 → jsdom は 0.9 に正規化）
+      // +30 → 最大強度の緑（intensity=1, alpha=0.90）
       const pos = screen.getByText("+30");
-      expect(pos.style.backgroundColor).toBe("rgba(21, 128, 61, 0.9)");
+      expect(pos.style.backgroundColor).toBe("rgba(21, 128, 61, 0.90)");
 
       // -25 → 強度 25/30 ≈ 0.833 の赤（alpha=0.77）
       const neg = screen.getByText("-25");

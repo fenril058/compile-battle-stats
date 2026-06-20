@@ -14,7 +14,7 @@ export default defineConfig({
       "e2e/**", // Playwright の E2E は vitest 対象外
       "**/*.emulator.test.*", // Emulator 連動テストは npm run test:emulator 専用
     ],
-    environment: "jsdom", // DOM環境が必要なテストのためにjsdomを使用
+    environment: "happy-dom", // DOM環境が必要なテストのためにjsdomを使用
     setupFiles: ["./src/setupTests.ts"], // グローバルな設定ファイル
     globals: true, // describe, test, expectなどをグローバルにする
     coverage: {
