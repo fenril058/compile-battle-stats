@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.6.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.6.0...compile-battle-stats-v2.6.1) (2026-06-20)
+
+
+### Bug Fixes
+
+* migrate from jsdom to happy-dom to resolve undici audit ([#257](https://github.com/fenril058/compile-battle-stats/issues/257)) ([e8a9e5b](https://github.com/fenril058/compile-battle-stats/commit/e8a9e5bedc3419b6a90d5164171e08efecbb8183))
+* TrioRecommend の color-contrast 違反と smoke ロケーター曖昧さを修正する ([#260](https://github.com/fenril058/compile-battle-stats/issues/260)) ([50fcba5](https://github.com/fenril058/compile-battle-stats/commit/50fcba58326a92d565dc4283919547aa60cda6cf))
+
 ## [2.6.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.5.2...compile-battle-stats-v2.6.0) (2026-06-15)
 
 
