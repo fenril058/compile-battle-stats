@@ -93,7 +93,7 @@ export const TrioRecommend: React.FC<TrioRecommendProps> = React.memo(
                       pairs: rec.pairsWithData,
                     })}
                   >
-                    <span className="w-5 text-right text-zinc-500 tabular-nums">
+                    <span className="w-5 text-right text-zinc-400 tabular-nums">
                       {i + 1}
                     </span>
                     <span
@@ -106,13 +106,13 @@ export const TrioRecommend: React.FC<TrioRecommendProps> = React.memo(
                     <span className="w-12 text-right tabular-nums font-medium">
                       {rec.score.toFixed(1)}%
                     </span>
-                    <span className="w-40 text-right text-zinc-500 tabular-nums hidden sm:inline">
+                    <span className="w-40 text-right text-zinc-400 tabular-nums hidden sm:inline">
                       {t("trio.breakdown", {
                         base: rec.base.toFixed(1),
                         synergy: signed(rec.synergy),
                       })}
                     </span>
-                    <span className="w-16 text-right text-zinc-500 tabular-nums">
+                    <span className="w-16 text-right text-zinc-400 tabular-nums">
                       {t("trio.pairData", { pairs: rec.pairsWithData })}
                     </span>
                   </li>
