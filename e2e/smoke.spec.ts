@@ -19,7 +19,7 @@ test.describe("smoke", () => {
     await expect(page.getByLabel("シーズン選択")).toBeVisible();
 
     // RatioTable
-    await expect(page.getByText("レシオ表")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "レシオ表" })).toBeVisible();
 
     // DataToolbar
     await expect(
