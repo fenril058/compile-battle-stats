@@ -1,3 +1,4 @@
+# show recipe list
 default:
     @just --list
 
