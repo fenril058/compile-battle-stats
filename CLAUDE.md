@@ -107,4 +107,4 @@ type Match = {
 - **Formatter/Linter**: Biome (2-space indent, double quotes). Run `npm run check:fix` to auto-fix.
 - **Tests**: Vitest with jsdom. Setup in `src/setupTests.ts`.
 - **Styling**: Tailwind CSS v4 via `@tailwindcss/vite`.
-- **Build**: Vite 8 with manual chunk splitting (`firebase` chunk separated from `vendor`).
+- **Build**: Vite 8 with chunk splitting via `rolldownOptions.output.codeSplitting.groups` — Firebase is split into `firebase-firestore` / `firebase-auth` / `firebase-analytics` / `firebase-core` chunks, with `react-dom` and `vendor` as additional chunks.

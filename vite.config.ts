@@ -70,13 +70,25 @@ export default defineConfig({
     }),
   ],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (id.includes("firebase")) return "firebase";
-            return "vendor";
-          }
+        codeSplitting: {
+          groups: [
+            {
+              name: "firebase-firestore",
+              test: /@firebase\/firestore/,
+              priority: 40,
+            },
+            { name: "firebase-auth", test: /@firebase\/auth/, priority: 35 },
+            {
+              name: "firebase-analytics",
+              test: /@firebase\/analytics/,
+              priority: 30,
+            },
+            { name: "firebase-core", test: /firebase/, priority: 20 },
+            { name: "react-dom", test: /react-dom/, priority: 15 },
+            { name: "vendor", test: /node_modules/, priority: 10 },
+          ],
         },
       },
     },
