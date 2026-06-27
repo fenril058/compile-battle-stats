@@ -9,7 +9,7 @@
     "build": "tsc -b && vite build",
     "check": "biome check",
     "check:fix": "biome check --write",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b",
     "preview": "vite preview",
     "prepare": "husky",
     "test": "vitest run",

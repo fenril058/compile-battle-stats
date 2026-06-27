@@ -11,6 +11,7 @@ export default defineConfig({
       "**/dist/**",
       "**/node_modules/**",
       ".direnv",
+      "**/.claude/**", // 背景エージェントの worktree (.claude/worktrees/*) を拾わない
       "e2e/**", // Playwright の E2E は vitest 対象外
       "**/*.emulator.test.*", // Emulator 連動テストは npm run test:emulator 専用
     ],
