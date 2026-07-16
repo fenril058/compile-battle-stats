@@ -49,29 +49,28 @@ jobs:
       - name: Verify devShell
         run: nix develop .#ci --command true
 
-      - parallel:
-          - name: Audit (production deps)
-            run: nix develop .#ci --command npm audit --omit=dev --audit-level=moderate
+      - name: Audit (production deps)
+        run: nix develop .#ci --command npm audit --omit=dev --audit-level=moderate
 
-          - name: Audit (all deps)
-            run: nix develop .#ci --command npm audit --audit-level=high
+      - name: Audit (all deps)
+        run: nix develop .#ci --command npm audit --audit-level=high
 
-          - name: Lint workflows (ghalint)
-            run: nix develop .#ci --command ghalint run
+      - name: Lint workflows (ghalint)
+        run: nix develop .#ci --command ghalint run
 
-          - name: Lint workflows (zizmor)
-            run: nix develop .#ci --command zizmor --offline --persona=pedantic .github/workflows
+      - name: Lint workflows (zizmor)
+        run: nix develop .#ci --command zizmor --offline --persona=pedantic .github/workflows
 
-          - name: Verify action SHA pins (pinact)
-            env:
-              GITHUB_TOKEN: ${{ github.token }}
-            run: nix develop .#ci --command pinact run --check
+      - name: Verify action SHA pins (pinact)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: nix develop .#ci --command pinact run --check
 
-          - name: Lint
-            run: nix develop .#ci --command npm run check
+      - name: Lint
+        run: nix develop .#ci --command npm run check
 
-          - name: Test
-            run: nix develop .#ci --command npm test
+      - name: Test
+        run: nix develop .#ci --command npm test
 
-          - name: Build
-            run: nix develop .#ci --command npm run build
+      - name: Build
+        run: nix develop .#ci --command npm run build
