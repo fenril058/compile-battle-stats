@@ -46,10 +46,10 @@ updates:
           - "@secretlint/*"
           - "globals"
     cooldown:
-      default-days: 7
-      semver-major-days: 7
-      semver-minor-days: 7
-      semver-patch-days: 7
+      default-days: 3
+      semver-major-days: 3
+      semver-minor-days: 3
+      semver-patch-days: 3
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -59,7 +59,7 @@ updates:
       time: "08:00"
       timezone: "Asia/Tokyo"
     cooldown:
-      default-days: 7
+      default-days: 3
 
   - package-ecosystem: "nix"
     directory: "/"
@@ -69,4 +69,4 @@ updates:
       time: "08:00"
       timezone: "Asia/Tokyo"
     cooldown:
-      default-days: 7
+      default-days: 3
