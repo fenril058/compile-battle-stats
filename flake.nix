@@ -12,6 +12,10 @@
         pkgs = nixpkgs.legacyPackages.${system};
         inherit (pkgs) importNpmLock;
         nodejs = pkgs.nodejs_24;
+        npmDeps = importNpmLock.buildNodeModules {
+          npmRoot = ./.;
+          inherit nodejs;
+        };
       in
       {
         devShells.default = pkgs.mkShell {
@@ -29,15 +33,25 @@
             importNpmLock.hooks.linkNodeModulesHook
           ];
 
-          npmDeps = importNpmLock.buildNodeModules {
-            npmRoot = ./.;
-            inherit nodejs;
-          };
+          inherit npmDeps;
 
           postShellHook = ''
             export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
             export PLAYWRIGHT_BROWSERS_PATH="$HOME/.cache/ms-playwright"
           '';
+        };
+
+        devShells.ci = pkgs.mkShell {
+          packages = with pkgs; [
+            pinact
+            zizmor
+            ghalint
+            biome
+            nodejs
+            importNpmLock.hooks.linkNodeModulesHook
+          ];
+
+          inherit npmDeps;
         };
       }
     );

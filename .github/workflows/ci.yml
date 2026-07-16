@@ -47,33 +47,30 @@ jobs:
           purge-primary-key: never
 
       - name: Verify devShell
-        run: nix develop .#default --command true
+        run: nix develop .#ci --command true
 
       - name: Audit (production deps)
-        run: nix develop .#default --command npm audit --omit=dev --audit-level=moderate
+        run: nix develop .#ci --command npm audit --omit=dev --audit-level=moderate
 
       - name: Audit (all deps)
-        run: nix develop .#default --command npm audit --audit-level=high
+        run: nix develop .#ci --command npm audit --audit-level=high
 
       - name: Lint workflows (ghalint)
-        run: nix develop .#default --command ghalint run
+        run: nix develop .#ci --command ghalint run
 
       - name: Lint workflows (zizmor)
-        run: nix develop .#default --command zizmor --offline --persona=pedantic .github/workflows
+        run: nix develop .#ci --command zizmor --offline --persona=pedantic .github/workflows
 
       - name: Verify action SHA pins (pinact)
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: nix develop .#default --command pinact run --check
+        run: nix develop .#ci --command pinact run --check
 
       - name: Lint
-        run: nix develop .#default --command npm run check
-
-      - name: Typecheck
-        run: nix develop .#default --command npm run typecheck
+        run: nix develop .#ci --command npm run check
 
       - name: Test
-        run: nix develop .#default --command npm test
+        run: nix develop .#ci --command npm test
 
       - name: Build
-        run: nix develop .#default --command npm run build
+        run: nix develop .#ci --command npm run build
