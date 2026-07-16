@@ -1,6 +1,7 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/fenril058/compile-battle-stats)](https://github.com/fenril058/compile-battle-stats/releases)
 [![CI](https://github.com/fenril058/compile-battle-stats/actions/workflows/ci.yml/badge.svg)](https://github.com/fenril058/compile-battle-stats/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/fenril058/compile-battle-stats/LICENSE)
+[![Deepwiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/fenril058/compile-battle-stats)
 
 # compile-battle-stats
 
