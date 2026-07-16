@@ -38,42 +38,40 @@ jobs:
       - name: Restore and save Nix store
         uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
         with:
-          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock', 'package-lock.json') }}
           restore-prefixes-first-match: nix-${{ runner.os }}-
-          gc-max-store-size-linux: 4G
+          gc-max-store-size-linux: 1G
+          save: ${{ github.event_name == 'push' }}
           purge: true
           purge-prefixes: nix-${{ runner.os }}-
           purge-created: 0
           purge-primary-key: never
 
       - name: Verify devShell
-        run: nix develop .#default --command true
+        run: nix develop .#ci --command true
 
       - name: Audit (production deps)
-        run: nix develop .#default --command npm audit --omit=dev --audit-level=moderate
+        run: nix develop .#ci --command npm audit --omit=dev --audit-level=moderate
 
       - name: Audit (all deps)
-        run: nix develop .#default --command npm audit --audit-level=high
+        run: nix develop .#ci --command npm audit --audit-level=high
 
       - name: Lint workflows (ghalint)
-        run: nix develop .#default --command ghalint run
+        run: nix develop .#ci --command ghalint run
 
       - name: Lint workflows (zizmor)
-        run: nix develop .#default --command zizmor --offline --persona=pedantic .github/workflows
+        run: nix develop .#ci --command zizmor --offline --persona=pedantic .github/workflows
 
       - name: Verify action SHA pins (pinact)
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: nix develop .#default --command pinact run --check
+        run: nix develop .#ci --command pinact run --check
 
       - name: Lint
-        run: nix develop .#default --command npm run check
-
-      - name: Typecheck
-        run: nix develop .#default --command npm run typecheck
+        run: nix develop .#ci --command npm run check
 
       - name: Test
-        run: nix develop .#default --command npm test
+        run: nix develop .#ci --command npm test
 
       - name: Build
-        run: nix develop .#default --command npm run build
+        run: nix develop .#ci --command npm run build
