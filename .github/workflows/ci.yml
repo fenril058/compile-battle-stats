@@ -42,7 +42,7 @@ jobs:
           primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock', 'package-lock.json') }}
           restore-prefixes-first-match: nix-${{ runner.os }}-
           gc-max-store-size-linux: 1G
-          save: ${{ github.event_name == 'push' }}
+          save: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
           purge: true
           purge-prefixes: nix-${{ runner.os }}-
           purge-created: 0
