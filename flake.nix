@@ -16,8 +16,26 @@
           npmRoot = ./.;
           inherit nodejs;
         };
+        ciDevShell = pkgs.mkShell {
+          packages = with pkgs; [
+            pinact
+            zizmor
+            ghalint
+            biome
+            nodejs
+            importNpmLock.hooks.linkNodeModulesHook
+          ];
+
+          inherit npmDeps;
+        };
       in
       {
+        packages.saveFromGC = pkgs.writeText "save-from-gc" ''
+          ${nixpkgs}
+          ${flake-utils}
+          ${ciDevShell}
+        '';
+
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             jdk
@@ -41,18 +59,7 @@
           '';
         };
 
-        devShells.ci = pkgs.mkShell {
-          packages = with pkgs; [
-            pinact
-            zizmor
-            ghalint
-            biome
-            nodejs
-            importNpmLock.hooks.linkNodeModulesHook
-          ];
-
-          inherit npmDeps;
-        };
+        devShells.ci = ciDevShell;
       }
     );
 }
