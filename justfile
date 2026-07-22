@@ -11,10 +11,10 @@ default:
 audit:
     -npm audit
 
-# 脆弱性を強制修正 (Nix環境対策で --ignore-scripts を付与)
+# package-lock.json の脆弱な依存関係を更新
 [group('deps')]
-audit-fix:
-    npm audit fix --force --ignore-scripts
+audit-fix *args:
+    npm audit fix --package-lock-only --ignore-scripts {{args}}
 
 # npm install --package-lock-only (*args にして複数パッケージ対応 + Nix対策)
 [group('deps')]
