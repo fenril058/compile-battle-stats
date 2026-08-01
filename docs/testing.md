@@ -28,5 +28,5 @@ server with `--mode e2e` → loads `.env.e2e` (empty Firebase vars) → **LocalS
 mode**, so tests never touch real Firestore.
 The Vitest config excludes `e2e/**`, so unit tests never pick up Playwright specs.
 
-Browsers are shared in the user cache (not downloaded per-project);
-install once with `npx playwright install` if not already cached.
+Playwright browsers are provided by `playwright-driver` in the default Nix dev shell.
+Run E2E tests inside `nix develop`; no separate browser installation is required.
