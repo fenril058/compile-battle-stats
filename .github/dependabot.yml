@@ -9,36 +9,47 @@ updates:
       interval: "daily"
       time: "08:00"
       timezone: "Asia/Tokyo"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 1
     groups:
       react:
         patterns:
           - "react"
           - "react-dom"
-          - "react-toastify"
           - "@types/react*"
-          - "@testing-library/react"
+
+      testing:
+        dependency-type: "development"
+        patterns:
+          - "@playwright/*"
+          - "@axe-core/*"
+          - "@testing-library/*"
+          - "@firebase/rules-unit-testing"
+          - "happy-dom"
+          - "vitest*"
+          - "@vitest/*"
+
       build-tools:
+        dependency-type: "development"
         patterns:
           - "vite*"
           - "@vitejs/*"
           - "tailwindcss"
           - "@tailwindcss/*"
-          - "typescript"
-      type-definitions:
+
+      type-tools:
+        dependency-type: "development"
         patterns:
+          - "typescript"
+          - "@types/node"
           - "@types/*"
-        exclude-patterns:
-          - "@types/react*"
+          - "globals"
+
       vercel:
         patterns:
           - "@vercel/*"
-      testing:
-        patterns:
-          - "vitest"
-          - "jsdom"
-          - "@testing-library/jest-dom"
-      linting-tools:
+
+      repo-tools:
+        dependency-type: "development"
         patterns:
           - "husky"
           - "lint-staged"
