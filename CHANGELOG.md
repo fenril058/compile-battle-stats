@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.2](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.6.1...compile-battle-stats-v2.6.2) (2026-08-07)
+
+
+### Bug Fixes
+
+* apply audit fix ([#325](https://github.com/fenril058/compile-battle-stats/issues/325)) ([cef753f](https://github.com/fenril058/compile-battle-stats/commit/cef753f38b5bc68358af4d9ea3433ff8c5e015db))
+
 ## [2.6.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.6.0...compile-battle-stats-v2.6.1) (2026-06-20)
 
 
