@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
 // happy-dom does not implement window.confirm; stub it so vi.spyOn can override per-test
