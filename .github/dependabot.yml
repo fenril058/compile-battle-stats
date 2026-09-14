@@ -16,6 +16,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    # @playwright/test は nixpkgs の playwright-driver と同じバージョンでなければ
+    # E2E がブラウザを見つけられない (docs/testing.md, scripts/check-playwright-version.mjs)。
+    # nixpkgs が先に動かない限り上げても必ず壊れるので、バージョンは nixpkgs に追随して
+    # 手で上げる。追随の合図は nixpkgs bump PR で playwright-nix.yml が赤くなることで受け取る。
+    ignore:
+      - dependency-name: "@playwright/test"
     cooldown:
       default-days: 3
 
