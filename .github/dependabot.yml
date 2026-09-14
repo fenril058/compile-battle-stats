@@ -8,51 +8,14 @@ updates:
     schedule:
       interval: "weekly"
       day: "sunday"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
     groups:
-      react:
+      npm-non-major:
         patterns:
-          - "react"
-          - "react-dom"
-          - "@types/react*"
-
-      testing:
-        dependency-type: "development"
-        patterns:
-          - "@playwright/*"
-          - "@axe-core/*"
-          - "@testing-library/*"
-          - "@firebase/rules-unit-testing"
-          - "happy-dom"
-          - "vitest*"
-          - "@vitest/*"
-
-      build-tools:
-        dependency-type: "development"
-        patterns:
-          - "vite*"
-          - "@vitejs/*"
-          - "tailwindcss"
-          - "@tailwindcss/*"
-
-      type-tools:
-        dependency-type: "development"
-        patterns:
-          - "typescript"
-          - "@types/*"
-          - "globals"
-
-      vercel:
-        patterns:
-          - "@vercel/*"
-
-      repo-tools:
-        dependency-type: "development"
-        patterns:
-          - "husky"
-          - "lint-staged"
-          - "secretlint"
-          - "@secretlint/*"
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
     cooldown:
       default-days: 3
 
