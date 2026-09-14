@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.2](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.6.1...compile-battle-stats-v2.6.2) (2026-09-14)
+
+
+### Bug Fixes
+
+* **e2e:** pin @playwright/test to nixpkgs' playwright-driver version ([#366](https://github.com/fenril058/compile-battle-stats/issues/366)) ([327a6b5](https://github.com/fenril058/compile-battle-stats/commit/327a6b5900356031b632d588115774fd4001c73a))
+
 ## [2.6.1](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.6.0...compile-battle-stats-v2.6.1) (2026-06-20)
 
 
