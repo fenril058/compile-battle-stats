@@ -1,0 +1,58 @@
+name: Playwright Nix
+
+# E2E のブラウザは Nix devShell が playwright-driver で供給するため、@playwright/test と
+# nixpkgs の playwright-driver は同じバージョンでなければ E2E が起動しない。ci.yml は E2E を
+# 実行しないので、このズレはここでしか止められない。関係するパスが動いたときだけ走らせる。
+on:
+  push:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "flake.nix"
+      - "flake.lock"
+      - "scripts/check-playwright-version.mjs"
+      - ".github/workflows/playwright-nix.yml"
+  pull_request:
+    paths:
+      - "package.json"
+      - "flake.nix"
+      - "flake.lock"
+      - "scripts/check-playwright-version.mjs"
+      - ".github/workflows/playwright-nix.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playwright-nix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright-version:
+    name: playwright version (npm / nixpkgs)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: write # cache-nix-action が古い Nix ストアキャッシュを削除するために必要
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: nixbuild/nix-quick-install-action@9f63be77f412a248c9d9a65a4c82cf066cdf8f0c # v35
+        with:
+          nix_conf: max-jobs = auto
+      - uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
+        with:
+          primary-key: nix-${{ runner.os }}-playwright-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-playwright-
+          gc-max-store-size-linux: 1G
+          save: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+          purge: true
+          purge-prefixes: nix-${{ runner.os }}-playwright-
+          purge-created: 0
+          purge-primary-key: never
+      # devShell には入らない。playwright-driver.browsers の実体化に数百MBかかるが、
+      # この検査は nix eval による評価だけで済む。Node は runner に同梱のものを使う。
+      - run: node scripts/check-playwright-version.mjs

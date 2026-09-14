@@ -79,9 +79,16 @@ test-watch:
 coverage:
     npm run test:coverage
 
+# @playwright/test と nixpkgs の playwright-driver が同じバージョンか検査する。
+# ズレると E2E のブラウザが見つからず起動しなくなるが、CI は E2E を実行しないため
+# ズレは黙って起きる (docs/testing.md 参照)。
+[group('test')]
+playwright-version:
+    node scripts/check-playwright-version.mjs
+
 # E2Eテストを実行
 [group('test')]
-e2e:
+e2e: playwright-version
     npm run e2e
 
 # E2EテストをUIモードで実行

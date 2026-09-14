@@ -30,3 +30,13 @@ The Vitest config excludes `e2e/**`, so unit tests never pick up Playwright spec
 
 Playwright browsers are provided by `playwright-driver` in the default Nix dev shell.
 Run E2E tests inside `nix develop`; no separate browser installation is required.
+
+`@playwright/test` in `package.json` must be pinned to the **exact** version of nixpkgs' `playwright-driver` (no `^`/`~` range).
+Playwright looks up its bundled Chromium by a revision tied to its own version, and nixpkgs ships the revision matching its own `playwright-driver` version.
+A mismatch fails with `browserType.launch: Executable doesn't exist at ...`.
+
+`ci.yml` doesn't run E2E, so this can only drift silently.
+`just playwright-version` (`scripts/check-playwright-version.mjs`) checks that the two versions match; `just e2e` runs it first, and `.github/workflows/playwright-nix.yml` runs it in CI when `package.json`, `flake.nix`, or `flake.lock` change.
+
+Dependabot is configured to ignore `@playwright/test`.
+Bump it by hand once nixpkgs' `playwright-driver` has moved — a `flake.lock` bump PR going red on this check is the signal.
