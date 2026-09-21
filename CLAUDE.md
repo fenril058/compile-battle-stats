@@ -23,6 +23,16 @@ Committing locally to `main` is fine; leave pushing `main` to the user, who revi
 When a change should reach the remote on its own, create a feature branch, push it, and open a PR.
 Auto-close an issue with a `Closes #<n>` trailer on a commit that reaches `main`.
 
+Commits follow Conventional Commits, and release-please decides releases from the type and the breaking marker, never from the scope or the changed files.
+`feat:` bumps minor; `fix:`, `perf:`, and `revert:` bump patch; `!` or a `BREAKING CHANGE:` footer bumps major; `build:`, `chore:`, `ci:`, `docs:`, `refactor:`, `style:`, and `test:` release nothing on their own.
+So `fix(e2e):` or `perf:` on a dev-only change opens a release PR, while Dependabot's `build(deps):` does not.
+PRs are squash-merged, so the subject release-please reads is the **PR title** — check it before merging, not just the local commits.
+
+Pick the type by whether the change deserves a line in the user-facing CHANGELOG, not by how important it felt.
+Tests, e2e, CI, tooling, and build-time performance are `build:` / `ci:` / `test:` / `chore:`; reserve `perf:` for runtime performance users can observe.
+When in doubt, use `chore:`.
+To drop an unwanted release PR, add the `autorelease: snooze` label **before** closing it — a release PR closed without that label is recreated on the next push to `main`.
+
 Husky hooks: **pre-commit** runs `lint-staged` (Biome + secretlint), `typecheck`, `test:staged`; **pre-push** runs `build`.
 Fix failures; do not bypass with `--no-verify`.
 
