@@ -53,6 +53,9 @@
     "vite-plugin-beasties": "^0.5.4",
     "vitest": "^5.0.0"
   },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.5"
+  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json}": [
       "biome check --write --no-errors-on-unmatched"
