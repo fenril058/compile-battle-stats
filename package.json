@@ -23,14 +23,14 @@
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "firebase": "^12.19.0",
+    "firebase": "^13.0.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-select": "^5.10.2"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@firebase/rules-unit-testing": "^5.0.2",
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@playwright/test": "1.63.0",
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.7",
     "@tailwindcss/vite": "^4.3.3",
