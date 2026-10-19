@@ -3,10 +3,21 @@
   "vcs": {
     "enabled": true,
     "clientKind": "git",
-    "useIgnoreFile": true
+    "useIgnoreFile": false
   },
   "files": {
-    "includes": ["**", "!!**/dist", "!!**/.direnv"]
+    "includes": [
+      "**",
+      "!!**/dist",
+      "!!**/.direnv",
+      "!!**/node_modules",
+      "!!**/coverage",
+      "!!**/test-results",
+      "!!**/playwright-report",
+      "!!**/playwright/.cache",
+      "!!**/.claude",
+      "!!**/.agents"
+    ]
   },
   "formatter": {
     "enabled": true,
