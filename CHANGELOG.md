@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.6.2...compile-battle-stats-v3.0.0) (2026-10-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* **deps-dev:** Disables CSS and IFrame loading by default (<a href="https://redirect.github.com/capricorn86/happy-dom/issues/2502">#2502</a>)</li> <li><a href="https://github.com/capricorn86/happy-dom/commit/f21dbd7d0a0c63cdd41954ba5d0f05def4e0f2b3"><code>f21dbd7</code></a> fix: Fixes cookie scope forgery vulnerability (<a href="https://redirect.github.com/capricorn86/happy-dom/issues/2477">#2477</a>)</li> <li>See full diff in <a href="https://github.com/capricorn86/happy-dom/compare/v20.14.5...v21.0.1">compare view</a></li> </ul> </details> <br />
+
+### Build System
+
+* **deps-dev:** bump happy-dom from 20.14.5 to 21.0.1 ([#387](https://github.com/fenril058/compile-battle-stats/issues/387)) ([d33cd82](https://github.com/fenril058/compile-battle-stats/commit/d33cd82a658e1924aa9bba14e6ef07a66377d51b))
+
 ## [2.6.2](https://github.com/fenril058/compile-battle-stats/compare/compile-battle-stats-v2.6.1...compile-battle-stats-v2.6.2) (2026-09-21)
 
 
