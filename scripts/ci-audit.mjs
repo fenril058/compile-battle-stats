@@ -91,8 +91,10 @@ function main() {
     throw new Error(`npm audit error: ${JSON.stringify(report.error)}`);
   }
   const { ignored, blocking } = classifyAudit(report);
+  let expired = false;
   if (ignored.length) {
     if (!exceptionIsActive()) {
+      expired = true;
       console.error(
         "::error::The withdrawn picomatch advisory waiver expired on 2026-11-26 UTC. Review the npm audit feed and remove or renew the exception explicitly.",
       );
@@ -108,7 +110,7 @@ function main() {
       `::error::High/critical dependency vulnerabilities outside the exception: ${blocking.join(", ")}`,
     );
     process.exitCode = 1;
-  } else {
+  } else if (!expired) {
     console.log(
       "Dependency audit passed: no other high/critical vulnerabilities.",
     );
