@@ -2,11 +2,16 @@ import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Temporary exception for the unpatched picomatch ReDoS advisory, currently
-// present only in dev dependencies. The production audit remains blocking.
-// Remove this exception once a patched picomatch release is available.
+// GitHub withdrew this disputed advisory on 2026-11-18, but the npm audit
+// registry still reports it. Only the dev dependency graph is affected.
+// This waiver must expire: do not permanently suppress advisories.
 const ALLOWED_ADVISORY = "https://github.com/advisories/GHSA-fc5q-39xc-vjpf";
+const EXCEPTION_EXPIRES_AT = Date.parse("2026-11-26T00:00:00Z");
 const BLOCKING_SEVERITIES = new Set(["high", "critical"]);
+
+export function exceptionIsActive(now = Date.now()) {
+  return now < EXCEPTION_EXPIRES_AT;
+}
 
 export function classifyAudit(report) {
   if (
@@ -87,9 +92,16 @@ function main() {
   }
   const { ignored, blocking } = classifyAudit(report);
   if (ignored.length) {
-    console.warn(
-      `::warning::Temporarily allowing ${ALLOWED_ADVISORY} in dev dependencies (affected packages: ${ignored.join(", ")})`,
-    );
+    if (!exceptionIsActive()) {
+      console.error(
+        "::error::The withdrawn picomatch advisory waiver expired on 2026-11-26 UTC. Review the npm audit feed and remove or renew the exception explicitly.",
+      );
+      process.exitCode = 1;
+    } else {
+      console.warn(
+        `::warning::Temporarily allowing withdrawn ${ALLOWED_ADVISORY} until 2026-11-26 UTC (affected dev packages: ${ignored.join(", ")})`,
+      );
+    }
   }
   if (blocking.length) {
     console.error(
