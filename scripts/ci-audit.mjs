@@ -1,0 +1,130 @@
+import { spawnSync } from "node:child_process";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+// GitHub withdrew this disputed advisory on 2026-11-18, but the npm audit
+// registry still reports it. Only the dev dependency graph is affected.
+// This waiver must expire: do not permanently suppress advisories.
+const ALLOWED_ADVISORY = "https://github.com/advisories/GHSA-fc5q-39xc-vjpf";
+const EXCEPTION_EXPIRES_AT = Date.parse("2026-11-26T00:00:00Z");
+const BLOCKING_SEVERITIES = new Set(["high", "critical"]);
+
+export function exceptionIsActive(now = Date.now()) {
+  return now < EXCEPTION_EXPIRES_AT;
+}
+
+export function classifyAudit(report) {
+  if (
+    report?.auditReportVersion !== 2 ||
+    !report.metadata?.vulnerabilities ||
+    !report.vulnerabilities ||
+    typeof report.vulnerabilities !== "object"
+  ) {
+    throw new Error("npm audit did not return a valid v2 vulnerability report");
+  }
+
+  const vulnerabilities = report.vulnerabilities;
+  const tracedToAllowedAdvisory = (name) => {
+    const visited = new Set();
+    let foundAllowedAdvisory = false;
+    let hasUnapprovedSource = false;
+
+    const visit = (dependencyName) => {
+      // npm audit can report cycles (e.g. vitest <-> @vitest/coverage-v8).
+      if (visited.has(dependencyName)) return;
+      visited.add(dependencyName);
+      const vulnerability = vulnerabilities[dependencyName];
+      if (
+        !vulnerability ||
+        !Array.isArray(vulnerability.via) ||
+        !vulnerability.via.length
+      ) {
+        hasUnapprovedSource = true;
+        return;
+      }
+      for (const source of vulnerability.via) {
+        if (typeof source === "string") {
+          visit(source);
+        } else if (
+          source?.name === "picomatch" &&
+          source.url === ALLOWED_ADVISORY
+        ) {
+          foundAllowedAdvisory = true;
+        } else {
+          hasUnapprovedSource = true;
+        }
+      }
+    };
+
+    visit(name);
+    return foundAllowedAdvisory && !hasUnapprovedSource;
+  };
+
+  const ignored = [];
+  const blocking = [];
+  for (const [name, vulnerability] of Object.entries(vulnerabilities)) {
+    if (!BLOCKING_SEVERITIES.has(vulnerability.severity)) continue;
+    (tracedToAllowedAdvisory(name) ? ignored : blocking).push(name);
+  }
+  return { ignored, blocking };
+}
+
+function main() {
+  const result = spawnSync("npm", ["audit", "--json", "--audit-level=high"], {
+    encoding: "utf8",
+    maxBuffer: 20 * 1024 * 1024,
+  });
+  if (result.error || (result.status !== 0 && result.status !== 1)) {
+    throw new Error(
+      `npm audit could not run: ${result.error?.message ?? result.stderr ?? result.status}`,
+    );
+  }
+  let report;
+  try {
+    report = JSON.parse(result.stdout);
+  } catch {
+    throw new Error(
+      `npm audit returned invalid JSON: ${result.stderr || result.stdout.slice(0, 500)}`,
+    );
+  }
+  if (report.error) {
+    throw new Error(`npm audit error: ${JSON.stringify(report.error)}`);
+  }
+  const { ignored, blocking } = classifyAudit(report);
+  let expired = false;
+  if (ignored.length) {
+    if (!exceptionIsActive()) {
+      expired = true;
+      console.error(
+        "::error::The withdrawn picomatch advisory waiver expired on 2026-11-26 UTC. Review the npm audit feed and remove or renew the exception explicitly.",
+      );
+      process.exitCode = 1;
+    } else {
+      console.warn(
+        `::warning::Temporarily allowing withdrawn ${ALLOWED_ADVISORY} until 2026-11-26 UTC (affected dev packages: ${ignored.join(", ")})`,
+      );
+    }
+  }
+  if (blocking.length) {
+    console.error(
+      `::error::High/critical dependency vulnerabilities outside the exception: ${blocking.join(", ")}`,
+    );
+    process.exitCode = 1;
+  } else if (!expired) {
+    console.log(
+      "Dependency audit passed: no other high/critical vulnerabilities.",
+    );
+  }
+}
+
+if (
+  process.argv[1] &&
+  fileURLToPath(import.meta.url) === resolve(process.argv[1])
+) {
+  try {
+    main();
+  } catch (error) {
+    console.error(`::error::${error.message}`);
+    process.exitCode = 1;
+  }
+}
