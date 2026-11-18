@@ -90,7 +90,9 @@ test("blocks a mixed downstream dependency", () => {
       picomatch: { severity: "high", via: [advisory] },
       other: {
         severity: "high",
-        via: [{ name: "other", url: "https://github.com/advisories/GHSA-other" }],
+        via: [
+          { name: "other", url: "https://github.com/advisories/GHSA-other" },
+        ],
       },
       downstream: { severity: "high", via: ["picomatch", "other"] },
     }),
