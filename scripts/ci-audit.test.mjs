@@ -30,6 +30,33 @@ test("allows only the known picomatch advisory and its downstream impact", () =>
   );
 });
 
+test("allows dependency cycles that still resolve only to the known advisory", () => {
+  assert.deepEqual(
+    classifyAudit(
+      report({
+        picomatch: { severity: "high", via: [advisory] },
+        vite: { severity: "high", via: ["picomatch"] },
+        vitest: { severity: "high", via: ["vite", "@vitest/coverage-v8"] },
+        "@vitest/coverage-v8": { severity: "high", via: ["vitest"] },
+      }),
+    ),
+    {
+      ignored: ["picomatch", "vite", "vitest", "@vitest/coverage-v8"],
+      blocking: [],
+    },
+  );
+});
+
+test("blocks dependency cycles without any allowed advisory source", () => {
+  const outcome = classifyAudit(
+    report({
+      a: { severity: "high", via: ["b"] },
+      b: { severity: "high", via: ["a"] },
+    }),
+  );
+  assert.deepEqual(outcome.blocking, ["a", "b"]);
+});
+
 test("blocks a different advisory even when it affects picomatch", () => {
   const outcome = classifyAudit(
     report({
