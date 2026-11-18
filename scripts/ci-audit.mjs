@@ -5,14 +5,12 @@ import { fileURLToPath } from "node:url";
 // Temporary exception for the unpatched picomatch ReDoS advisory, currently
 // present only in dev dependencies. The production audit remains blocking.
 // Remove this exception once a patched picomatch release is available.
-const ALLOWED_ADVISORY =
-  "https://github.com/advisories/GHSA-fc5q-39xc-vjpf";
+const ALLOWED_ADVISORY = "https://github.com/advisories/GHSA-fc5q-39xc-vjpf";
 const BLOCKING_SEVERITIES = new Set(["high", "critical"]);
 
 export function classifyAudit(report) {
   if (
-    !report ||
-    report.auditReportVersion !== 2 ||
+    report?.auditReportVersion !== 2 ||
     !report.metadata?.vulnerabilities ||
     !report.vulnerabilities ||
     typeof report.vulnerabilities !== "object"
