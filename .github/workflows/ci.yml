@@ -59,7 +59,7 @@ jobs:
 
       - name: Audit (all deps)
         run: |
-          nix develop .#ci --command node --test scripts/ci-audit.test.mjs
+          nix develop .#ci --command node --test scripts/ci-audit.node-test.mjs
           nix develop .#ci --command node scripts/ci-audit.mjs
 
       - name: Lint workflows (ghalint)
