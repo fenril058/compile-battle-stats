@@ -58,7 +58,9 @@ jobs:
         run: nix develop .#ci --command npm audit --omit=dev --audit-level=moderate
 
       - name: Audit (all deps)
-        run: nix develop .#ci --command npm audit --audit-level=high
+        run: |
+          nix develop .#ci --command node --test scripts/ci-audit.test.mjs
+          nix develop .#ci --command node scripts/ci-audit.mjs
 
       - name: Lint workflows (ghalint)
         run: nix develop .#ci --command ghalint run
