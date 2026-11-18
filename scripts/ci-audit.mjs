@@ -21,23 +21,40 @@ export function classifyAudit(report) {
   }
 
   const vulnerabilities = report.vulnerabilities;
-  const tracedToAllowedAdvisory = (name, visited = new Set()) => {
-    const vulnerability = vulnerabilities[name];
-    if (
-      !vulnerability ||
-      visited.has(name) ||
-      !Array.isArray(vulnerability.via) ||
-      vulnerability.via.length === 0
-    ) {
-      return false;
-    }
-    const next = new Set(visited).add(name);
-    return vulnerability.via.every((source) => {
-      if (typeof source === "string") {
-        return tracedToAllowedAdvisory(source, next);
+  const tracedToAllowedAdvisory = (name) => {
+    const visited = new Set();
+    let foundAllowedAdvisory = false;
+    let hasUnapprovedSource = false;
+
+    const visit = (dependencyName) => {
+      // npm audit can report cycles (e.g. vitest <-> @vitest/coverage-v8).
+      if (visited.has(dependencyName)) return;
+      visited.add(dependencyName);
+      const vulnerability = vulnerabilities[dependencyName];
+      if (
+        !vulnerability ||
+        !Array.isArray(vulnerability.via) ||
+        !vulnerability.via.length
+      ) {
+        hasUnapprovedSource = true;
+        return;
       }
-      return source?.name === "picomatch" && source.url === ALLOWED_ADVISORY;
-    });
+      for (const source of vulnerability.via) {
+        if (typeof source === "string") {
+          visit(source);
+        } else if (
+          source?.name === "picomatch" &&
+          source.url === ALLOWED_ADVISORY
+        ) {
+          foundAllowedAdvisory = true;
+        } else {
+          hasUnapprovedSource = true;
+        }
+      }
+    };
+
+    visit(name);
+    return foundAllowedAdvisory && !hasUnapprovedSource;
   };
 
   const ignored = [];
