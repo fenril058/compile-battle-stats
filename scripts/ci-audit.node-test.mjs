@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { classifyAudit } from "./ci-audit.mjs";
+import { classifyAudit, exceptionIsActive } from "./ci-audit.mjs";
 
 const advisory = {
   name: "picomatch",
@@ -11,6 +11,11 @@ const report = (vulnerabilities) => ({
   auditReportVersion: 2,
   metadata: { vulnerabilities: { high: 0, critical: 0 } },
   vulnerabilities,
+});
+
+test("temporary exception expires after 2026-11-26 UTC", () => {
+  assert.equal(exceptionIsActive(Date.parse("2026-11-25T23:59:59Z")), true);
+  assert.equal(exceptionIsActive(Date.parse("2026-11-26T00:00:00Z")), false);
 });
 
 test("passes a clean audit", () => {
