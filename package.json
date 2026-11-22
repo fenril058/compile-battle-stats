@@ -46,7 +46,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "react-toastify": "^11.2.0",
-    "secretlint": "^13.1.0",
+    "secretlint": "^14.0.1",
     "tailwindcss": "^4.3.1",
     "typescript": "~7.0.2",
     "vite": "^8.3.8",
